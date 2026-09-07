@@ -1,0 +1,41 @@
+name: Package Mirroried LED Storefront
+
+on:
+  push:
+    branches:
+      - storefront-vnext
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Verify storefront files
+        run: |
+          test -f index.html
+          test -f styles.css
+          test -f app.js
+          node --check app.js
+
+      - name: Build deployment bundle
+        run: |
+          mkdir -p dist/mirroriedled-storefront
+          cp index.html styles.css app.js dist/mirroriedled-storefront/
+          cp deploy/HOSTINGER_DEPLOYMENT.md dist/mirroriedled-storefront/
+          cd dist/mirroriedled-storefront
+          sha256sum index.html styles.css app.js > SHA256SUMS.txt
+          printf 'Mirroried LED public storefront\nCommit: %s\nBuilt: %s UTC\n' "${GITHUB_SHA}" "$(date -u +'%Y-%m-%d %H:%M:%S')" > BUILD_INFO.txt
+
+      - name: Upload storefront artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mirroriedled-storefront-${{ github.sha }}
+          path: dist/mirroriedled-storefront/
+          if-no-files-found: error
+          retention-days: 30
