@@ -23,11 +23,26 @@ jobs:
           test -f app.js
           node --check app.js
 
+      - name: Verify deployment tools
+        run: |
+          test -f deploy/hostinger/deploy-storefront.sh
+          test -f deploy/hostinger/rollback-storefront.sh
+          test -f deploy/hostinger/verify-storefront.sh
+          test -f deploy/hostinger/README.md
+          bash -n deploy/hostinger/deploy-storefront.sh
+          bash -n deploy/hostinger/rollback-storefront.sh
+          bash -n deploy/hostinger/verify-storefront.sh
+
       - name: Build deployment bundle
         run: |
           mkdir -p dist/mirroriedled-storefront
           cp index.html styles.css app.js dist/mirroriedled-storefront/
           cp deploy/HOSTINGER_DEPLOYMENT.md dist/mirroriedled-storefront/
+          cp deploy/hostinger/deploy-storefront.sh dist/mirroriedled-storefront/
+          cp deploy/hostinger/rollback-storefront.sh dist/mirroriedled-storefront/
+          cp deploy/hostinger/verify-storefront.sh dist/mirroriedled-storefront/
+          cp deploy/hostinger/README.md dist/mirroriedled-storefront/HOSTINGER_SAFE_DEPLOY.md
+          chmod +x dist/mirroriedled-storefront/*.sh
           cd dist/mirroriedled-storefront
           sha256sum index.html styles.css app.js > SHA256SUMS.txt
           printf 'Mirroried LED public storefront\nCommit: %s\nBuilt: %s UTC\n' "${GITHUB_SHA}" "$(date -u +'%Y-%m-%d %H:%M:%S')" > BUILD_INFO.txt
