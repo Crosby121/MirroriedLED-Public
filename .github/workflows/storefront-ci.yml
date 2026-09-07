@@ -1,0 +1,58 @@
+name: Storefront CI
+
+on:
+  push:
+    branches:
+      - storefront-vnext
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Verify required storefront files
+        run: |
+          test -s index.html
+          test -s styles.css
+          test -s app.js
+
+      - name: Check JavaScript syntax
+        run: node --check app.js
+
+      - name: Verify required public sections
+        run: |
+          grep -q 'id="products"' index.html
+          grep -q 'id="custom"' index.html
+          grep -q 'id="advertising"' index.html
+          grep -q 'id="sponsors"' index.html
+          grep -q 'id="events"' index.html
+          grep -q 'id="portals"' index.html
+          grep -q 'id="contact"' index.html
+
+      - name: Verify Sponsor Portal integration
+        run: |
+          grep -q 'https://sponsors.mirroriedled.com/' index.html
+          grep -q 'Advertising on the Go' index.html
+          grep -q 'Sponsor Partner Program' index.html
+
+      - name: Verify brand spelling in staged site
+        run: |
+          grep -q 'Mirroried LED' index.html
+          if grep -q 'Mirrored LED' index.html; then
+            echo 'Unexpected Mirrored LED spelling found in index.html'
+            exit 1
+          fi
+
+      - name: Verify staged storefront has no embedded secrets
+        run: |
+          if grep -Eqi '(HOSTINGER_API_KEY|PORTAL_POSTGRES_PASSWORD|PORTAL_ADMIN_PASSWORD|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' index.html styles.css app.js; then
+            echo 'Potential production secret marker found in storefront files'
+            exit 1
+          fi
