@@ -7,6 +7,7 @@ BACKUP_ROOT="${BACKUP_ROOT:-$HOME/mirroriedled-backups}"
 DOMAIN="${DOMAIN:-https://mirroriedled.com}"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 BACKUP_DIR="$BACKUP_ROOT/storefront-$STAMP"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 required=(index.html styles.css app.js)
 
@@ -25,8 +26,14 @@ if [[ -f "$PACKAGE_DIR/SHA256SUMS.txt" ]]; then
   (cd "$PACKAGE_DIR" && sha256sum -c SHA256SUMS.txt)
 fi
 
+# Safest path: create and verify a complete public_html archive before changing any live file.
+[[ -x "$SCRIPT_DIR/backup-public-html.sh" ]] || fail "Missing executable full-backup helper: $SCRIPT_DIR/backup-public-html.sh"
+echo "Creating full-site safety backup before deployment..."
+PUBLIC_HTML="$PUBLIC_HTML" BACKUP_ROOT="$BACKUP_ROOT" "$SCRIPT_DIR/backup-public-html.sh"
+
+# Also keep a lightweight storefront-only backup for fast rollback.
 mkdir -p "$BACKUP_DIR"
-echo "Backing up current storefront to $BACKUP_DIR"
+echo "Backing up current storefront files to $BACKUP_DIR"
 for f in "${required[@]}"; do
   if [[ -f "$PUBLIC_HTML/$f" ]]; then
     cp -p "$PUBLIC_HTML/$f" "$BACKUP_DIR/$f"
@@ -58,12 +65,13 @@ chmod 0644 "$PUBLIC_HTML/index.html" "$PUBLIC_HTML/styles.css" "$PUBLIC_HTML/app
 echo "Deployment files installed. Running public verification..."
 if command -v curl >/dev/null 2>&1; then
   code="$(curl -L -sS -o /tmp/mirroriedled-home.html -w '%{http_code}' --max-time 20 "$DOMAIN/")"
-  [[ "$code" == "200" ]] || fail "Homepage returned HTTP $code. Backup is at $BACKUP_DIR"
-  grep -qi 'Mirroried LED' /tmp/mirroriedled-home.html || fail "Homepage response does not contain Mirroried LED. Backup is at $BACKUP_DIR"
+  [[ "$code" == "200" ]] || fail "Homepage returned HTTP $code. Fast rollback backup is at $BACKUP_DIR; full-site archive is under $BACKUP_ROOT"
+  grep -qi 'Mirroried LED' /tmp/mirroriedled-home.html || fail "Homepage response does not contain Mirroried LED. Fast rollback backup is at $BACKUP_DIR; full-site archive is under $BACKUP_ROOT"
 else
   echo "curl not installed; skipped public HTTP verification."
 fi
 
 echo "DEPLOYMENT SUCCESS"
-echo "Backup: $BACKUP_DIR"
+echo "Fast rollback backup: $BACKUP_DIR"
+echo "Full-site backups: $BACKUP_ROOT/public_html-full-*.tar.gz"
 echo "Site: $DOMAIN"
