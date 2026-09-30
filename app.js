@@ -43,7 +43,11 @@
   }
 
   function saveCart() {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    try {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    } catch {
+      // Keep the in-memory cart usable when storage is unavailable.
+    }
     renderCart();
   }
 
