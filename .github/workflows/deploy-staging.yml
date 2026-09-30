@@ -1,0 +1,74 @@
+name: Deploy Storefront to Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      staging_path:
+        description: "Absolute staging path; must end with /public_html/MLED_v5_TEST"
+        required: true
+        type: string
+      staging_url:
+        description: "Optional staging URL to verify after upload"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout approved storefront
+        uses: actions/checkout@v5
+
+      - name: Validate storefront
+        run: |
+          test -s index.html
+          test -s styles.css
+          test -s app.js
+          node --check app.js
+
+      - name: Guard staging destination
+        env:
+          STAGING_PATH: ${{ inputs.staging_path }}
+        run: |
+          [[ "$STAGING_PATH" =~ ^(/[A-Za-z0-9._-]+)+/public_html/MLED_v5_TEST$ ]] || {
+            echo "Refusing: destination contains unsupported characters" >&2
+            exit 1
+          }
+          case "$STAGING_PATH" in
+            */public_html/MLED_v5_TEST) ;;
+            *) echo "Refusing: destination must end with /public_html/MLED_v5_TEST" >&2; exit 1 ;;
+          esac
+
+      - name: Configure deployment key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+        run: |
+          test -n "$SSH_PRIVATE_KEY"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+      - name: Upload storefront to staging only
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          STAGING_PORT: ${{ secrets.STAGING_SSH_PORT }}
+          STAGING_USER: ${{ secrets.STAGING_SSH_USER }}
+          STAGING_PATH: ${{ inputs.staging_path }}
+        run: |
+          test -n "$STAGING_HOST"
+          test -n "$STAGING_PORT"
+          test -n "$STAGING_USER"
+          ssh -i ~/.ssh/id_ed25519 -p "$STAGING_PORT" -o StrictHostKeyChecking=accept-new "$STAGING_USER@$STAGING_HOST" "mkdir -p '$STAGING_PATH'"
+          scp -i ~/.ssh/id_ed25519 -P "$STAGING_PORT" -o StrictHostKeyChecking=accept-new index.html styles.css app.js "$STAGING_USER@$STAGING_HOST:$STAGING_PATH/"
+          ssh -i ~/.ssh/id_ed25519 -p "$STAGING_PORT" -o StrictHostKeyChecking=accept-new "$STAGING_USER@$STAGING_HOST" "test -s '$STAGING_PATH/index.html' && test -s '$STAGING_PATH/styles.css' && test -s '$STAGING_PATH/app.js'"
+
+      - name: Verify staging URL
+        if: ${{ inputs.staging_url != '' }}
+        env:
+          STAGING_URL: ${{ inputs.staging_url }}
+        run: |
+          curl -fsSL --max-time 30 "$STAGING_URL" | grep -qi 'Mirroried LED'
