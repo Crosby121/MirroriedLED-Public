@@ -1,4 +1,5 @@
-name: Deploy Storefront to Staging
+defaults:
+  name: Deploy Storefront to Staging
 
 on:
   workflow_dispatch:
@@ -15,6 +16,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: staging-storefront
+  cancel-in-progress: false
+
 jobs:
   deploy-staging:
     runs-on: ubuntu-latest
@@ -28,7 +33,22 @@ jobs:
           test -s index.html
           test -s styles.css
           test -s app.js
+          test -s repair.js
           node --check app.js
+          node --check repair.js
+          grep -q 'id="products"' index.html
+          grep -q 'id="custom"' index.html
+          grep -q 'id="advertising"' index.html
+          grep -q 'id="sponsors"' index.html
+          grep -q 'id="events"' index.html
+          grep -q 'id="portals"' index.html
+          grep -q 'id="contact"' index.html
+          grep -q 'https://sponsors.mirroriedled.com/' index.html
+          grep -q 'Advertising on the Go' index.html
+          grep -q 'Sponsor Partner Program' index.html
+          grep -q 'Mirroried LED' index.html
+          ! grep -q 'Mirrored LED' index.html
+          ! grep -Eqi '(HOSTINGER_API_KEY|PORTAL_POSTGRES_PASSWORD|PORTAL_ADMIN_PASSWORD|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' index.html styles.css app.js repair.js
 
       - name: Guard staging destination
         env:
@@ -46,11 +66,15 @@ jobs:
       - name: Configure deployment key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
         run: |
           test -n "$SSH_PRIVATE_KEY"
+          test -n "$SSH_KNOWN_HOSTS"
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/known_hosts
 
       - name: Upload storefront to staging only
         env:
@@ -62,9 +86,11 @@ jobs:
           test -n "$STAGING_HOST"
           test -n "$STAGING_PORT"
           test -n "$STAGING_USER"
-          ssh -i ~/.ssh/id_ed25519 -p "$STAGING_PORT" -o StrictHostKeyChecking=accept-new "$STAGING_USER@$STAGING_HOST" "mkdir -p '$STAGING_PATH'"
-          scp -i ~/.ssh/id_ed25519 -P "$STAGING_PORT" -o StrictHostKeyChecking=accept-new index.html styles.css app.js "$STAGING_USER@$STAGING_HOST:$STAGING_PATH/"
-          ssh -i ~/.ssh/id_ed25519 -p "$STAGING_PORT" -o StrictHostKeyChecking=accept-new "$STAGING_USER@$STAGING_HOST" "test -s '$STAGING_PATH/index.html' && test -s '$STAGING_PATH/styles.css' && test -s '$STAGING_PATH/app.js'"
+          RUN_DIR="$STAGING_PATH/.release-tmp"
+          SSH_OPTIONS="-i ~/.ssh/id_ed25519 -p $STAGING_PORT -o StrictHostKeyChecking=yes"
+          ssh $SSH_OPTIONS "$STAGING_USER@$STAGING_HOST" "mkdir -p '$RUN_DIR'"
+          scp -i ~/.ssh/id_ed25519 -P "$STAGING_PORT" -o StrictHostKeyChecking=yes index.html styles.css app.js repair.js "$STAGING_USER@$STAGING_HOST:$RUN_DIR/"
+          ssh $SSH_OPTIONS "$STAGING_USER@$STAGING_HOST" "test -s '$RUN_DIR/index.html' && test -s '$RUN_DIR/styles.css' && test -s '$RUN_DIR/app.js' && test -s '$RUN_DIR/repair.js' && mkdir -p '$STAGING_PATH' && mv '$RUN_DIR/index.html' '$RUN_DIR/styles.css' '$RUN_DIR/app.js' '$RUN_DIR/repair.js' '$STAGING_PATH/' && rmdir '$RUN_DIR'"
 
       - name: Verify staging URL
         if: ${{ inputs.staging_url != '' }}
