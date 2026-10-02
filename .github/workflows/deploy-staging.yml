@@ -1,5 +1,4 @@
-defaults:
-  name: Deploy Storefront to Staging
+name: Deploy Storefront to Staging
 
 on:
   workflow_dispatch:
@@ -16,6 +15,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: staging-storefront
   cancel-in-progress: false
@@ -23,6 +26,7 @@ concurrency:
 jobs:
   deploy-staging:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: staging
     steps:
       - name: Checkout approved storefront
@@ -47,34 +51,47 @@ jobs:
           grep -q 'Advertising on the Go' index.html
           grep -q 'Sponsor Partner Program' index.html
           grep -q 'Mirroried LED' index.html
-          ! grep -q 'Mirrored LED' index.html
-          ! grep -Eqi '(HOSTINGER_API_KEY|PORTAL_POSTGRES_PASSWORD|PORTAL_ADMIN_PASSWORD|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' index.html styles.css app.js repair.js
+          if grep -q 'Mirrored LED' index.html; then
+            echo 'Unexpected brand spelling in storefront' >&2
+            exit 1
+          fi
+          if grep -Eqi '(HOSTINGER_API_KEY|PORTAL_POSTGRES_PASSWORD|PORTAL_ADMIN_PASSWORD|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' index.html styles.css app.js repair.js; then
+            echo 'Potential secret marker in storefront' >&2
+            exit 1
+          fi
 
       - name: Guard staging destination
         env:
           STAGING_PATH: ${{ inputs.staging_path }}
+          STAGING_URL: ${{ inputs.staging_url }}
         run: |
-          [[ "$STAGING_PATH" =~ ^(/[A-Za-z0-9._-]+)+/public_html/MLED_v5_TEST$ ]] || {
-            echo "Refusing: destination contains unsupported characters" >&2
+          bash deploy/hostinger/staging-release.sh validate "$STAGING_PATH"
+          if [[ -n "$STAGING_URL" && ! "$STAGING_URL" =~ ^https://(www\.)?mirroriedled\.com/MLED_v5_TEST/?$ ]]; then
+            echo 'Refusing: URL must point to Mirroried LED staging over HTTPS' >&2
             exit 1
-          }
-          case "$STAGING_PATH" in
-            */public_html/MLED_v5_TEST) ;;
-            *) echo "Refusing: destination must end with /public_html/MLED_v5_TEST" >&2; exit 1 ;;
-          esac
+          fi
+
+      - name: Prepare checked storefront bundle
+        run: |
+          mkdir -p "$RUNNER_TEMP/staging-bundle"
+          cp index.html styles.css app.js repair.js "$RUNNER_TEMP/staging-bundle/"
+          (cd "$RUNNER_TEMP/staging-bundle" && sha256sum index.html styles.css app.js repair.js > SHA256SUMS.txt)
 
       - name: Configure deployment key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
         run: |
-          test -n "$SSH_PRIVATE_KEY"
-          test -n "$SSH_KNOWN_HOSTS"
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/known_hosts
+          test -n "$SSH_PRIVATE_KEY" || { echo 'Missing STAGING_SSH_PRIVATE_KEY' >&2; exit 1; }
+          test -n "$SSH_KNOWN_HOSTS" || { echo 'Missing STAGING_SSH_KNOWN_HOSTS' >&2; exit 1; }
+          install -m 700 -d "$RUNNER_TEMP/staging-ssh"
+          umask 077
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/staging-ssh/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/staging-ssh/known_hosts"
+          ssh-keygen -y -P '' -f "$RUNNER_TEMP/staging-ssh/key" >/dev/null 2>&1 || {
+            echo 'Staging key is invalid or requires a passphrase' >&2
+            exit 1
+          }
 
       - name: Upload storefront to staging only
         env:
@@ -83,18 +100,29 @@ jobs:
           STAGING_USER: ${{ secrets.STAGING_SSH_USER }}
           STAGING_PATH: ${{ inputs.staging_path }}
         run: |
-          test -n "$STAGING_HOST"
-          test -n "$STAGING_PORT"
-          test -n "$STAGING_USER"
-          RUN_DIR="$STAGING_PATH/.release-tmp"
-          SSH_OPTIONS="-i ~/.ssh/id_ed25519 -p $STAGING_PORT -o StrictHostKeyChecking=yes"
-          ssh $SSH_OPTIONS "$STAGING_USER@$STAGING_HOST" "mkdir -p '$RUN_DIR'"
-          scp -i ~/.ssh/id_ed25519 -P "$STAGING_PORT" -o StrictHostKeyChecking=yes index.html styles.css app.js repair.js "$STAGING_USER@$STAGING_HOST:$RUN_DIR/"
-          ssh $SSH_OPTIONS "$STAGING_USER@$STAGING_HOST" "test -s '$RUN_DIR/index.html' && test -s '$RUN_DIR/styles.css' && test -s '$RUN_DIR/app.js' && test -s '$RUN_DIR/repair.js' && mkdir -p '$STAGING_PATH' && mv '$RUN_DIR/index.html' '$RUN_DIR/styles.css' '$RUN_DIR/app.js' '$RUN_DIR/repair.js' '$STAGING_PATH/' && rmdir '$RUN_DIR'"
+          [[ "$STAGING_HOST" =~ ^[A-Za-z0-9][A-Za-z0-9.-]*$ ]] || { echo 'Invalid or missing STAGING_SSH_HOST' >&2; exit 1; }
+          [[ "$STAGING_PORT" =~ ^[0-9]{1,5}$ ]] && (( 10#$STAGING_PORT >= 1 && 10#$STAGING_PORT <= 65535 )) || { echo 'Invalid or missing STAGING_SSH_PORT' >&2; exit 1; }
+          [[ "$STAGING_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || { echo 'Invalid or missing STAGING_SSH_USER' >&2; exit 1; }
+          RELEASE_NAME=".release-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/staging-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/staging-ssh/known_hosts")
+          REMOTE="$STAGING_USER@$STAGING_HOST"
+          ssh "${SSH_OPTIONS[@]}" -p "$STAGING_PORT" "$REMOTE" "bash -s -- prepare '$STAGING_PATH' '$RELEASE_NAME'" < deploy/hostinger/staging-release.sh
+          BUNDLE="$RUNNER_TEMP/staging-bundle"
+          scp "${SSH_OPTIONS[@]}" -P "$STAGING_PORT" "$BUNDLE/index.html" "$BUNDLE/styles.css" "$BUNDLE/app.js" "$BUNDLE/repair.js" "$BUNDLE/SHA256SUMS.txt" "$REMOTE:$STAGING_PATH/$RELEASE_NAME/"
+          ssh "${SSH_OPTIONS[@]}" -p "$STAGING_PORT" "$REMOTE" "bash -s -- activate '$STAGING_PATH' '$RELEASE_NAME'" < deploy/hostinger/staging-release.sh
 
       - name: Verify staging URL
         if: ${{ inputs.staging_url != '' }}
         env:
           STAGING_URL: ${{ inputs.staging_url }}
         run: |
-          curl -fsSL --max-time 30 "$STAGING_URL" | grep -qi 'Mirroried LED'
+          mkdir -p "$RUNNER_TEMP/verified-staging"
+          for asset in index.html styles.css app.js repair.js; do
+            code="$(curl --fail --silent --show-error --max-time 30 --output "$RUNNER_TEMP/verified-staging/$asset" --write-out '%{http_code}' "${STAGING_URL%/}/$asset")"
+            [[ "$code" == 200 ]] || { echo "Staging $asset returned HTTP $code" >&2; exit 1; }
+            cmp "$RUNNER_TEMP/staging-bundle/$asset" "$RUNNER_TEMP/verified-staging/$asset"
+          done
+
+      - name: Remove deployment credentials
+        if: ${{ always() }}
+        run: rm -f -- "$RUNNER_TEMP/staging-ssh/key" "$RUNNER_TEMP/staging-ssh/known_hosts"
