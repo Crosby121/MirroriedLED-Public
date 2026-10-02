@@ -29,7 +29,10 @@ commits or workflow inputs.
 ## Run and verify
 
 In GitHub **Actions → Deploy Storefront to Staging → Run workflow**, select
-`main` and enter the verified absolute staging path. The path must end exactly
+`main` and enter the verified absolute staging path. Runs selected from other
+branches skip the deployment job; checkout is also pinned to `main`. Set the
+`staging` environment's deployment branch policy to `main` when configuring
+that environment. The path must end exactly
 with `/public_html/MLED_v5_TEST`. Paths with `.` or `..` components, symlinked
 directories, and existing upload directories are refused.
 
