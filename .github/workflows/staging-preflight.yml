@@ -30,7 +30,53 @@ jobs:
           [[ "$SSH_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 1
           install -m 700 -d "$RUNNER_TEMP/staging-preflight-ssh"
           umask 077
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/staging-preflight-ssh/key"
+          python3 - <<'KEY_FORMAT'
+          import base64
+          import os
+          from pathlib import Path
+          import re
+          import struct
+          key = os.environ['SSH_PRIVATE_KEY'].strip().lstrip('\ufeff')
+          corrections = []
+          if '\r' in key:
+              key = key.replace('\r','')
+              corrections.append('Windows line endings')
+          if '\\n' in key and '\n' not in key:
+              key = key.replace('\\n','\n')
+              corrections.append('escaped newlines')
+          if key.startswith(('ssh-','ecdsa-','sk-')):
+              print('SSH_KEY_DIAGNOSIS: public key supplied; the private-key secret needs the matching private key')
+              raise SystemExit(1)
+          if '-----BEGIN ' not in key:
+              try:
+                  decoded = base64.b64decode(key,validate=True).decode()
+                  if decoded.startswith('-----BEGIN '):
+                      key = decoded.replace('\r','').strip()
+                      corrections.append('base64 encoding')
+              except (ValueError,UnicodeError):
+                  pass
+          header = re.match(r'^-----BEGIN (OPENSSH|RSA|EC|DSA|ENCRYPTED)? ?PRIVATE KEY-----',key)
+          if not header:
+              print('SSH_KEY_DIAGNOSIS: private-key header missing; check the secret contains the file contents')
+              raise SystemExit(1)
+          encrypted = 'BEGIN ENCRYPTED PRIVATE KEY' in key or 'Proc-Type: 4,ENCRYPTED' in key
+          if key.startswith('-----BEGIN OPENSSH PRIVATE KEY-----'):
+              try:
+                  blob = base64.b64decode(''.join(key.splitlines()[1:-1]))
+                  magic = b'openssh-key-v1\0'
+                  if blob.startswith(magic):
+                      length = struct.unpack('>I',blob[len(magic):len(magic)+4])[0]
+                      encrypted = blob[len(magic)+4:len(magic)+4+length] != b'none'
+              except (ValueError,struct.error):
+                  pass
+          if encrypted:
+              print('SSH_KEY_DIAGNOSIS: private key is encrypted; unattended deployment needs its passphrase or a dedicated deployment key')
+              raise SystemExit(1)
+          output = Path(os.environ['RUNNER_TEMP'])/'staging-preflight-ssh/key'
+          output.write_text(key+'\n')
+          output.chmod(0o600)
+          print('SSH_KEY_DIAGNOSIS: recognized private-key format; normalizations: '+(', '.join(corrections) or 'none'))
+          KEY_FORMAT
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/staging-preflight-ssh/known_hosts"
           ssh-keygen -y -P '' -f "$RUNNER_TEMP/staging-preflight-ssh/key" >/dev/null 2>&1 || {
             echo 'Staging key is invalid or requires a passphrase' >&2
