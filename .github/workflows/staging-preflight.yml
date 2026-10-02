@@ -1,0 +1,94 @@
+name: Read-only Staging Server Preflight
+
+on:
+  push:
+    branches: [staging-server-preflight-20261002]
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-staging-server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: staging
+    steps:
+      - name: Verify configured SSH connection and read website paths
+        shell: bash
+        env:
+          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+          SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+        run: |
+          for setting in SSH_HOST SSH_PORT SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS; do
+            [[ -n "${!setting}" ]] || { echo "Missing staging setting: $setting" >&2; exit 1; }
+          done
+          [[ "$SSH_HOST" =~ ^[A-Za-z0-9][A-Za-z0-9.-]*$ ]] || exit 1
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( 10#$SSH_PORT >= 1 && 10#$SSH_PORT <= 65535 )) || exit 1
+          [[ "$SSH_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 1
+          install -m 700 -d "$RUNNER_TEMP/staging-preflight-ssh"
+          umask 077
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/staging-preflight-ssh/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/staging-preflight-ssh/known_hosts"
+          ssh-keygen -y -P '' -f "$RUNNER_TEMP/staging-preflight-ssh/key" >/dev/null 2>&1 || {
+            echo 'Staging key is invalid or requires a passphrase' >&2
+            exit 1
+          }
+          ssh -i "$RUNNER_TEMP/staging-preflight-ssh/key" -p "$SSH_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/staging-preflight-ssh/known_hosts" "$SSH_USER@$SSH_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          command -v python3 >/dev/null || { echo 'Server needs Python 3 for read-only path inspection' >&2; exit 1; }
+          python3 - <<'PY'
+          import glob
+          import json
+          from pathlib import Path
+          import re
+          import socket
+
+          domain = 'mirroriedled.com'
+          candidates = []
+          for pattern in ['/home/*/domains/mirroriedled.com/public_html',
+                          '/home/*/domains/www.mirroriedled.com/public_html',
+                          '/var/www/mirroriedled.com/public_html',
+                          '/var/www/html/mirroriedled.com/public_html',
+                          '/srv/www/mirroriedled.com/public_html',
+                          '/root/domains/mirroriedled.com/public_html']:
+              for match in glob.glob(pattern):
+                  path = Path(match)
+                  if path.is_dir():
+                      candidates.append({'path':str(path),'physical_path':str(path.resolve())})
+          configurations = []
+          for pattern in ['/etc/nginx/sites-enabled/*','/etc/nginx/conf.d/*.conf',
+                          '/etc/apache2/sites-enabled/*.conf','/etc/httpd/conf.d/*.conf']:
+              for match in glob.glob(pattern):
+                  path = Path(match)
+                  if not path.is_file() or path.stat().st_size > 1048576:
+                      continue
+                  text = path.read_text(errors='replace')
+                  if domain not in text:
+                      continue
+                  directives = []
+                  for line in text.splitlines():
+                      line = line.split('#',1)[0].strip()
+                      if re.match(r'^(server_name|root|alias|ServerName|ServerAlias|DocumentRoot)\s',line):
+                          directives.append(line[:500])
+                  configurations.append({'file':str(path),'website_directives':directives[:30]})
+          dns = {}
+          for host in [domain,'www.'+domain,'sponsors.'+domain]:
+              try:
+                  dns[host] = sorted({entry[4][0] for entry in socket.getaddrinfo(host,443,type=socket.SOCK_STREAM)})
+              except OSError:
+                  dns[host] = 'unresolved from this server'
+          print('READ_ONLY_STAGING_PREFLIGHT_RESULT')
+          print(json.dumps({'candidate_public_html_paths':candidates,
+                           'domain_configuration_candidates':configurations,
+                           'server_dns_results':dns},indent=2))
+          print('END_READ_ONLY_STAGING_PREFLIGHT_RESULT')
+          PY
+          REMOTE
+
+      - name: Remove runner SSH credentials
+        if: ${{ always() }}
+        shell: bash
+        run: rm -f -- "$RUNNER_TEMP/staging-preflight-ssh/key" "$RUNNER_TEMP/staging-preflight-ssh/known_hosts"
