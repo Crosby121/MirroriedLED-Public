@@ -8,12 +8,13 @@ The deployment replaces only:
 - `index.html`
 - `styles.css`
 - `app.js`
+- `repair.js`
 
 It does not delete or replace the rest of `public_html`.
 
 Before any live file is changed, the deployment now creates **two backups**:
 1. a verified compressed archive of the **entire `public_html` directory**
-2. a lightweight copy of the three storefront files for fast rollback
+2. a lightweight copy of the four storefront files for fast rollback
 
 ## Default Hostinger path
 
@@ -64,7 +65,7 @@ The deploy script:
 4. creates a storefront-only fast rollback backup
 5. checks JavaScript syntax
 6. stages the new files
-7. installs only the three storefront files
+7. installs only the four storefront files
 8. verifies the public homepage
 9. prints the backup locations
 
@@ -91,6 +92,9 @@ If the storefront deployment has a problem, use the storefront backup path print
 ```
 
 Rollback itself creates a pre-rollback copy before restoring the previous storefront files.
+New backups record originally absent files so rollback also restores their absence.
+An older three-file backup must be supplemented with its matching `repair.js`
+from the full-site archive before using the updated rollback helper.
 
 ## Full-site disaster recovery
 

@@ -27,7 +27,7 @@ jobs:
       - name: Test staging deployment boundaries
         run: |
           bash -n deploy/hostinger/staging-release.sh
-          python3 -m unittest discover -s tests -p 'test_staging_release.py' -v
+          python3 -m unittest discover -s tests -p 'test_*release.py' -v
 
       - name: Verify required storefront files
         run: |

@@ -31,6 +31,8 @@
   let activeProduct = null;
   let cart = loadCart();
 
+  if (cartDrawer) cartDrawer.inert = true;
+
   if (year) year.textContent = new Date().getFullYear();
 
   function loadCart() {
@@ -78,11 +80,13 @@
   }
 
   function openCart() {
+    cartDrawer.inert = false;
     cartDrawer.classList.add('open');
     cartDrawer.setAttribute('aria-hidden', 'false');
     cartButton.setAttribute('aria-expanded', 'true');
     drawerBackdrop.hidden = false;
     document.body.style.overflow = 'hidden';
+    cartClose?.focus();
   }
 
   function closeCart() {
@@ -91,6 +95,8 @@
     cartButton.setAttribute('aria-expanded', 'false');
     drawerBackdrop.hidden = true;
     document.body.style.overflow = '';
+    cartDrawer.inert = true;
+    cartButton?.focus();
   }
 
   function renderCart() {

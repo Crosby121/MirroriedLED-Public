@@ -9,7 +9,7 @@ STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 BACKUP_DIR="$BACKUP_ROOT/storefront-$STAMP"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-required=(index.html styles.css app.js)
+required=(index.html styles.css app.js repair.js)
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 
@@ -20,6 +20,9 @@ fail() { echo "ERROR: $*" >&2; exit 1; }
 for f in "${required[@]}"; do
   [[ -f "$PACKAGE_DIR/$f" ]] || fail "Missing package file: $PACKAGE_DIR/$f"
 done
+
+node --check "$PACKAGE_DIR/app.js" >/dev/null
+node --check "$PACKAGE_DIR/repair.js" >/dev/null
 
 if [[ -f "$PACKAGE_DIR/SHA256SUMS.txt" ]]; then
   echo "Verifying deployment package checksums..."
@@ -37,6 +40,8 @@ echo "Backing up current storefront files to $BACKUP_DIR"
 for f in "${required[@]}"; do
   if [[ -f "$PUBLIC_HTML/$f" ]]; then
     cp -p "$PUBLIC_HTML/$f" "$BACKUP_DIR/$f"
+  else
+    printf '%s\n' "$f" >> "$BACKUP_DIR/ABSENT_FILES.txt"
   fi
 done
 
@@ -52,6 +57,7 @@ for f in "${required[@]}"; do
 done
 
 node --check "$STAGE/app.js" >/dev/null
+node --check "$STAGE/repair.js" >/dev/null
 
 for f in "${required[@]}"; do
   mv "$STAGE/$f" "$PUBLIC_HTML/$f.new"
@@ -60,7 +66,7 @@ for f in "${required[@]}"; do
   mv "$PUBLIC_HTML/$f.new" "$PUBLIC_HTML/$f"
 done
 
-chmod 0644 "$PUBLIC_HTML/index.html" "$PUBLIC_HTML/styles.css" "$PUBLIC_HTML/app.js" 2>/dev/null || true
+chmod 0644 "$PUBLIC_HTML/index.html" "$PUBLIC_HTML/styles.css" "$PUBLIC_HTML/app.js" "$PUBLIC_HTML/repair.js" 2>/dev/null || true
 
 echo "Deployment files installed. Running public verification..."
 if command -v curl >/dev/null 2>&1; then

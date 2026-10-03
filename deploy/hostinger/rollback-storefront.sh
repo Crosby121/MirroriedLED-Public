@@ -4,7 +4,7 @@ set -euo pipefail
 PUBLIC_HTML="${PUBLIC_HTML:-$HOME/domains/mirroriedled.com/public_html}"
 BACKUP_DIR="${1:-}"
 DOMAIN="${DOMAIN:-https://mirroriedled.com}"
-required=(index.html styles.css app.js)
+required=(index.html styles.css app.js repair.js)
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 
@@ -14,7 +14,9 @@ fail() { echo "ERROR: $*" >&2; exit 1; }
 [[ "$PUBLIC_HTML" == *public_html* ]] || fail "Refusing to restore outside a public_html path: $PUBLIC_HTML"
 
 for f in "${required[@]}"; do
-  [[ -f "$BACKUP_DIR/$f" ]] || fail "Backup missing required file: $BACKUP_DIR/$f"
+  [[ -f "$BACKUP_DIR/$f" ]] || {
+    [[ -f "$BACKUP_DIR/ABSENT_FILES.txt" ]] && grep -Fxq "$f" "$BACKUP_DIR/ABSENT_FILES.txt" || fail "Backup has no recorded state for $f; use the full-site backup to recover it"
+  }
 done
 
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
@@ -25,13 +27,16 @@ for f in "${required[@]}"; do
 done
 
 for f in "${required[@]}"; do
-  cp "$BACKUP_DIR/$f" "$PUBLIC_HTML/$f.restore"
+  [[ ! -f "$BACKUP_DIR/$f" ]] || cp "$BACKUP_DIR/$f" "$PUBLIC_HTML/$f.restore"
 done
 for f in "${required[@]}"; do
-  mv "$PUBLIC_HTML/$f.restore" "$PUBLIC_HTML/$f"
+  if [[ -f "$BACKUP_DIR/$f" ]]; then
+    mv "$PUBLIC_HTML/$f.restore" "$PUBLIC_HTML/$f"
+    chmod 0644 "$PUBLIC_HTML/$f"
+  else
+    rm -f -- "$PUBLIC_HTML/$f"
+  fi
 done
-
-chmod 0644 "$PUBLIC_HTML/index.html" "$PUBLIC_HTML/styles.css" "$PUBLIC_HTML/app.js" 2>/dev/null || true
 
 if command -v curl >/dev/null 2>&1; then
   code="$(curl -L -sS -o /tmp/mirroriedled-home-rollback.html -w '%{http_code}' --max-time 20 "$DOMAIN/")"

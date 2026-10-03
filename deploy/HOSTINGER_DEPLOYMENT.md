@@ -6,20 +6,21 @@ This guide deploys the static storefront only. It does not modify the Sponsor Po
 
 - Domain: `https://mirroriedled.com`
 - Hostinger web root: `public_html`
-- Static files to deploy: `index.html`, `styles.css`, `app.js`
+- Static files to deploy: `index.html`, `styles.css`, `app.js`, `repair.js`
 - Sponsor Portal target: `https://sponsors.mirroriedled.com/`
 
 ## Safety rule
 
-Do not delete or overwrite the current production files until a backup of the existing `public_html/index.html`, `public_html/styles.css`, and `public_html/app.js` has been created and verified.
+Use the guarded helpers in `deploy/hostinger` to create a verified full-site backup
+outside `public_html` and a separate four-file storefront backup before installation.
 
 ## Pre-deploy checklist
 
 1. Confirm Storefront CI is green for the exact commit being deployed.
 2. Confirm `https://sponsors.mirroriedled.com/` is reachable over HTTPS before exposing Sponsor Login buttons.
-3. In Hostinger File Manager, create a timestamped backup folder under `public_html/_backups/`, for example `public_html/_backups/storefront-2026-09-07/`.
-4. Copy the current production `index.html`, `styles.css`, and `app.js` into that backup folder.
-5. Download or otherwise preserve a second copy outside `public_html` when practical.
+3. Correct and verify the staging SSH settings, including the private key and independently verified host key.
+4. Confirm the physical website webroot, then deploy to `MLED_v5_TEST` and complete the staging acceptance checks.
+5. Keep full-site and storefront backups outside the public webroot, following `deploy/hostinger/README.md`.
 
 ## Deploy
 
@@ -30,7 +31,8 @@ Do not delete or overwrite the current production files until a backup of the ex
    - `index.html`
    - `styles.css`
    - `app.js`
-5. Place those three files directly in Hostinger `public_html`.
+   - `repair.js`
+5. Use the package's guarded `deploy-storefront.sh` with the verified `PUBLIC_HTML` path to install those four files.
 6. Do not move or delete unrelated API, portal, WLED bridge, database, configuration, asset, or backup folders.
 
 ## Acceptance checks
@@ -52,10 +54,11 @@ After upload, verify in a private/incognito browser:
 If the storefront fails acceptance:
 
 1. Stop further changes.
-2. Copy the three backed-up production files from the timestamped backup folder back into `public_html`:
+2. Use `rollback-storefront.sh` with the printed storefront backup path to restore all four recorded file states:
    - `index.html`
    - `styles.css`
    - `app.js`
+   - `repair.js`
 3. Hard-refresh and verify `https://mirroriedled.com/`.
 4. Keep the failed deployment files outside production for diagnosis.
 
