@@ -11,6 +11,8 @@ record for connected apps.
 | sessions/ | One explicit work record per AI session |
 | history/github-baseline.json | Sourced past GitHub events with unknown AI attribution |
 | CURRENT_STATUS.md | Generated readable view of state and tasks |
+| CONNECTOR_SETUP.md | Deploy and connect the shared authenticated MCP tools |
+| AUTO_CAPTURE.md | Private transcript capture, tab-close recovery and upload checks |
 | ../../AGENTS.md | Shared instructions at the repository root |
 | tools/ai_workflow.py (repository root) | Local status, logging and validation helper |
 
@@ -27,8 +29,8 @@ Start prints a session ID and records UTC access time, app declaration, branch
 and base commit. It claims the task in this checkout. Commit/push the record and
 queue, and link the work PR before coding. Other apps must inspect the shared
 queue and open PRs. The local lock prevents simultaneous helper writes in one
-checkout; separate checkouts still need coordination. A centralized reservation
-service is part of WF-003.
+checkout; separate checkouts still need coordination. Once deployed, the shared
+MCP connector makes task reservations centrally with conflict detection.
 
 Add --github-account LOGIN only when the authenticated account is known; the
 helper does not discover credentials or infer the AI app from a Git author.
@@ -94,18 +96,32 @@ local HEAD and warns when it differs from the observed source. Workflow checks
 validate records; they do not certify every claim or automatically refresh
 Hostinger state.
 
-## Connection stage
+## Shared connector and capture
 
-The starting foundation installs shared files, the local logger and CI validation.
-Full automatic chat imports, automatic access capture and the common remote
-connector are not installed by this change. Each app needs its own authorized
-connection and startup/handoff integration. Instruction files guide behavior;
-they cannot guarantee every app will report every action.
+The connector implementation provides read_state, read_history, start_session,
+claim_task and finish_session. Every successful handoff is a GitHub commit.
+Read tools report the checked GitHub HEAD and explicit app/session attribution;
+write tools reserve tasks and preserve concurrent work using non-forced ref updates.
+They do not change website code. Hostinger Agent receives the actual records
+through MCP tools.
 
-WF-003 will expose explicit tools such as read_state, start_session,
-claim_task and finish_session through a shared authenticated MCP endpoint.
-Hostinger Agent uses MCP tools and ignores MCP resources/prompts, so the endpoint
-must return the actual work record through tools.
+[Deploy and connect the endpoint](CONNECTOR_SETUP.md), then follow
+[private capture setup](AUTO_CAPTURE.md). Code, configuration templates and tests
+are present; credentials, Hostinger installation, private-repository creation,
+local PC installation and individual app connections still need verification.
+
+Supported local hooks capture available chat/tool payloads and authorized
+transcripts at task stops and other events. The Chrome helper continuously
+checkpoints visible messages in explicitly tracked ChatGPT/Hostinger Agent chats.
+A PC worker retries private GitHub uploads after the UI closes. Browser shutdown
+events are best effort, so periodic checkpoints and persistent queues are used.
+There is no universal API that exports every app's complete chat or guarantees a
+final save during a crash. Unavailable, unloaded and hidden content stays unknown.
+
+The shared public MCP tools return redacted work records. Full captured chat is
+kept separately in a private GitHub repository; another app needs its own
+authorized private GitHub access to read it. This connector does not expose the
+private archive. Existing conversations are not automatically imported.
 
 Official references:
 

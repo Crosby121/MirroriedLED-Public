@@ -8,9 +8,24 @@ on:
       - .github/copilot-instructions.md
       - .github/PULL_REQUEST_TEMPLATE.md
       - .github/workflows/ai-workflow-check.yml
+      - .github/workflows/deploy-ai-workflow-connector.yml
       - docs/ai-workflow/**
       - tools/ai_workflow.py
       - tests/test_ai_workflow.py
+      - ai-workflow/**
+      - services/ai-workflow/**
+      - tools/ai_capture.py
+      - tools/configure_ai_workflow.py
+      - tools/setup_ai_capture.py
+      - tools/check_ai_workflow_connection.py
+      - tools/browser-ai-capture/**
+      - deploy/hostinger/ai-workflow-release.py
+      - .github/hooks/**
+      - .codex/hooks.json
+      - .vscode/mcp.json
+      - tests/test_ai*.py
+      - tests/browser-ai-capture.test.cjs
+      - tests/fixtures/ai-workflow-router.php
   pull_request:
     branches: [main]
 
@@ -25,5 +40,12 @@ jobs:
       - uses: actions/checkout@v5
       - name: Validate status, task ownership and session records
         run: python3 tools/ai_workflow.py validate
-      - name: Test session lifecycle and conflicting claims
-        run: python3 -m unittest discover -s tests -p 'test_ai_workflow.py' -v
+      - name: Validate connector PHP and required runtime
+        run: |
+          php -l services/ai-workflow/server.php
+          php -l ai-workflow/mcp.php
+          php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("curl") ? 0 : 1);'
+      - name: Test sessions, concurrent claims, private capture and recovery
+        run: python3 -m unittest discover -s tests -p 'test_ai*.py' -v
+      - name: Test browser retry queue and tab-close checkpoints
+        run: node --test tests/browser-ai-capture.test.cjs

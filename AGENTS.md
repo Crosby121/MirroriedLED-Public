@@ -12,7 +12,11 @@ Main website: https://mirroriedled.com. The sponsor VPS is a separate destinatio
    on their source, checks, task ownership or deployment status.
 3. Read the documentation for the part you will change. The root is a static
    storefront with a PHP backend; it has no root npm project.
-4. Record this session and its selected task. In a local Git checkout, run:
+4. If the shared MCP connector is available, call read_state, then start_session
+   with the actual app name, a unique request_id and selected task. Use claim_task
+   for additional work. A successful write includes a GitHub commit receipt;
+   a failed response is not a claim. Setup is in docs/ai-workflow/CONNECTOR_SETUP.md.
+   Without the connector, record the session in a local Git checkout:
 
        python3 tools/ai_workflow.py status
        python3 tools/ai_workflow.py start --app "APP NAME" --task WF-003
@@ -20,10 +24,11 @@ Main website: https://mirroriedled.com. The sponsor VPS is a separate destinatio
    Supply the actual app name. Add --github-account only when that account is
    known. An app declaration is separate from GitHub's authenticated identity.
    A connector-only client can create the equivalent JSON record directly.
-5. Publish the task claim on the work branch and share its PR before changing
+5. For the local fallback, publish the task claim and share its PR before changing
    product code. Check the current shared queue and open work PRs for conflicts.
    Local file claims are advisory across separate checkouts. Resolve duplicate
-   claims with the other session; the central connector is a queued follow-up.
+   claims with the other session. The MCP connector makes reservations centrally
+   on main using non-forced GitHub writes; it must be deployed and tested first.
 
 ## Leave a usable handoff
 
@@ -33,6 +38,17 @@ Main website: https://mirroriedled.com. The sponsor VPS is a separate destinatio
   explicitly. Imported history retains unknown applications and access times.
 - Finish the record with a completed or blocked outcome; release its task claim.
   CLI usage and connector-only record formats are in docs/ai-workflow/README.md.
+- Before reporting a task as finished, call finish_session and verify its GitHub
+  commit receipt, or publish and verify the equivalent local handoff. Include
+  changes, checks, blockers and the next action. Never equate closing a tab or
+  editor with successful task completion or upload.
+- Publish this task's code changes on its work branch and verify the commit/PR
+  before the completed handoff; include that evidence. Capture hooks archive
+  available chat, not unsaved editor buffers, and do not push website source.
+- When configured, capture hooks save available prompts, tool payloads and
+  authorized local transcripts to a private queue. Follow
+  docs/ai-workflow/AUTO_CAPTURE.md for the private archive and browser helper.
+  Report unavailable capture honestly. A local save is not a GitHub receipt.
 - Refresh state.json when a checked source or deployment observation changes,
   then regenerate CURRENT_STATUS.md using the status --write command.
 - Run the workflow validator before pushing:

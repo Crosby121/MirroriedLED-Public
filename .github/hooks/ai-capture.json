@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "hooks": {
+    "userPromptSubmitted": [{"type": "command", "bash": "python3 tools/ai_capture.py hook --source copilot --event UserPromptSubmit", "powershell": "python tools/ai_capture.py hook --source copilot --event UserPromptSubmit", "timeoutSec": 10}],
+    "postToolUse": [{"type": "command", "bash": "python3 tools/ai_capture.py hook --source copilot --event PostToolUse", "powershell": "python tools/ai_capture.py hook --source copilot --event PostToolUse", "timeoutSec": 10}],
+    "agentStop": [{"type": "command", "bash": "python3 tools/ai_capture.py hook --source copilot --event Stop", "powershell": "python tools/ai_capture.py hook --source copilot --event Stop", "timeoutSec": 10}],
+    "sessionEnd": [{"type": "command", "bash": "python3 tools/ai_capture.py hook --source copilot --event SessionEnd", "powershell": "python tools/ai_capture.py hook --source copilot --event SessionEnd", "timeoutSec": 10}]
+  }
+}

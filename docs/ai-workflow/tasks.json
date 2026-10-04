@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T22:24:57Z",
+  "updated_at": "2026-10-04T22:56:15Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -43,10 +43,10 @@
     {
       "id": "WF-003",
       "title": "Connect AI apps to a shared remote workflow service",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": 3,
-      "owner_session_id": "20261004t222457z-67d4c2b8",
-      "last_session_id": null,
+      "owner_session_id": null,
+      "last_session_id": "20261004t222457z-67d4c2b8",
       "depends_on": [
         "WF-001"
       ],
@@ -56,16 +56,20 @@
         "Make reservation conflicts explicit across concurrent clients.",
         "Test an authorized connection from ChatGPT/Codex, Copilot and Hostinger Agent; mark unavailable clients accurately."
       ],
-      "next_action": "Implement the shared MCP tools and configure each app's authorized connection; use explicit tool responses for Hostinger Agent.",
+      "next_action": "Complete CONNECTOR_SETUP.md: provision scoped service credentials, resolve main-site SSH settings, run the manual connector install and verify each app read/write receipt.",
       "evidence": [
-        "docs/ai-workflow/README.md"
+        "docs/ai-workflow/README.md",
+        "services/ai-workflow/server.php",
+        "tests/test_ai_workflow_mcp.py",
+        "docs/ai-workflow/CONNECTOR_SETUP.md",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/13"
       ]
     },
     {
       "id": "WF-004",
       "title": "Curate accessible prior AI work into the shared history",
       "status": "ready",
-      "priority": 4,
+      "priority": 5,
       "owner_session_id": null,
       "last_session_id": null,
       "depends_on": [
@@ -95,9 +99,36 @@
         "Detect fine-grained GitHub tokens before recording a handoff and during shared-record validation.",
         "Cover the token format in regression tests and pass the updated GitHub checks."
       ],
-      "next_action": "Complete the updated PR checks and merge the foundation; WF-003 is the next independent app-connection task.",
+      "next_action": "Foundation fix merged in PR #12; continue with shared connection and private capture activation.",
       "evidence": [
-        "https://github.com/Crosby121/MirroriedLED-Public/pull/12#discussion_r4179537729"
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/12#discussion_r4179537729",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/12"
+      ]
+    },
+    {
+      "id": "WF-006",
+      "title": "Activate automatic private AI chat capture and close recovery",
+      "status": "blocked",
+      "priority": 4,
+      "owner_session_id": null,
+      "last_session_id": "20261004t222457z-67d4c2b8",
+      "depends_on": [
+        "WF-001"
+      ],
+      "acceptance": [
+        "Verify a dedicated private GitHub archive and actual upload receipts without placing raw chat in the public repository.",
+        "Install and verify supported local hooks and the PC retry worker; checkpoint available transcript final writes after UI closure.",
+        "Verify tracked Chrome chat checkpoints, tab-close events and offline restart recovery on the actual PC.",
+        "Record coverage and unavailable app/attachment/history limitations honestly; verify task handoff publication before reporting completion."
+      ],
+      "next_action": "Complete AUTO_CAPTURE.md on the persistent PC: private repository/token, trusted hooks, Chrome helper, background worker and actual task/close/upload receipt checks.",
+      "evidence": [
+        "tools/ai_capture.py",
+        "tools/setup_ai_capture.py",
+        "tools/browser-ai-capture",
+        "tests/test_ai_capture.py",
+        "tests/browser-ai-capture.test.cjs",
+        "docs/ai-workflow/AUTO_CAPTURE.md"
       ]
     }
   ]

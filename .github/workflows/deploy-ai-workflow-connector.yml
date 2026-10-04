@@ -1,0 +1,120 @@
+name: Deploy Shared AI Workflow Connector
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hostinger-main-website
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  deploy:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://mirroriedled.com/ai-workflow/mcp.php
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+      CONFIG_JSON: ${{ secrets.AI_WORKFLOW_CONFIG }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate connector source and private settings
+        run: |
+          test -n "$SSH_PRIVATE_KEY" || { echo 'Missing HOSTINGER_SSH_PRIVATE_KEY' >&2; exit 1; }
+          test -n "$SSH_KNOWN_HOSTS" || { echo 'Missing HOSTINGER_SSH_KNOWN_HOSTS' >&2; exit 1; }
+          test -n "$CONFIG_JSON" || { echo 'Missing AI_WORKFLOW_CONFIG' >&2; exit 1; }
+          php -l services/ai-workflow/server.php
+          php -l ai-workflow/mcp.php
+          php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("curl") ? 0 : 1);'
+          python3 -m unittest discover -s tests -p 'test_ai*.py' -v
+          node --test tests/browser-ai-capture.test.cjs
+          install -m 700 -d "$RUNNER_TEMP/ai-workflow-stage"
+          python3 - <<'PY'
+          import hashlib, json, os, secrets
+          from pathlib import Path
+          stage = Path(os.environ['RUNNER_TEMP']) / 'ai-workflow-stage'
+          os.umask(0o077)
+          config = json.loads(os.environ['CONFIG_JSON'])
+          token = 'mlwf_' + secrets.token_urlsafe(48)
+          config['clients']['deployment-check'] = {'application': 'Deployment check', 'token_sha256': hashlib.sha256(token.encode()).hexdigest()}
+          (stage / 'config.json').write_text(json.dumps(config))
+          (stage / 'smoke-credentials.json').write_text(json.dumps({'deployment-check': token}))
+          key = os.environ['SSH_PRIVATE_KEY'].lstrip('\ufeff').replace('\r', '').strip()
+          if '\\n' in key and '\n' not in key:
+              key = key.replace('\\n', '\n')
+          (stage / 'key').write_text(key + '\n')
+          (stage / 'known_hosts').write_text(os.environ['SSH_KNOWN_HOSTS'].replace('\r', '').strip() + '\n')
+          profile = json.loads(Path('deploy/hostinger/main-website.json').read_text())
+          assert profile['domain'] == 'mirroriedled.com'
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              for name, field in [('SSH_HOST','ssh_host'),('SSH_PORT','ssh_port'),('SSH_USER','ssh_user'),('PUBLIC_HTML','public_html')]:
+                  value = str(profile[field])
+                  assert '\n' not in value and '\r' not in value
+                  output.write(f'{name}={value}\n')
+          PY
+          php -r 'require $argv[1]; MirroriedWorkflowServer::validateConfig(json_decode(file_get_contents($argv[2]), true, 64, JSON_THROW_ON_ERROR));' services/ai-workflow/server.php "$RUNNER_TEMP/ai-workflow-stage/config.json"
+          ssh-keygen -y -P '' -f "$RUNNER_TEMP/ai-workflow-stage/key" >/dev/null 2>&1
+
+      - name: Check the exact main website destination before upload
+        run: |
+          [[ "$SSH_HOST" =~ ^[A-Za-z0-9][A-Za-z0-9.-]*$ ]]
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( 10#$SSH_PORT >= 1 && 10#$SSH_PORT <= 65535 ))
+          [[ "$SSH_USER" =~ ^u[0-9]+$ ]]
+          [[ "$PUBLIC_HTML" == "/home/$SSH_USER/domains/mirroriedled.com/public_html" ]]
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/ai-workflow-stage/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/ai-workflow-stage/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML'" <<'REMOTE'
+          set -euo pipefail
+          test -f "$1/index.html"
+          command -v python3 >/dev/null
+          php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("curl") ? 0 : 1);'
+          REMOTE
+          curl --fail --silent --show-error --max-time 30 "https://mirroriedled.com/index.html?ai_preflight=$GITHUB_RUN_ID" --output "$RUNNER_TEMP/ai-workflow-stage/live-before.html"
+          printf 'EXPECTED_HOMEPAGE_SHA=%s\n' "$(sha256sum "$RUNNER_TEMP/ai-workflow-stage/live-before.html" | cut -d ' ' -f 1)" >> "$GITHUB_ENV"
+          printf 'REMOTE_STAGE=%s\n' "${PUBLIC_HTML%/public_html}/.mirroriedled-ai-workflow-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+
+      - name: Upload connector files outside public_html
+        run: |
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/ai-workflow-stage/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/ai-workflow-stage/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "umask 077; mkdir '$REMOTE_STAGE'"
+          scp "${SSH_OPTIONS[@]}" -P "$SSH_PORT" ai-workflow/mcp.php ai-workflow/.htaccess services/ai-workflow/server.php deploy/hostinger/ai-workflow-release.py "$RUNNER_TEMP/ai-workflow-stage/config.json" "$SSH_USER@$SSH_HOST:$REMOTE_STAGE/"
+
+      - name: Back up and install the connector only
+        id: install
+        run: |
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/ai-workflow-stage/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/ai-workflow-stage/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "python3 '$REMOTE_STAGE/ai-workflow-release.py' install --webroot '$PUBLIC_HTML' --source '$REMOTE_STAGE' --config '$REMOTE_STAGE/config.json' --release '$GITHUB_SHA' --expected-homepage-sha '$EXPECTED_HOMEPAGE_SHA' --receipt '$REMOTE_STAGE/receipt.json'"
+
+      - name: Verify anonymous denial and authenticated GitHub read
+        id: verify
+        run: |
+          python3 tools/check_ai_workflow_connection.py
+          python3 tools/check_ai_workflow_connection.py --credentials "$RUNNER_TEMP/ai-workflow-stage/smoke-credentials.json" --client-id deployment-check
+
+      - name: Restore prior connector if verification fails
+        if: ${{ failure() && steps.install.outcome == 'success' && steps.verify.outcome == 'failure' }}
+        run: |
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/ai-workflow-stage/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/ai-workflow-stage/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "python3 '$REMOTE_STAGE/ai-workflow-release.py' rollback --webroot '$PUBLIC_HTML' --receipt '$REMOTE_STAGE/receipt.json'"
+
+      - name: Report connector verification
+        run: |
+          printf 'Shared AI workflow endpoint installed and authenticated read verified.\n\nCommit: `%s`\n\nIndividual ChatGPT, Copilot and Hostinger Agent UI connections still require their own verification.\n' "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove temporary credentials
+        if: ${{ always() }}
+        run: |
+          if [[ -n "${REMOTE_STAGE:-}" && -f "$RUNNER_TEMP/ai-workflow-stage/key" ]]; then
+            SSH_OPTIONS=(-i "$RUNNER_TEMP/ai-workflow-stage/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/ai-workflow-stage/known_hosts")
+            ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "rm -f -- '$REMOTE_STAGE/config.json' '$REMOTE_STAGE/mcp.php' '$REMOTE_STAGE/.htaccess' '$REMOTE_STAGE/server.php'; if test -f '$REMOTE_STAGE/receipt.json'; then cp '$REMOTE_STAGE/receipt.json' '${PUBLIC_HTML%/public_html}/mirroriedled-private/ai-workflow/receipt-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.json'; fi; rm -f -- '$REMOTE_STAGE/receipt.json' '$REMOTE_STAGE/ai-workflow-release.py'; rmdir '$REMOTE_STAGE'" || echo 'Private remote staging cleanup needs attention'
+          fi
+          rm -f -- "$RUNNER_TEMP/ai-workflow-stage/key" "$RUNNER_TEMP/ai-workflow-stage/known_hosts" "$RUNNER_TEMP/ai-workflow-stage/config.json" "$RUNNER_TEMP/ai-workflow-stage/smoke-credentials.json"

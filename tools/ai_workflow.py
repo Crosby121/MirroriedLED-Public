@@ -21,7 +21,7 @@ REL = Path("docs/ai-workflow")
 SESSION_ID = re.compile(r"[a-z0-9][a-z0-9_-]{0,95}")
 TASK_ID = re.compile(r"WF-[0-9]{3,}")
 COMMIT = re.compile(r"[0-9a-f]{40}")
-SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9_-]{30,}")
+SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9_-]{30,}|mlwf_[A-Za-z0-9_-]{40,}")
 
 
 def now():
@@ -99,7 +99,7 @@ def render(state, queue):
         f"| Verified live Hostinger commit | {deployment['live_commit'] or 'Unknown — no verified live commit recorded'} |",
         f"| Last Hostinger attempt | [{cell(attempt['status'])}]({attempt['evidence_url']}) · {cell(attempt['failed_step'])} |",
         f"| Deployment blocker | {cell(attempt['finding'])} |",
-        "| Shared app connections | Instructions and local logger available; common remote connector is queued |",
+        f"| Shared app connections | {cell(state.get('connector', {}).get('summary', 'Instructions and local logger available; common remote connector is queued'))} |",
         "", "## Source checks", "",
     ]
     for check in source["checks"]:
