@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-04T22:18:30Z",
+  "observed_at": "2026-10-04T22:54:53Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,24 +8,19 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "778e926615e1168dad4f795bf1da7dcef95904a1",
-    "summary": "Supplier pricing and 20% frame markup merged after the interactive builder and customer/team portal work.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/778e926615e1168dad4f795bf1da7dcef95904a1",
+    "observed_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
+    "summary": "Shared workflow foundation merged after the supplier pricing and 20% frame markup release. The checked source is separate from the unknown Hostinger live version.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/620d57c6c182c19ada124a40722ef52e7474502d",
     "checks": [
       {
-        "name": "Full public release validation",
+        "name": "Main shared workflow validation",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537693924"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703708"
       },
       {
-        "name": "Storefront CI for supplier pricing",
+        "name": "Main website packaging",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236842366"
-      },
-      {
-        "name": "Website packaging",
-        "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890597"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703753"
       }
     ]
   },
@@ -48,29 +43,35 @@
       "application": "ChatGPT Work / Codex",
       "github_access": "Authenticated GitHub reads, branch publication and PR creation verified for Crosby121.",
       "session_logging": "Explicit local helper or JSON record",
-      "shared_remote_connector": "not_installed"
+      "shared_remote_connector": "configuration_prepared_not_activated",
+      "automatic_capture": "local_helpers_prepared_not_installed_or_verified"
     },
     {
       "application": "GitHub Copilot",
       "github_access": "GitHub Copilot code review observed on PR #12; local IDE access and session logging are not tested.",
       "session_logging": "Repository instructions plus explicit helper or JSON record",
-      "shared_remote_connector": "not_installed",
-      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/12#pullrequestreview-5408473625"
+      "shared_remote_connector": "configuration_prepared_not_activated",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/12#pullrequestreview-5408473625",
+      "automatic_capture": "local_helpers_prepared_not_installed_or_verified"
     },
     {
       "application": "Hostinger Agent",
       "github_access": "Not connected to this shared workflow by this session.",
       "session_logging": "Requires authorized GitHub/MCP tools or a curated export",
-      "shared_remote_connector": "not_installed"
+      "shared_remote_connector": "configuration_prepared_not_activated",
+      "automatic_capture": "local_helpers_prepared_not_installed_or_verified"
     }
   ],
   "next_task_id": "WF-002",
   "limitations": [
-    "These are dated observations, not a live monitor. Refresh actual GitHub state at each session.",
-    "The starting foundation does not install automatic cross-app chat import or access capture.",
-    "Application identity is declared independently from the authenticated GitHub account.",
-    "Task claims in independent checkouts need coordination until a centralized connector is installed.",
-    "Source checks and GitHub Pages success do not establish a verified Hostinger live commit."
+    "Dated observations require an actual GitHub refresh at each session.",
+    "The MCP endpoint and app connections are implemented but not installed or verified on Hostinger.",
+    "Private transcript archives and the PC capture helper require one-time setup; no actual archive upload is verified.",
+    "Browser capture covers visible rendered messages only; hidden/unloaded content, attachments, unsupported apps and final crash/shutdown content cannot be guaranteed.",
+    "Application names are declared separately from the authenticated GitHub account or configured capture source.",
+    "Local fallback task claims remain advisory across separate checkouts until the central connector is activated.",
+    "Chat capture does not commit unsaved source files; each app must publish code and verify its commit/PR before a completed handoff.",
+    "Source checks and packaging success do not establish a verified Hostinger live commit."
   ],
   "product_observations": [
     {
@@ -83,5 +84,31 @@
       "basis": "repository_documentation",
       "evidence": "docs/INFINITY_MIRROR_BUILDER.md"
     }
-  ]
+  ],
+  "connector": {
+    "status": "implemented_activation_pending",
+    "summary": "Shared MCP connector and private capture tools implemented and locally tested; endpoint, PC installation and individual app connections are not activated.",
+    "planned_endpoint": "https://mirroriedled.com/ai-workflow/mcp.php",
+    "setup": "docs/ai-workflow/CONNECTOR_SETUP.md",
+    "live_verified_at": null,
+    "evidence": [
+      "services/ai-workflow/server.php",
+      "tests/test_ai_workflow_mcp.py",
+      "https://github.com/Crosby121/MirroriedLED-Public/pull/13"
+    ]
+  },
+  "capture": {
+    "status": "implemented_activation_pending",
+    "planned_private_repository": "Crosby121/MirroriedLED-AI-History",
+    "private_repository_verified": false,
+    "pc_installation_verified": false,
+    "github_archive_upload_verified": false,
+    "setup": "docs/ai-workflow/AUTO_CAPTURE.md",
+    "coverage": [
+      "Available supported native hook payloads and authorized transcript files",
+      "Visible rendered messages in explicitly tracked ChatGPT and Hostinger Agent Chrome tabs"
+    ],
+    "recovery": "Persistent local queues and a PC retry worker; browser final shutdown events are best effort",
+    "current_hosted_chat_archived": false
+  }
 }

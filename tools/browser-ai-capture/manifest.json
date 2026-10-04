@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Mirroried LED AI Capture",
+  "version": "0.1.0",
+  "description": "Checkpoint explicitly tracked Mirroried LED browser chats to the private local retry queue.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvJ8UF1jNRfqmHCyuDVOPMcJ+xB7G3ijvirnRu2Z0rXpnMhK08h2jwItdd2ZCmVK9AyMMfTN/vmNP/d10wqy4F3bwITzBPcOZ12H/ZmQiTKU6eKOUFadxL99ktYk0n4ohQsquc1Ycnyf/HCcb2U3HU+rJKX6n7Gp14QepsQ9GSyP44OVHeKpGW9q3Awq47+J/NhceKIMIbCAgYEmpptZ+SLXT+oejefbARWJKToPR2kjPI3m/3vjlQ7oUwJ/reCvZe+6Te0yuc1SQk75+oBcTGPXVTUp1b95tIlfNhfFWCRqSGJymd60kUXrpu2K1MsxdRtKC7YcOxAz92GSRVg0RoQIDAQAB",
+  "permissions": ["storage", "unlimitedStorage", "alarms", "nativeMessaging", "activeTab"],
+  "host_permissions": ["https://chatgpt.com/*", "https://agent.hostinger.com/*"],
+  "background": {"service_worker": "background.js"},
+  "action": {"default_popup": "popup.html", "default_title": "Mirroried LED AI capture status"},
+  "content_scripts": [{"matches": ["https://chatgpt.com/*", "https://agent.hostinger.com/*"], "js": ["content.js"], "run_at": "document_idle"}]
+}

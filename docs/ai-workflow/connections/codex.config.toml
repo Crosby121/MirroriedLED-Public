@@ -1,0 +1,8 @@
+# Merge this table into the existing trusted Codex configuration.
+# Set MIRRORIED_WORKFLOW_TOKEN privately to the chatgpt-codex app credential.
+# This does not install tools in a hosted ChatGPT web chat.
+[mcp_servers.mirroriedLedWorkflow]
+url = "https://mirroriedled.com/ai-workflow/mcp.php"
+bearer_token_env_var = "MIRRORIED_WORKFLOW_TOKEN"
+startup_timeout_sec = 20
+tool_timeout_sec = 120
