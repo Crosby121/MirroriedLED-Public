@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build your Infinity Mirror · Mirroried LED</title>
+  <meta name="description" content="Design your infinity mirror with a live preview, custom frosted engraving, rim LED rows, rear panels and compatible controllers.">
+  <link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="builder.css">
+  <script src="engine.js" defer></script><script src="draft-store.js" defer></script><script src="builder.js" defer></script>
+</head>
+<body class="builder-page">
+  <a class="skip-link" href="#build-controls">Skip to build options</a>
+  <header class="site-header"><div class="shell header-inner">
+    <a class="brand" href="../"><span class="brand-mark">M</span><span><strong>MIRRORIED LED</strong><small>CUSTOM LED ART • FABRICATION • EXPERIENCES</small></span></a>
+    <nav class="builder-nav" aria-label="Builder navigation"><a href="../#products">← Choose a build</a><a href="../customer-portal/">Customer Portal</a></nav>
+  </div></header>
+  <main class="builder-shell" id="main">
+    <div class="builder-heading"><div><p class="eyebrow">YOUR IDEA. YOUR INFINITY.</p><h1>Build your<br><span>Infinity Mirror.</span></h1><p>Choose a detail. See your design take shape.</p></div><div class="saved-label" id="draftStatus" role="status">Your design stays on this device until you request a quote.</div></div>
+    <div id="loadError" class="build-message" role="alert" hidden></div>
+    <div class="builder-layout">
+      <aside class="preview-column" aria-label="Live mirror design">
+        <div class="preview-card">
+          <div class="preview-toolbar"><span><i class="live-dot"></i> LIVE DESIGN</span><div class="view-toggle" role="group" aria-label="Preview view"><button class="active" id="frontView" type="button" aria-pressed="true">Mirror</button><button id="rearView" type="button" aria-pressed="false">Panel layout</button></div></div>
+          <div class="mirror-stage"><svg id="mirrorPreview" viewBox="0 0 600 590" role="img" aria-label="Your custom infinity mirror design"><title>Your custom infinity mirror</title></svg></div>
+          <div class="preview-caption"><strong id="previewSize">12 × 12 in</strong><span id="previewLabel">1 rim row · 72 LEDs</span></div>
+          <div class="preview-stats"><div><span id="statRim">72</span><small>RIM LEDs</small></div><div><span id="statPanels">—</span><small>REAR PANELS</small></div><div><span id="statController">Digi-Uno</span><small>CONTROLLER</small></div></div>
+        </div>
+        <p class="preview-note">Design preview. Final diffusion, colors and depth depend on the approved production proof.</p>
+        <ol class="build-progress" id="progressList" aria-label="Your build checklist"><li>Frame</li><li>Rim lighting</li><li>Artwork</li><li>Rear panels</li><li>Controller</li><li>Hardware</li></ol>
+        <div class="preview-actions"><button type="button" class="button secondary" id="saveDraft">Save on this device</button><button type="button" class="button text-button" id="downloadSpec">Download build</button></div>
+      </aside>
+      <div class="controls-column" id="build-controls">
+        <section class="build-section" aria-labelledby="frameHeading"><div class="step-heading"><span>01</span><div><h2 id="frameHeading">Start with your frame</h2><p>Mirror size, depth and finish.</p></div><span class="step-tick" id="tick-frame">✓</span></div>
+          <fieldset><legend>Mirror size · inches</legend><div class="size-grid" id="sizeOptions"></div></fieldset>
+          <div class="field-pair"><label>Frame finish<select id="frameFinish"><option>Matte black</option><option>Natural birch</option><option>White</option></select></label><label>Frame depth<select id="frameDepth"><option value="3">3 inches</option></select></label></div>
+        </section>
+        <section class="build-section" aria-labelledby="rimHeading"><div class="step-heading"><span>02</span><div><h2 id="rimHeading">Light the infinity tunnel</h2><p>Build the LED rows around the frame.</p></div><span class="step-tick" id="tick-rim">✓</span></div>
+          <label class="check-option"><input type="checkbox" id="rimEnabled" checked><span><strong>Include rim LED strips</strong><small>Individually addressable WS2812B LEDs</small></span></label>
+          <div id="rimOptions"><fieldset><legend>Number of LED rows</legend><div class="choice-row" id="rowOptions"><label><input type="radio" name="rows" value="1" checked><span>1 row</span></label><label><input type="radio" name="rows" value="2"><span>2 rows</span></label><label><input type="radio" name="rows" value="3"><span>3 rows</span></label></div></fieldset>
+          <label class="check-option"><input type="checkbox" id="addressableEffects" checked><span><strong>Enable individually addressable effects</strong><small>Switch off for a steady glow using the same addressable LED hardware.</small></span></label>
+          <div class="field-pair"><label>LEDs per row<input type="number" id="ledCount" min="24" max="2000" step="1" value="72" inputmode="numeric"></label><label>Preview glow<input type="color" id="ledColor" value="#2dd4bf"></label></div><p class="field-note" id="densityNote">72 LEDs per row · 72 rim LEDs total</p></div>
+          <label class="check-option"><input type="checkbox" id="audioReactive"><span><strong>Make the lights audio reactive</strong><small>Respond to music through a compatible microphone or network audio source.</small></span></label>
+        </section>
+        <section class="build-section" aria-labelledby="artHeading"><div class="step-heading"><span>03</span><div><h2 id="artHeading">Make the engraving yours</h2><p>Choose, review and approve your artwork.</p></div><span class="step-tick pending" id="tick-art">○</span></div>
+          <div class="art-tabs" role="tablist" aria-label="Artwork source"><button role="tab" id="tab-gallery" aria-selected="true" aria-controls="panel-gallery" data-art-tab="gallery">Our library</button><button role="tab" id="tab-upload" aria-selected="false" tabindex="-1" aria-controls="panel-upload" data-art-tab="upload">Upload image</button><button role="tab" id="tab-ai" aria-selected="false" tabindex="-1" aria-controls="panel-ai" data-art-tab="ai">Create with AI</button></div>
+          <div role="tabpanel" id="panel-gallery" aria-labelledby="tab-gallery"><div class="gallery-grid" id="artGallery"></div><p class="field-note">Original studio starters. Your selected artwork is reviewed for a frosted engraving proof.</p></div>
+          <div role="tabpanel" id="panel-upload" aria-labelledby="tab-upload" hidden><label class="upload-zone">Choose your artwork<input type="file" id="artUpload" accept="image/png,image/jpeg,image/webp"><span>PNG, JPEG or WebP · up to 10 MB</span></label><label>Engraved parts<select id="uploadPolarity"><option value="dark">Dark artwork on a light background</option><option value="light">Light artwork on a dark background</option></select></label><p class="field-note">The preview turns your image into a frosted light mask. The original is kept for the team’s proof. PDF/SVG source files can be attached in the Customer Portal.</p></div>
+          <div role="tabpanel" id="panel-ai" aria-labelledby="tab-ai" hidden>
+            <p class="ai-availability" id="aiAvailability" role="status">Checking artwork studio availability…</p>
+            <form id="aiForm"><label>What would you like engraved?<textarea id="aiSubject" rows="2" maxlength="1200" placeholder="A trumpet surrounded by flowing music, with my name underneath…" required></textarea></label>
+              <label>Type of image<select id="aiType"><option value="music">Music / instrument</option><option value="nature">Nature / animal</option><option value="portrait">Portrait / memorial</option><option value="logo">Logo / lettering</option><option value="sports">Sports / stadium</option><option value="geometric">Geometric / abstract</option><option value="other">Something else</option></select></label>
+              <button class="button secondary" type="button" id="askAI">Guide my design</button><div class="ai-questions" id="aiQuestions"></div>
+              <label class="check-option"><input type="checkbox" id="aiConsent"><span><strong>Create this artwork using AI</strong><small>Your description and answers will be sent to the artwork service.</small></span></label>
+              <button class="button primary" type="submit" id="generateArt">Generate engraving concept</button>
+            </form><p class="field-note">Every request includes our frosted backside engraving rules, broad light areas, safe margins and no visible LED dots. The team verifies the final proof.</p>
+          </div>
+          <div class="art-review" id="artReview" hidden><div class="art-review-image"><img id="artCandidate" alt="Engraving artwork awaiting your approval"></div><div><strong id="artCandidateName"></strong><p class="field-note">White areas show the proposed engraving. Review the image before adding it to your mirror.</p><button type="button" id="approveArt" class="button primary">Approve & add to mirror</button><button type="button" id="discardArt" class="button text-button">Choose another</button></div></div>
+          <div id="approvedArt" class="approved-art" hidden><span>✓</span><div><strong id="approvedArtName"></strong><small>Approved for this design · production proof follows</small></div><button type="button" id="changeArt">Change</button></div>
+          <label class="art-scale" id="artScaleField" hidden>Artwork size <span id="artScaleLabel">65% of safe area</span><input type="range" id="artScale" min="20" max="100" value="65"></label>
+          <p class="build-message" id="artMessage" role="status"></p>
+        </section>
+        <section class="build-section" aria-labelledby="rearHeading"><div class="step-heading"><span>04</span><div><h2 id="rearHeading">Light behind the engraving</h2><p>Panels selected around your artwork’s coverage.</p></div><span class="step-tick pending" id="tick-rear">○</span></div>
+          <fieldset><legend>Rear lighting</legend><div class="rear-options"><label><input type="radio" name="rear" value="flex" checked><span><strong>Flexible panels</strong><small>Addressable pixels</small></span></label><label><input type="radio" name="rear" value="hub75"><span><strong>HUB75 panels</strong><small>Detailed RGB matrix</small></span></label><label><input type="radio" name="rear" value="none"><span><strong>Rim only</strong><small>No rear panels</small></span></label></div></fieldset>
+          <div id="panelResult" class="panel-result"><p>Approve artwork to find the best-fitting panels.</p></div>
+          <label id="panelSelectField" hidden>Panel layout<select id="panelSelect"></select></label><p class="field-note">Recommendations compare uniform tiled layouts and orientations to reduce unused coverage. Actual panel size and stock are confirmed by the team.</p>
+        </section>
+        <section class="build-section" aria-labelledby="controllerHeading"><div class="step-heading"><span>05</span><div><h2 id="controllerHeading">Choose your controller</h2><p>Options follow your selected LED system.</p></div><span class="step-tick" id="tick-controller">✓</span></div>
+          <div id="controllerOptions" class="controller-options"></div>
+          <label id="rimControllerField" hidden>Separate rim LED controller<select id="rimController"><option value="digi-uno">QuinLED Digi-Uno</option><option value="digi-quad">QuinLED Digi-Quad</option></select></label>
+          <p class="field-note" id="controllerNote">Flexible panels and rim LEDs use an addressable LED controller.</p>
+        </section>
+        <section class="build-section" aria-labelledby="hardwareHeading"><div class="step-heading"><span>06</span><div><h2 id="hardwareHeading">Finish the build</h2><p>The remaining hardware follows your choices.</p></div><span class="step-tick" id="tick-hardware">✓</span></div>
+          <label class="check-option"><input type="checkbox" id="wallMount" checked><span>Include a wall mounting kit</span></label><label class="check-option"><input type="checkbox" id="remote"><span>Add a compatible remote / local control option</span></label>
+          <ul id="hardwareList" class="hardware-list"></ul><div class="power-note" id="powerNote"></div>
+          <details><summary>Production review notes</summary><ul id="reviewNotes"></ul><p>Hardware quantities and power ratings are confirmed before the quote and production proof. Artwork approval here does not start fabrication.</p></details>
+        </section>
+        <section class="build-section quote-section"><p class="eyebrow">YOUR CUSTOM BUILD</p><h2>Ready to make it real?</h2><p>Save this design to your build list, then review it in the Customer Portal for a quote.</p><p class="build-message" id="buildMessage" role="status"></p><button type="button" class="button primary" id="addBuild" disabled>Add design to build list</button><a class="button text-button" href="../#products">Back to storefront</a><p class="field-note">No payment or fabrication starts from this page.</p></section>
+      </div>
+    </div>
+  </main><footer class="builder-footer">MIRRORIED LED · Frosted light. Infinite possibilities.</footer>
+</body>
+</html>

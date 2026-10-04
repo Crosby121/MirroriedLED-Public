@@ -18,6 +18,10 @@ PUBLIC_FILES = (
     "customer-portal/backend/api.php", "customer-portal/backend/portal.php",
     "customer-portal/backend/business.php",
     "customer-portal/backend/.htaccess", "customer-portal/backend/.user.ini",
+    "customer-portal/backend/builder.php",
+    "infinity-builder/index.html", "infinity-builder/builder.css", "infinity-builder/builder.js",
+    "infinity-builder/engine.js", "infinity-builder/draft-store.js", "infinity-builder/catalog.json",
+    "infinity-builder/artwork/orbit.svg", "infinity-builder/artwork/tree.svg", "infinity-builder/artwork/wave.svg",
 )
 
 

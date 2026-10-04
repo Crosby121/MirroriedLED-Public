@@ -48,7 +48,7 @@ def verify(source: Path, base: str, release: str) -> bool:
     status, homepage = fetch(base, "", release)
     if status != 200 or hashlib.sha256(homepage).digest() != hashlib.sha256((source / "index.html").read_bytes()).digest():
         raise ValueError("The website homepage does not serve the new release")
-    for name in ("portal.php", "business.php", "config.php", "config.example.php", ".htaccess", ".user.ini"):
+    for name in ("portal.php", "business.php", "builder.php", "config.php", "config.example.php", ".htaccess", ".user.ini"):
         status, _ = fetch(base, "customer-portal/backend/" + name, release)
         if status not in (403, 404):
             raise ValueError("An internal portal file is publicly reachable: " + name)

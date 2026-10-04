@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/business.php';
+require_once __DIR__ . '/builder.php';
 
 final class PortalError extends RuntimeException
 {
@@ -50,8 +51,8 @@ final class CustomerPortal
     {
         $action = (string)($_GET['action'] ?? 'session');
         $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-        $reads = array_merge(['session', 'library', 'media'], BusinessPortal::READS);
-        $writes = array_merge(['signup', 'login', 'logout', 'upload', 'delete'], BusinessPortal::WRITES);
+        $reads = array_merge(['session', 'library', 'media'], BusinessPortal::READS, InfinityBuilder::READS);
+        $writes = array_merge(['signup', 'login', 'logout', 'upload', 'delete'], BusinessPortal::WRITES, InfinityBuilder::WRITES);
         if (!in_array($action, array_merge($reads, $writes), true)) {
             throw new PortalError('That portal action is unavailable.', 404);
         }
@@ -74,6 +75,10 @@ final class CustomerPortal
         if (str_starts_with($action, 'business-')) {
             $business = new BusinessPortal($this->database, $this->config, $this->storage, $this->requireUser());
             $business->handle($action, $data);
+        }
+        if (str_starts_with($action, 'builder-')) {
+            $builder = new InfinityBuilder($this->database, $this->config, $this->storage, $this->requireUser());
+            $builder->handle($action, $data);
         }
         match ($action) {
             'signup' => $this->signup($data),
@@ -270,6 +275,7 @@ final class CustomerPortal
             'capabilities' => ['signup' => $this->configured, 'upload' => $this->configured,
                 'business' => $this->configured && ($this->config['business_enabled'] ?? false) === true,
                 'hardwareSync' => false, 'payments' => false,
+                'builderAi' => $this->configured && InfinityBuilder::aiAvailable($this->config, $user),
                 'maxFileBytes' => ['audio' => $this->configured ? $this->positiveOption('max_audio_bytes', 67108864) : 67108864,
                     'video' => $this->configured ? $this->positiveOption('max_video_bytes', 134217728) : 134217728]]];
     }

@@ -4,7 +4,7 @@ The full release now has a GitHub installation workflow. See
 `GITHUB_WEBSITE_DEPLOYMENT.md` for the main website hosting connection,
 verified installation, rollback and remaining private portal setup.
 
-Use the `MirroriedLED_Automated_Business_Website.zip` created by the dedicated customer-portal packager. It contains the eight current storefront assets and eleven public portal/operations assets. Do not upload the selected automation archives or extracted legacy PHP/SQL modules into `public_html`.
+Use the `MirroriedLED_Automated_Business_Website.zip` created by the dedicated customer-portal packager. Its 29-file public allowlist includes the storefront, Customer Portal, team operations, Infinity Mirror builder, curated starter artwork and private artwork service. Do not upload the selected automation archives or extracted legacy PHP/SQL modules into `public_html`.
 
 This change is based on the current `main` storefront plus the Customer Portal draft in PR #6. Both sets of public files must be present together. The historical eight-file shell deployment tools do not install the portal and are not the installer for this release.
 
