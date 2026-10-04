@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T22:18:30Z",
+  "updated_at": "2026-10-04T22:24:57Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -43,9 +43,9 @@
     {
       "id": "WF-003",
       "title": "Connect AI apps to a shared remote workflow service",
-      "status": "ready",
+      "status": "in_progress",
       "priority": 3,
-      "owner_session_id": null,
+      "owner_session_id": "20261004t222457z-67d4c2b8",
       "last_session_id": null,
       "depends_on": [
         "WF-001"
