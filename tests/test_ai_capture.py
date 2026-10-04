@@ -121,6 +121,25 @@ class CaptureTests(unittest.TestCase):
         capture.flush(self.config, archive)
         self.assertIn(self.transcript.read_bytes(), archive.files.values())
 
+    def test_worker_recovers_a_final_write_during_the_previous_checkpoint_read(self):
+        original = Path.read_text
+        appended = False
+        def read_then_append(path, *args, **kwargs):
+            nonlocal appended
+            text = original(path, *args, **kwargs)
+            if path == self.transcript and not appended:
+                appended = True
+                path.write_text(text + '{"role":"assistant","text":"Final text written during capture"}\n')
+            return text
+        with patch.object(Path, "read_text", read_then_append):
+            capture.capture(self.config, self.event(), "codex")
+        capture.monitor_transcripts(self.config)
+        self.assertEqual(len(self.pending()), 2)
+        self.assertEqual({json.loads(path.read_text())["platform_session_id"] for path in self.pending()}, {"native-session-1"})
+        archive = ArchiveDouble()
+        capture.flush(self.config, archive)
+        self.assertIn(self.transcript.read_bytes(), archive.files.values())
+
     def test_browser_capture_requires_tracking_and_reports_visible_only_coverage(self):
         event = {"url": "https://chatgpt.com/c/example", "event": "browser_checkpoint", "messages": [{"role": "user", "text": "Website task"}]}
         with self.assertRaises(ValueError):

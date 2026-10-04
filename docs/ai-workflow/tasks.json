@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T22:58:58Z",
+  "updated_at": "2026-10-04T23:01:20Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -108,10 +108,10 @@
     {
       "id": "WF-006",
       "title": "Activate automatic private AI chat capture and close recovery",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": 4,
-      "owner_session_id": "20261004t225858z-4f6e2af3",
-      "last_session_id": "20261004t222457z-67d4c2b8",
+      "owner_session_id": null,
+      "last_session_id": "20261004t225858z-4f6e2af3",
       "depends_on": [
         "WF-001"
       ],
@@ -121,7 +121,7 @@
         "Verify tracked Chrome chat checkpoints, tab-close events and offline restart recovery on the actual PC.",
         "Record coverage and unavailable app/attachment/history limitations honestly; verify task handoff publication before reporting completion."
       ],
-      "next_action": "Complete AUTO_CAPTURE.md on the persistent PC: private repository/token, trusted hooks, Chrome helper, background worker and actual task/close/upload receipt checks.",
+      "next_action": "Complete AUTO_CAPTURE.md on the persistent PC and verify the private repository, trusted hooks, Chrome/native connection, background worker and actual GitHub receipts. Complete CONNECTOR_SETUP.md for task handoffs; do not claim live capture before verification.",
       "evidence": [
         "tools/ai_capture.py",
         "tools/setup_ai_capture.py",

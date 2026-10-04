@@ -116,8 +116,11 @@ def capture(config, event, source):
             roots = [safe(root) for root in config["transcript_roots"]]
             require(any(root == path.parent or root in path.parents for root in roots), "Transcript path is outside the authorized directories")
             require(path.suffix.lower() in {".json", ".jsonl", ".ndjson", ".txt"} and path.is_file(), "Unsupported transcript file")
-            require(path.stat().st_size <= 20971520, "Transcript exceeds the 20 MiB capture limit; export it in parts")
-            text = redact(path.read_text(encoding="utf-8"), secrets)
+            observed = path.stat()
+            require(observed.st_size <= 20971520, "Transcript exceeds the 20 MiB capture limit; export it in parts")
+            raw_text = path.read_text(encoding="utf-8")
+            require(len(raw_text.encode()) <= 20971520, "Transcript exceeds the 20 MiB capture limit; export it in parts")
+            text = redact(raw_text, secrets)
             for offset in range(0, len(text), 131072):
                 content = text[offset:offset + 131072].encode()
                 object_id = digest(content)
@@ -127,7 +130,8 @@ def capture(config, event, source):
             # A PC worker follows registered files even after the UI disappears.
             monitor_id = digest(str(path).encode())
             atomic(spool / "monitors" / (monitor_id + ".json"), encoded({"path": str(path), "source": source,
-                   "cwd": str(workspace), "signature": [path.stat().st_mtime_ns, path.stat().st_size]}))
+                   "cwd": str(workspace), "session_id": str(event.get("session_id") or event.get("sessionId") or "unknown"),
+                   "signature": [observed.st_mtime_ns, observed.st_size]}))
         except (ValueError, OSError, UnicodeError) as failure:
             error = str(failure)
             coverage = "hook_payload_only; transcript_capture_failed"
@@ -203,7 +207,7 @@ def monitor_transcripts(config):
         path = safe(monitor["path"])
         if path.is_file() and [path.stat().st_mtime_ns, path.stat().st_size] != monitor["signature"]:
             capture(config, {"hook_event_name": "file_checkpoint", "cwd": monitor["cwd"],
-                            "transcript_path": str(path), "session_id": "file-" + marker.stem}, monitor["source"])
+                            "transcript_path": str(path), "session_id": monitor.get("session_id", "file-" + marker.stem)}, monitor["source"])
 
 
 class NoRedirects(HTTPRedirectHandler):

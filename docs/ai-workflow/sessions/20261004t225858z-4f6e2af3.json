@@ -5,16 +5,77 @@
   "application_identity": "declared",
   "github_account": "Crosby121",
   "started_at": "2026-10-04T22:58:58Z",
-  "ended_at": null,
-  "status": "active",
+  "ended_at": "2026-10-04T23:01:20Z",
+  "status": "blocked",
   "task_ids": [
     "WF-006"
   ],
   "branch": "feat/shared-ai-connector-20261004",
   "base_commit": "c4c1b36dc0306a746ee2e65775ef6604b0147637",
-  "summary": "",
-  "next_action": "",
-  "changed_files": [],
-  "checks": [],
-  "findings": []
+  "summary": "Pre-merge capture review reproduced a final transcript write being hidden by a post-read file signature. Record the signature before reading so the background worker detects later text, and preserve the native session ID for final file checkpoints. Added a regression that failed before the fix and passed afterward. Windows worker settings now permit battery operation. All 42 Python tests pass; actual PC/private archive activation remains pending.",
+  "next_action": "Complete AUTO_CAPTURE.md on the persistent PC and verify the private repository, trusted hooks, Chrome/native connection, background worker and actual GitHub receipts. Complete CONNECTOR_SETUP.md for task handoffs; do not claim live capture before verification.",
+  "changed_files": [
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261004t225858z-4f6e2af3.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_ai_capture.py",
+    "tools/ai_capture.py",
+    "tools/setup_ai_capture.py"
+  ],
+  "checks": [
+    {
+      "name": "env PHP_BIN=/workspace/scratch/60db67fe587a/php-runtime/bin/php python3 -m unittest discover -s tests -p 'test_ai*.py' -v",
+      "command": "env PHP_BIN=/workspace/scratch/60db67fe587a/php-runtime/bin/php python3 -m unittest discover -s tests -p 'test_ai*.py' -v",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "git diff --check",
+      "command": "git diff --check",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Final-write race regression before fix",
+      "result": "failed",
+      "command": "python3 -m unittest discover -s tests -p test_ai_capture.py -k during -v",
+      "basis": "agent_report",
+      "finding": "The original implementation queued only the earlier checkpoint. The worker did not detect final text written during that read."
+    },
+    {
+      "name": "GitHub shared workflow checks for the initial implementation",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37241936753",
+      "basis": "GitHub Actions; c4c1b36 before final-write fix"
+    },
+    {
+      "name": "GitHub storefront CI for the initial implementation",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37241936748",
+      "basis": "GitHub Actions; c4c1b36 before final-write fix"
+    },
+    {
+      "name": "Windows registration, actual closure and private upload",
+      "result": "not_run",
+      "basis": "agent_report",
+      "finding": "The user PC and private-history token are not available in this workspace."
+    }
+  ],
+  "findings": [
+    {
+      "source": "tests/test_ai_capture.py",
+      "basis": "reproduced_regression",
+      "finding": "Final text written between the previous transcript read and monitor registration is now detected and archived, with the original platform session ID."
+    },
+    {
+      "source": "tools/setup_ai_capture.py",
+      "basis": "implementation_review",
+      "finding": "Windows retry worker task allows starting and continuing on battery; actual Windows registration remains unverified."
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/13",
+      "basis": "publication_evidence",
+      "finding": "Follow-up code fix and blocked activation handoff are published together; no raw hosted chat or actual private archive upload is claimed."
+    }
+  ]
 }
