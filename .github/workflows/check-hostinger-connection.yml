@@ -1,0 +1,55 @@
+name: Check Main Hostinger Connection
+
+on:
+  push:
+    branches: [main, hostinger-main-connection-20261004]
+    paths:
+      - deploy/hostinger/main-website.json
+      - .github/workflows/check-hostinger-connection.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  connection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Load the saved main website address
+        run: |
+          python3 - <<'PY'
+          import ipaddress
+          import json
+          import os
+          import re
+          from pathlib import Path
+          profile = json.loads(Path('deploy/hostinger/main-website.json').read_text())
+          assert profile['domain'] == 'mirroriedled.com'
+          ipaddress.ip_address(profile['ssh_host'])
+          assert isinstance(profile['ssh_port'], int) and 1 <= profile['ssh_port'] <= 65535
+          assert re.fullmatch(r'u[0-9]+', profile['ssh_user'])
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write(f"SSH_HOST={profile['ssh_host']}\nSSH_PORT={profile['ssh_port']}\nSSH_USER={profile['ssh_user']}\n")
+          print(f"Saved command: ssh -p {profile['ssh_port']} {profile['ssh_user']}@{profile['ssh_host']}")
+          PY
+
+      - name: Check HTTPS on the supplied website hosting address
+        run: |
+          curl --fail --silent --show-error --location --max-time 30 \
+            --resolve "mirroriedled.com:443:$SSH_HOST" \
+            https://mirroriedled.com/index.html --output "$RUNNER_TEMP/hostinger-homepage.html"
+          echo 'MAIN_WEBSITE_HTTPS_REACHABLE_FROM_GITHUB'
+
+      - name: Read the SSH server public keys without authenticating
+        run: |
+          timeout 25 ssh-keyscan -T 10 -p "$SSH_PORT" -t ed25519,rsa "$SSH_HOST" \
+            > "$RUNNER_TEMP/main-host-candidate-known-hosts"
+          test -s "$RUNNER_TEMP/main-host-candidate-known-hosts"
+          echo 'SSH_SERVER_REACHABLE_FROM_GITHUB'
+          echo 'Candidate server keys; independently verify these before trusting them for deployment:'
+          cat "$RUNNER_TEMP/main-host-candidate-known-hosts"
+          ssh-keygen -lf "$RUNNER_TEMP/main-host-candidate-known-hosts"
+          echo 'No private key was used. Authentication and deployment are still pending.'

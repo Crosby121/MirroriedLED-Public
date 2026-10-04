@@ -12,17 +12,33 @@ The existing staging workflow remains limited to its test directory.
 
 ## Main website hosting connection
 
-The production environment uses these GitHub Actions secrets from the actual
-Hostinger **website hosting** account:
+The main website connection supplied by the owner on October 4, 2026 is saved
+in `deploy/hostinger/main-website.json`:
+
+```bash
+ssh -p 65002 u655491421@82.180.171.18
+```
+
+The expected webroot is
+`/home/u655491421/domains/mirroriedled.com/public_html`. The deployment still
+checks that directory on the server before uploading anything.
+
+Only these two GitHub Actions secrets are required from the actual Hostinger
+**website hosting** account:
 
 | Secret | Required value |
 | --- | --- |
-| `HOSTINGER_SSH_HOST` | Website hosting SSH server, not the sponsor VPS |
-| `HOSTINGER_SSH_PORT` | Website hosting SSH port |
-| `HOSTINGER_SSH_USER` | Website hosting username, in `u` plus digits form |
 | `HOSTINGER_SSH_PRIVATE_KEY` | Matching unattended deployment private key |
 | `HOSTINGER_SSH_KNOWN_HOSTS` | Independently verified website hosting SSH host key |
-| `HOSTINGER_PUBLIC_HTML` | `/home/<website-user>/domains/mirroriedled.com/public_html` |
+
+Optional `HOSTINGER_SSH_HOST`, `HOSTINGER_SSH_PORT`, `HOSTINGER_SSH_USER` and
+`HOSTINGER_PUBLIC_HTML` secrets override the saved non-secret connection
+settings. Keep them separate from the sponsor VPS credentials.
+
+`Check Main Hostinger Connection` checks HTTPS and reads candidate SSH server
+public keys from a GitHub runner. It does not use credentials, authenticate,
+upload website files or automatically trust the returned keys. A successful
+connection check alone does not establish authenticated SSH access.
 
 The workflow does not create keys, change Hostinger access, read secret values,
 reuse the sponsor VPS credentials or disable SSH host-key verification.

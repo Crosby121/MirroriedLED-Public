@@ -13,6 +13,7 @@ on:
       - deploy/hostinger/website-release.py
       - deploy/hostinger/verify-website.py
       - deploy/hostinger/package-customer-portal.py
+      - deploy/hostinger/main-website.json
       - .github/workflows/deploy-hostinger-website.yml
   workflow_dispatch:
 
@@ -61,6 +62,23 @@ jobs:
       PUBLIC_HTML: ${{ secrets.HOSTINGER_PUBLIC_HTML }}
     steps:
       - uses: actions/checkout@v5
+
+      - name: Load saved main website connection
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          profile = json.loads(Path('deploy/hostinger/main-website.json').read_text())
+          assert profile['domain'] == 'mirroriedled.com'
+          mapping = {'SSH_HOST': 'ssh_host', 'SSH_PORT': 'ssh_port', 'SSH_USER': 'ssh_user', 'PUBLIC_HTML': 'public_html'}
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              for environment, field in mapping.items():
+                  value = os.environ.get(environment) or str(profile[field])
+                  if '\n' in value or '\r' in value:
+                      raise ValueError('Invalid connection setting')
+                  output.write(f'{environment}={value}\n')
+          PY
 
       - name: Verify main website hosting settings
         run: |
