@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-04T22:18:30Z",
+  "observed_at": "2026-10-04T22:34:13Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,9 +8,9 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "778e926615e1168dad4f795bf1da7dcef95904a1",
-    "summary": "Supplier pricing and 20% frame markup merged after the interactive builder and customer/team portal work.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/778e926615e1168dad4f795bf1da7dcef95904a1",
+    "observed_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
+    "summary": "Shared AI workflow foundation is merged; limited public product ordering is being implemented on an isolated branch.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/620d57c6c182c19ada124a40722ef52e7474502d",
     "checks": [
       {
         "name": "Full public release validation",
