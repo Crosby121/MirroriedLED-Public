@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T23:25:44Z",
+  "updated_at": "2026-10-04T23:33:40Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -171,6 +171,26 @@
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"
+      ]
+    },
+    {
+      "id": "WF-009",
+      "title": "Preserve browser delta offsets when credentials are masked",
+      "status": "in_progress",
+      "priority": 1,
+      "owner_session_id": "20261004t233340z-652dc899",
+      "last_session_id": null,
+      "depends_on": [
+        "WF-007"
+      ],
+      "acceptance": [
+        "Redacted browser text retains its UTF-16 lengths so later edit/append deltas reconstruct correctly.",
+        "Snapshot IDs do not expose a digest of unredacted credential-bearing content.",
+        "Regression verifies editing text after a masked credential without retaining the credential."
+      ],
+      "next_action": "Make browser masks preserve offsets and use random snapshot IDs; verify delta reconstruction before merging PR #15.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/15"
       ]
     }
   ]

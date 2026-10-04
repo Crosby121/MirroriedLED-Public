@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "20261004t233340z-652dc899",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-04T23:33:40Z",
+  "ended_at": null,
+  "status": "active",
+  "task_ids": [
+    "WF-009"
+  ],
+  "branch": "fix/ai-capture-review-20261004",
+  "base_commit": "3b1e04aae7277239e14a216bbfe4557e80e5da29",
+  "summary": "",
+  "next_action": "",
+  "changed_files": [],
+  "checks": [],
+  "findings": []
+}
