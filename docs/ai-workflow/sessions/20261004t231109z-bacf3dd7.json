@@ -5,16 +5,95 @@
   "application_identity": "declared",
   "github_account": "Crosby121",
   "started_at": "2026-10-04T23:11:09Z",
-  "ended_at": null,
-  "status": "active",
+  "ended_at": "2026-10-04T23:25:44Z",
+  "status": "completed",
   "task_ids": [
     "WF-007"
   ],
   "branch": "fix/ai-capture-review-20261004",
   "base_commit": "3b1e04aae7277239e14a216bbfe4557e80e5da29",
-  "summary": "",
-  "next_action": "",
-  "changed_files": [],
-  "checks": [],
-  "findings": []
+  "summary": "Addressed all three PR #13 review findings: reject tokenized evidence queries and unsafe fragments; align structured, inline and JSON/JSONL opaque credential filtering; checkpoint browser streaming as changed suffixes with periodic/full bases and preserve Unicode boundaries. Added durable local upload budgets and GitHub retry/reset backoff. Preserved the separate draft PR #14 phased-opening work record as WF-008 with original WF-006 provenance, preventing it from replacing main private-capture WF-006. All 46 Python and 9 browser tests pass; actual endpoint/PC capture activation remains unverified.",
+  "next_action": "Merge the verified review fixes. Complete WF-003 and WF-006 activation guides on Hostinger and the persistent PC, then verify actual GitHub receipts. Before merging draft PR #14, reconcile its product task/session references to shared WF-008 while preserving capture WF-006 and current connection records.",
+  "changed_files": [
+    "AGENTS.md",
+    "docs/ai-workflow/AUTO_CAPTURE.md",
+    "docs/ai-workflow/CONNECTOR_SETUP.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/README.md",
+    "docs/ai-workflow/sessions/20261004t223413z-233a5f91.json",
+    "docs/ai-workflow/sessions/20261004t231109z-bacf3dd7.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "services/ai-workflow/server.php",
+    "tests/browser-ai-capture.test.cjs",
+    "tests/test_ai_capture.py",
+    "tests/test_ai_workflow_mcp.py",
+    "tools/ai_capture.py",
+    "tools/browser-ai-capture/background.js",
+    "tools/browser-ai-capture/content.js"
+  ],
+  "checks": [
+    {
+      "name": "env PHP_BIN=/workspace/scratch/60db67fe587a/php-runtime/bin/php python3 -m unittest discover -s tests -p 'test_ai*.py' -v",
+      "command": "env PHP_BIN=/workspace/scratch/60db67fe587a/php-runtime/bin/php python3 -m unittest discover -s tests -p 'test_ai*.py' -v",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "node --test tests/browser-ai-capture.test.cjs",
+      "command": "node --test tests/browser-ai-capture.test.cjs",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "/workspace/scratch/2835bdd501dc/check-tools/actionlint",
+      "command": "/workspace/scratch/2835bdd501dc/check-tools/actionlint",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "/workspace/scratch/60db67fe587a/php-runtime/bin/php -l services/ai-workflow/server.php",
+      "command": "/workspace/scratch/60db67fe587a/php-runtime/bin/php -l services/ai-workflow/server.php",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "git diff --check",
+      "command": "git diff --check",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": [
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712048",
+      "basis": "review_finding_and_regression",
+      "finding": "Queries and unsafe URL fragments are refused before public writes; standard GitHub comment links remain usable."
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712063",
+      "basis": "review_finding_and_regression",
+      "finding": "Structured and inline sensitive-key lists are aligned; native JSON/JSONL is decoded before filtering and opaque/escaped credentials are covered."
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712075",
+      "basis": "review_finding_and_regression",
+      "finding": "Browser streaming saves changed suffixes at a 30-second interval with recoverable full bases; unchanged force checks create no duplicate history. Queued uploads honor local write budgets and GitHub retry times."
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+      "basis": "checked_branch_record",
+      "finding": "A concurrent branch used WF-006 for a different product task. Its declared application, access/end times, changes, checks and blocked handoff are preserved under shared WF-008 with original task IDs and source URL. Product files were not imported or changed."
+    },
+    {
+      "source": "docs/ai-workflow/AUTO_CAPTURE.md",
+      "basis": "activation_limits",
+      "finding": "No actual private archive upload, PC installation or live shared endpoint is verified. Browser coverage is visible text only; instruction files and tests cannot guarantee every app reports all content."
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/15",
+      "basis": "publication_evidence",
+      "finding": "Review fixes, sourced history and this completion record are published together; their containing commit identifies the code version."
+    }
+  ]
 }

@@ -78,3 +78,84 @@ test('content scripts cannot change tracking settings or request native status',
   assert.ok((await state.call({ type: 'toggle', url: URL_CHAT, tabId: 7 }, sender)).error);
   assert.ok((await state.call({ type: 'status', url: URL_CHAT }, sender)).error);
 });
+
+test('browser queue preserves delta chains and rejects invalid replacements', async () => {
+  const state = setup();
+  await state.call({ type: 'toggle', url: URL_CHAT, tabId: 7 });
+  const delta = { ...snapshot, checkpoint_mode: 'delta', base_snapshot_id: 'b'.repeat(64), message_count: 1,
+    messages: [{ role: 'assistant', text: 'new', message_index: 0, offset: 4, replace_from: 4, final_length: 7 }] };
+  assert.equal((await state.call(delta, sender)).queued, true);
+  const queued = Object.values(state.data.pending)[0];
+  assert.equal(queued.checkpoint_mode, 'delta');
+  assert.equal(queued.base_snapshot_id, delta.base_snapshot_id);
+  assert.equal(queued.messages[0].replace_from, 4);
+  assert.ok((await state.call({ ...delta, messages: [{ ...delta.messages[0], final_length: 1 }] }, sender)).error);
+  assert.equal(Object.keys(state.data.pending).length, 1);
+});
+
+async function contentSetup() {
+  const chat = [{ role: 'user', text: 'Earlier website discussion' }, { role: 'assistant', text: 'Answer' }];
+  const clock = { value: 100000 };
+  const saved = [];
+  class Clock extends Date { static now() { return clock.value; } }
+  const location = { href: URL_CHAT };
+  const document = { documentElement: {}, title: 'Website task', addEventListener() {},
+    querySelectorAll() { return chat.map(message => ({ dataset: { messageAuthorRole: message.role }, innerText: message.text, contains() { return false; } })); } };
+  const chrome = { runtime: { onMessage: { addListener() {} }, async sendMessage(message) {
+    if (message.type === 'trackingState') return { tracking: true };
+    saved.push(structuredClone(message)); return { queued: true };
+  } } };
+  const context = vm.createContext({ chrome, location, document, Date: Clock, TextEncoder, crypto: webcrypto,
+    MutationObserver: class { observe() {} }, window: { addEventListener() {} }, setTimeout() {}, clearTimeout() {}, setInterval() {} });
+  await vm.runInContext(fs.readFileSync(path.join(__dirname, '../tools/browser-ai-capture/content.js'), 'utf8'), context);
+  return { chat, clock, saved, checkpoint: force => context.checkpoint(force), location };
+}
+
+test('streaming is throttled and only the changed suffix is queued', async () => {
+  const state = await contentSetup();
+  const first = state.saved[0];
+  assert.equal(first.checkpoint_mode, 'full');
+  state.chat[1].text += ' more';
+  state.clock.value += 10000;
+  await state.checkpoint();
+  assert.equal(state.saved.length, 1);
+  state.clock.value += 20000;
+  await state.checkpoint();
+  const delta = state.saved[1];
+  assert.equal(delta.checkpoint_mode, 'delta');
+  assert.equal(delta.base_snapshot_id, first.snapshot_id);
+  assert.equal(delta.messages.length, 1);
+  assert.equal(delta.messages[0].text, ' more');
+  assert.equal(delta.messages[0].replace_from, 'Answer'.length);
+  const reconstructed = first.messages[1].text.slice(0, delta.messages[0].replace_from) + delta.messages[0].text;
+  assert.equal(reconstructed, state.chat[1].text);
+});
+
+test('forced and periodic full checkpoints refresh the recoverable base', async () => {
+  const state = await contentSetup();
+  state.chat[1].text = 'Edited final reply';
+  await state.checkpoint(true);
+  assert.equal(state.saved[1].checkpoint_mode, 'full');
+  assert.equal(state.saved[1].base_snapshot_id, null);
+  await state.checkpoint(true);
+  assert.equal(state.saved.length, 2);
+  state.chat[1].text += ' and later update';
+  state.clock.value += 10 * 60 * 1000;
+  await state.checkpoint();
+  assert.equal(state.saved[2].checkpoint_mode, 'full');
+});
+
+test('emoji edits and long-message fragments preserve complete Unicode characters', async () => {
+  const state = await contentSetup();
+  state.chat[1].text = '🙂';
+  await state.checkpoint(true);
+  state.chat[1].text = '🙃';
+  state.clock.value += 30000;
+  await state.checkpoint();
+  assert.equal(state.saved.at(-1).messages[0].text, '🙃');
+  state.chat[1].text = 'x'.repeat(49999) + '🙂end';
+  await state.checkpoint(true);
+  const fragments = state.saved.at(-1).messages.filter(message => message.message_index === 1);
+  assert.equal(fragments.map(message => message.text).join(''), state.chat[1].text);
+  for (const fragment of fragments) assert.equal(Buffer.from(fragment.text, 'utf8').toString('utf8'), fragment.text);
+});

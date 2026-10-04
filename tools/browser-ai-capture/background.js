@@ -54,9 +54,18 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
       if (!trackedChats[url]) return { tracking: false };
       if (!Array.isArray(message.messages) || message.messages.length > 3 || !message.messages.every(x => typeof x.role === "string" && x.role.length <= 50 && typeof x.text === "string" && x.text.length <= 50000)) throw new Error("Invalid checkpoint");
       if (!/^[a-f0-9]{64}$/.test(message.snapshot_id || "") || !Number.isInteger(message.part) || !Number.isInteger(message.parts) || message.part < 0 || message.parts < 1 || message.part >= message.parts) throw new Error("Invalid checkpoint part");
+      const mode = message.checkpoint_mode || "full";
+      if (!["full", "delta"].includes(mode) || (mode === "delta" && !/^[a-f0-9]{64}$/.test(message.base_snapshot_id || ""))) throw new Error("Invalid checkpoint chain");
+      if (message.message_count !== undefined && (!Number.isInteger(message.message_count) || message.message_count < 1 || message.message_count > 10000)) throw new Error("Invalid message count");
+      const fragments = message.messages.map((x, index) => ({ role: x.role, text: x.text, message_index: x.message_index ?? index,
+        offset: x.offset ?? 0, replace_from: x.replace_from ?? 0, final_length: x.final_length ?? x.text.length }));
+      if (!fragments.every(x => [x.message_index, x.offset, x.replace_from, x.final_length].every(Number.isInteger)
+        && x.message_index >= 0 && x.message_index < (message.message_count ?? 10000) && x.replace_from >= 0
+        && x.offset >= x.replace_from && x.final_length >= x.offset + x.text.length)) throw new Error("Invalid replacement fragment");
       const payload = { url, tracking_enabled: true, session_id: url, event: "browser_checkpoint",
         captured_at: new Date().toISOString(), title: String(message.title || "").slice(0, 500), snapshot_id: message.snapshot_id,
-        part: message.part, parts: message.parts, messages: message.messages.map(x => ({ role: x.role, text: x.text, message_index: x.message_index, offset: x.offset })) };
+        checkpoint_mode: mode, base_snapshot_id: mode === "delta" ? message.base_snapshot_id : null,
+        message_count: message.message_count ?? fragments.length, part: message.part, parts: message.parts, messages: fragments };
       tabSnapshots[sender.tab.id] = { url, title: payload.title, captured_at: payload.captured_at };
       await chrome.storage.local.set({ tabSnapshots });
       await enqueue(payload);

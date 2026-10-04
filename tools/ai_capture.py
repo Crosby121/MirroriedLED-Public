@@ -5,6 +5,7 @@ import argparse
 import base64
 from contextlib import contextmanager
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 import hashlib
 import json
 import os
@@ -24,8 +25,9 @@ REPOSITORY = "Crosby121/MirroriedLED-AI-History"
 SOURCES = {"copilot": "GitHub Copilot", "codex": "ChatGPT / local Codex", "browser": "Tracked browser AI chat"}
 EXTENSION_ID = "hdecleonacegadhfjjnlioafnamnljkg"
 SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?(?:-----END [A-Z ]*PRIVATE KEY-----|\Z)|(?:gh[pousr]_|github_pat_|sk-)[A-Za-z0-9_-]{30,}|mlwf_[A-Za-z0-9_-]{40,}", re.DOTALL)
-SENSITIVE_KEY = re.compile(r"^(?:password|passwd|api[_-]?key|access[_-]?token|authorization|cookie|private[_-]?key|secret|github[_-]?token|workflow[_-]?token)$", re.I)
-INLINE_SECRET = re.compile(r'("(?:password|api[_-]?key|authorization|cookie|access[_-]?token|secret)"\s*:\s*")[^"\n]*(")', re.I)
+SENSITIVE_NAMES = r"(?:password|passwd|token|bearer|api[_-]?key|access[_-]?token|refresh[_-]?token|authorization|cookie|private[_-]?key|secret|client[_-]?secret|github[_-]?token|workflow[_-]?token)"
+SENSITIVE_KEY = re.compile(r"^" + SENSITIVE_NAMES + r"$", re.I)
+INLINE_SECRET = re.compile(r'("' + SENSITIVE_NAMES + r'"\s*:\s*)"(?:\\.|[^"\\])*(?:"|\\?\Z)', re.I)
 
 
 def require(condition, message):
@@ -33,12 +35,16 @@ def require(condition, message):
         raise ValueError(message)
 
 
+class UploadDeferred(ValueError):
+    """A durable queue must wait for its local budget or GitHub's retry time."""
+
+
 def now():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def encoded(value):
-    return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    return (json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":")) + "\n").encode()
 
 
 def digest(data):
@@ -54,8 +60,27 @@ def redact(value, known_secrets=()):
         for secret in known_secrets:
             if secret and len(secret) >= 12:
                 value = value.replace(secret, "[REDACTED]")
-        return INLINE_SECRET.sub(r"\1[REDACTED]\2", SECRET.sub("[REDACTED]", value))
+        return INLINE_SECRET.sub(r'\1"[REDACTED]"', SECRET.sub("[REDACTED]", value))
     return value
+
+
+def redact_transcript(text, known_secrets):
+    # Decode native JSON/JSONL before filtering so escaped message/tool JSON is
+    # treated like structured hook payloads. Preserve unchanged text exactly.
+    def filtered(part):
+        try:
+            original = json.loads(part)
+        except (ValueError, TypeError):
+            return redact(part, known_secrets)
+        cleaned = redact(original, known_secrets)
+        if cleaned == original:
+            return part
+        return json.dumps(cleaned, ensure_ascii=True, separators=(",", ":")) + ("\n" if part.endswith("\n") else "")
+    try:
+        json.loads(text)
+    except ValueError:
+        return "".join(filtered(line) for line in text.splitlines(keepends=True))
+    return filtered(text)
 
 
 def safe(path):
@@ -120,7 +145,7 @@ def capture(config, event, source):
             require(observed.st_size <= 20971520, "Transcript exceeds the 20 MiB capture limit; export it in parts")
             raw_text = path.read_text(encoding="utf-8")
             require(len(raw_text.encode()) <= 20971520, "Transcript exceeds the 20 MiB capture limit; export it in parts")
-            text = redact(raw_text, secrets)
+            text = redact_transcript(raw_text, secrets)
             for offset in range(0, len(text), 131072):
                 content = text[offset:offset + 131072].encode()
                 object_id = digest(content)
@@ -220,9 +245,54 @@ class GitHubArchive:
         self.token = config["github_token"]
         self.repo = config["repository"]
         require(self.repo == REPOSITORY, "Unexpected archive destination")
+        self.budget_path = safe(Path(config["spool"]) / "upload-budget.json")
         self.opener = build_opener(NoRedirects())
 
+    def budget(self):
+        state = json.loads(self.budget_path.read_text()) if self.budget_path.exists() else {"writes": [], "retry_after": 0, "failures": 0}
+        require(isinstance(state.get("writes"), list) and len(state["writes"]) <= 360
+                and all(isinstance(value, (int, float)) for value in state["writes"])
+                and isinstance(state.get("retry_after"), (int, float)) and isinstance(state.get("failures"), int), "Invalid private upload budget")
+        return state
+
+    def check_backoff(self):
+        if self.budget()["retry_after"] > time.time():
+            raise UploadDeferred("GitHub retry time has not arrived; checkpoints remain queued")
+
+    def reserve_write(self):
+        state, clock = self.budget(), time.time()
+        state["writes"] = [value for value in state["writes"] if value > clock - 3600]
+        if len(state["writes"]) >= 360 or sum(value > clock - 60 for value in state["writes"]) >= 30:
+            raise UploadDeferred("Private upload budget reached; checkpoints remain queued")
+        state["writes"].append(clock)  # Reserve before sending, including an uncertain response.
+        atomic(self.budget_path, encoded(state))
+
+    def defer(self, headers):
+        headers = headers or {}
+        state, clock = self.budget(), time.time()
+        delay = min(3600, 60 * (2 ** min(max(state["failures"], 0), 6)))
+        retry = str(headers.get("Retry-After", ""))
+        if retry.isdigit():
+            delay = max(delay, int(retry))
+        elif retry:
+            try:
+                delay = max(delay, parsedate_to_datetime(retry).timestamp() - clock)
+            except (ValueError, TypeError, OverflowError):
+                pass
+        reset = str(headers.get("X-RateLimit-Reset", ""))
+        if headers.get("X-RateLimit-Remaining") == "0" and reset.isdigit():
+            delay = max(delay, int(reset) - clock)
+        state.update(retry_after=clock + delay, failures=state["failures"] + 1)
+        atomic(self.budget_path, encoded(state))
+
+    def succeeded(self):
+        state = self.budget()
+        if state["failures"]:
+            state.update(failures=0, retry_after=0)
+            atomic(self.budget_path, encoded(state))
+
     def request(self, method, path, body=None, missing_ok=False):
+        self.check_backoff()
         data = encoded(body) if body is not None else None
         headers = {"Accept": "application/vnd.github+json", "Authorization": "Bearer " + self.token,
                    "User-Agent": "MirroriedLED-AICapture/1.0", "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json"}
@@ -231,6 +301,9 @@ class GitHubArchive:
         except HTTPError as failure:
             if missing_ok and failure.code == 404:
                 return None
+            if failure.code in {403, 429}:
+                self.defer(failure.headers)
+                raise UploadDeferred("GitHub requested a retry delay; checkpoints remain queued") from None
             # Never echo raw error bodies, headers, or credentials.
             raise ValueError("GitHub archive access failed (HTTP %d)" % failure.code) from None
         with response:
@@ -251,13 +324,17 @@ class GitHubArchive:
         if existing is not None:
             require(existing.get("sha") == blob_sha, "An immutable archive record has different contents")
             return existing.get("html_url")
+        self.reserve_write()
         try:
             created = self.request("PUT", endpoint, {"message": "Save Mirroried LED AI checkpoint", "content": base64.b64encode(data).decode()})
+        except UploadDeferred:
+            raise
         except ValueError:
             # A lost response or concurrent upload may have already created the exact blob.
             existing = self.request("GET", endpoint, missing_ok=True)
             require(existing is not None and existing.get("sha") == blob_sha, "Archive upload is unconfirmed; retained in the local retry queue")
             return existing.get("html_url")
+        self.succeeded()
         return created["content"]["html_url"]
 
 
@@ -374,9 +451,14 @@ def main():
                     monitor_transcripts(config)
                     flush(config)
                     atomic(Path(config["spool"]) / "worker-status.json", encoded({"checked_at": now(), "result": "ok"}))
+                except UploadDeferred:
+                    atomic(Path(config["spool"]) / "worker-status.json", encoded({"checked_at": now(), "result": "rate_wait"}))
                 except Exception:
                     atomic(Path(config["spool"]) / "worker-status.json", encoded({"checked_at": now(), "result": "retry_pending"}))
                 time.sleep(30)
+    except UploadDeferred:
+        print("GitHub upload deferred by its retry time or the local write budget; pending checkpoints are retained.", file=sys.stderr)
+        return 1
     except Exception:
         # Local hook errors remain visible, but private payloads/credentials never enter stdout.
         if args.command == "hook":

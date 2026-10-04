@@ -79,10 +79,27 @@ Actual transcript_path availability depends on the app/version. Each record says
 whether it contains a native transcript or only the hook payload.
 
 The Chrome helper reads rendered text in tracked tabs and checkpoints during
-streaming. Each part goes to persistent browser storage before forwarding to the
+streaming. Changed suffixes save at most once per 30 seconds; forced final/hidden
+checks and ten-minute full checkpoints refresh the visible-message base. Each
+part goes to persistent browser storage before forwarding to the
 PC helper. Tab removal adds a close event linked to the last checkpoint.
 Unacknowledged parts retry while Chrome runs or at the next startup. The PC worker
 independently retries records already acknowledged on disk.
+
+Browser delta records name their base_snapshot_id. To reconstruct a visible
+snapshot, require every part for its snapshot_id, load the named base, group
+fragments by message_index, keep text before replace_from, append fragments in
+offset order and truncate to final_length. Full records start a new base and
+contain message_count visible messages. Missing parts/base remain incomplete;
+never present them as a full conversation. Offsets and lengths use JavaScript
+UTF-16 units. Emoji boundaries are preserved. Periodic/full close attempts limit
+the length of delta chains; unchanged forced checks do not create duplicate copies.
+
+The PC worker caps new archive files at 30 per minute and 360 per hour and honors
+GitHub's retry/reset time with increasing backoff. Deferred records stay queued
+and worker-status.json reports rate_wait. This local budget does not count other
+apps' or PCs' requests, so GitHub can still defer uploads. Task completion records
+and source pushes remain separate from delayed private chat uploads.
 
 Closing all browser windows can stop the extension before a final event finishes.
 Power loss, crashes, unloaded/virtualized messages, hidden context, attachments
@@ -125,3 +142,4 @@ Official references:
 - [Copilot events and payloads](https://docs.github.com/en/copilot/reference/hooks-reference)
 - [Chrome native messaging](https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging)
 - [Chrome tab removal](https://developer.chrome.com/docs/extensions/reference/api/tabs)
+- [GitHub API rate limits and retry guidance](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)

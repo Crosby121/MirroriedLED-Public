@@ -360,8 +360,13 @@ final class MirroriedWorkflowServer
 
     private function checkUrl(mixed $url): void
     {
+        $fragment = is_string($url) ? parse_url($url, PHP_URL_FRAGMENT) : null;
+        $safeFragment = $fragment === null || (parse_url($url, PHP_URL_HOST) === 'github.com'
+            && preg_match('/^(?:discussion_r|issuecomment-|pullrequestreview-|commitcomment-)[0-9]+$/D', $fragment) === 1);
         wf_require(is_string($url) && strlen($url) <= 2000 && filter_var($url, FILTER_VALIDATE_URL) !== false
-            && parse_url($url, PHP_URL_SCHEME) === 'https' && parse_url($url, PHP_URL_USER) === null && parse_url($url, PHP_URL_PASS) === null, 'Evidence must use a public HTTPS URL without credentials.');
+            && parse_url($url, PHP_URL_SCHEME) === 'https' && parse_url($url, PHP_URL_USER) === null && parse_url($url, PHP_URL_PASS) === null
+            && parse_url($url, PHP_URL_QUERY) === null && $safeFragment,
+            'Use HTTPS evidence without credentials or query parameters; only standard GitHub comment fragments are allowed.');
     }
 
     private function taskIndex(array $queue, string $taskId): int

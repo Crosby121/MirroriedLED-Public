@@ -1,11 +1,11 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-04T22:54:53Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-04T23:20:03Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [620d57c](https://github.com/Crosby121/MirroriedLED-Public/commit/620d57c6c182c19ada124a40722ef52e7474502d) · Shared workflow foundation merged after the supplier pricing and 20% frame markup release. The checked source is separate from the unknown Hostinger live version. |
+| Observed website source | [3b1e04a](https://github.com/Crosby121/MirroriedLED-Public/commit/3b1e04aae7277239e14a216bbfe4557e80e5da29) · Shared workflow MCP connector and private capture implementation merged in PR #13. Activation remains pending; phased storefront work in draft PR #14 is separate and not merged into this observation. |
 | Verified live Hostinger commit | Unknown — no verified live commit recorded |
 | Last Hostinger attempt | [failed_before_upload](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537748608) · Verify main website hosting settings |
 | Deployment blocker | The job reported missing HOSTINGER_SSH_PRIVATE_KEY and HOSTINGER_SSH_KNOWN_HOSTS settings. Upload, installation and live verification were skipped. |
@@ -13,8 +13,8 @@ Evidence snapshot: 2026-10-04T22:54:53Z (UTC). Refresh GitHub at the start of ea
 
 ## Source checks
 
-- [Main shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703708): **passed**.
-- [Main website packaging](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703753): **passed**.
+- [Main shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37242502505): **passed**.
+- [Main website packaging](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37242502555): **passed**.
 
 ## Task queue
 
@@ -22,7 +22,8 @@ Evidence snapshot: 2026-10-04T22:54:53Z (UTC). Refresh GitHub at the start of ea
 | --- | --- | --- | --- |
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
-| WF-007 — Address workflow capture privacy and streaming review findings | in_progress | 20261004t231109z-bacf3dd7 | Resolve the three PR #13 automated-review findings and publish the verified fixes. |
+| WF-007 — Address workflow capture privacy and streaming review findings | done | Unclaimed | Merge the verified review fixes. Complete WF-003 and WF-006 activation guides on Hostinger and the persistent PC, then verify actual GitHub receipts. Before merging draft PR #14, reconcile its product task/session references to shared WF-008 while preserving capture WF-006 and current connection records. |
+| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Review draft PR #14. Reconcile its original WF-006 product task/session references to shared WF-008 while preserving main capture WF-006 and connection records. Complete documented merchant and launch prerequisites before release. |
 | WF-002 — Resolve the main website deployment settings blocker | blocked | Unclaimed | Inspect the failed job and resolve the two reported main-site secret settings; preserve the separate sponsor VPS connection. |
 | WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Complete CONNECTOR_SETUP.md: provision scoped service credentials, resolve main-site SSH settings, run the manual connector install and verify each app read/write receipt. |
 | WF-006 — Activate automatic private AI chat capture and close recovery | blocked | Unclaimed | Complete AUTO_CAPTURE.md on the persistent PC and verify the private repository, trusted hooks, Chrome/native connection, background worker and actual GitHub receipts. Complete CONNECTOR_SETUP.md for task handoffs; do not claim live capture before verification. |

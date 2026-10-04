@@ -1,6 +1,8 @@
 """Capture retention, privacy, close recovery, immutable uploads and native framing."""
 
 import importlib.util
+import base64
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -10,6 +12,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.error import HTTPError
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -100,6 +103,51 @@ class CaptureTests(unittest.TestCase):
         for secret_value in [secret, "do-not-save-password", "Bearer private-value", self.config["github_token"]]:
             self.assertNotIn(secret_value, text)
         self.assertIn("[REDACTED]", text)
+
+    def test_opaque_credentials_in_hook_and_json_transcript_keys_are_redacted(self):
+        values = {key: 'opaque-' + key + '-with-"quote' for key in ['token', 'github_token', 'workflow_token', 'private_key', 'passwd', 'refreshToken', 'client_secret']}
+        first = json.dumps({"settings": values, "tool_result": json.dumps({"token": "embedded-opaque-value"})})
+        second = json.dumps({"text": 'Example {"passwd":"inline-opaque-value"}', "password": 123456789})
+        self.transcript.write_text(first + '\n' + second + '\n')
+        capture.capture(self.config, {**self.event(), **values}, "copilot")
+        archive = ArchiveDouble()
+        capture.flush(self.config, archive)
+        text = b'\n'.join(archive.files.values()).decode()
+        self.assertNotIn('opaque-', text)
+        for value in [*values.values(), 'embedded-opaque-value', 'inline-opaque-value', '123456789']:
+            self.assertNotIn(value, text)
+        self.assertIn('[REDACTED]', text)
+        self.assertNotIn('unfinished-opaque-value', capture.redact('{"token":"unfinished-opaque-value'))
+
+    def test_local_upload_budget_defers_without_losing_the_queued_record(self):
+        capture.capture(self.config, self.event(), "codex")
+        archive = capture.GitHubArchive(self.config)
+        contents = {}
+        def request(method, path, body=None, missing_ok=False):
+            if path == '/user': return {'login': 'Crosby121'}
+            if path == '/repos/' + capture.REPOSITORY: return {'full_name': capture.REPOSITORY, 'private': True}
+            if method == 'GET': return contents.get(path)
+            data = base64.b64decode(body['content'])
+            contents[path] = {'sha': hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest(), 'html_url': 'https://github.com/example'}
+            return {'content': contents[path]}
+        with patch.object(capture.time, 'time', return_value=10000), patch.object(archive, 'request', request):
+            for writes in [30, 360]:
+                capture.atomic(archive.budget_path, capture.encoded({'writes': [10000] * writes, 'retry_after': 0, 'failures': 0}))
+                with self.assertRaises(capture.UploadDeferred): capture.flush(self.config, archive)
+                self.assertEqual(len(self.pending()), 1)
+                self.assertFalse(contents)
+        with patch.object(capture.time, 'time', return_value=13601), patch.object(archive, 'request', request):
+            self.assertEqual(capture.flush(self.config, archive), 1)
+        self.assertFalse(self.pending())
+
+    def test_github_retry_after_blocks_requests_until_the_advertised_time(self):
+        archive = capture.GitHubArchive(self.config)
+        failure = HTTPError('https://api.github.com/user', 429, 'Rate limited', {'Retry-After': '120'}, None)
+        with patch.object(capture.time, 'time', return_value=10000), patch.object(archive.opener, 'open', side_effect=failure) as opened:
+            with self.assertRaises(capture.UploadDeferred): archive.request('GET', '/user')
+            with self.assertRaises(capture.UploadDeferred): archive.request('GET', '/user')
+            self.assertEqual(opened.call_count, 1)
+        self.assertEqual(archive.budget()['retry_after'], 10120)
 
     def test_unauthorized_transcript_is_not_read_and_an_error_is_recorded(self):
         private = self.root / "unauthorized.jsonl"
