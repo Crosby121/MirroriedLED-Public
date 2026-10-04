@@ -22,6 +22,10 @@ jobs:
           test -f styles.css
           test -f app.js
           test -f repair.js
+          test -s infinity-mirror.webp
+          test -s stadium-model.webp
+          test -s led-display.webp
+          test -s address-sign.webp
           node --check app.js
           node --check repair.js
 
@@ -40,7 +44,7 @@ jobs:
       - name: Build deployment bundle
         run: |
           mkdir -p dist/mirroriedled-storefront
-          cp index.html styles.css app.js repair.js dist/mirroriedled-storefront/
+          cp index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp dist/mirroriedled-storefront/
           cp deploy/HOSTINGER_DEPLOYMENT.md dist/mirroriedled-storefront/
           cp deploy/hostinger/backup-public-html.sh dist/mirroriedled-storefront/
           cp deploy/hostinger/deploy-storefront.sh dist/mirroriedled-storefront/
@@ -49,7 +53,7 @@ jobs:
           cp deploy/hostinger/README.md dist/mirroriedled-storefront/HOSTINGER_SAFE_DEPLOY.md
           chmod +x dist/mirroriedled-storefront/*.sh
           cd dist/mirroriedled-storefront
-          sha256sum index.html styles.css app.js repair.js > SHA256SUMS.txt
+          sha256sum index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp > SHA256SUMS.txt
           printf 'Mirroried LED public storefront\nCommit: %s\nBuilt: %s UTC\nSafety mode: full public_html backup required before deployment\n' "${GITHUB_SHA}" "$(date -u +'%Y-%m-%d %H:%M:%S')" > BUILD_INFO.txt
 
       - name: Upload storefront artifact

@@ -9,7 +9,8 @@ import tempfile
 import unittest
 
 SOURCE = Path(__file__).resolve().parents[1]
-ASSETS = ("index.html", "styles.css", "app.js", "repair.js")
+IMAGES = ("infinity-mirror.webp", "stadium-model.webp", "led-display.webp", "address-sign.webp")
+ASSETS = ("index.html", "styles.css", "app.js", "repair.js") + IMAGES
 
 
 class ProductionReleaseTests(unittest.TestCase):
@@ -31,9 +32,14 @@ class ProductionReleaseTests(unittest.TestCase):
             content = ("previous " + asset).encode()
             self.previous[asset] = content
             (self.public / asset).write_bytes(content)
-            shutil.copyfile(SOURCE / asset, self.package / asset)
+            if asset in IMAGES:
+                # Deployment treats image bytes as opaque; visual validation is separate.
+                (self.package / asset).write_bytes(b"new image " + asset.encode() + b"\x00\xff")
+            else:
+                shutil.copyfile(SOURCE / asset, self.package / asset)
         (self.public / "api").mkdir()
         (self.public / "api/keep.txt").write_text("existing service")
+        (self.public / "customer-photo.webp").write_bytes(b"existing customer image\x00\xff")
         # HTTP verification is isolated from the real website.
         self.bin = self.root / "bin"
         self.bin.mkdir()
@@ -62,19 +68,22 @@ class ProductionReleaseTests(unittest.TestCase):
         for asset in ASSETS:
             self.assertEqual((self.public / asset).read_bytes(), (self.package / asset).read_bytes())
         self.assertEqual((self.public / "api/keep.txt").read_text(), "existing service")
+        self.assertEqual((self.public / "customer-photo.webp").read_bytes(), b"existing customer image\x00\xff")
         return next(self.backups.glob("storefront-*"))
 
     def assert_unchanged(self):
         for asset in ASSETS:
             self.assertEqual((self.public / asset).read_bytes(), self.previous[asset])
         self.assertEqual((self.public / "api/keep.txt").read_text(), "existing service")
+        self.assertEqual((self.public / "customer-photo.webp").read_bytes(), b"existing customer image\x00\xff")
 
-    def test_all_four_assets_are_backed_up_deployed_and_restored(self):
+    def test_all_eight_assets_are_backed_up_deployed_and_restored(self):
         backup = self.deploy()
         with tarfile.open(next(self.backups.glob("public_html-full-*.tar.gz"))) as archive:
             for asset in ASSETS:
                 self.assertEqual(archive.extractfile("public_html/" + asset).read(), self.previous[asset])
             self.assertEqual(archive.extractfile("public_html/api/keep.txt").read(), b"existing service")
+            self.assertEqual(archive.extractfile("public_html/customer-photo.webp").read(), b"existing customer image\x00\xff")
         result = self.run_helper("rollback-storefront.sh", backup)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assert_unchanged()
@@ -90,15 +99,61 @@ class ProductionReleaseTests(unittest.TestCase):
         self.assertNotEqual(self.run_helper("deploy-storefront.sh", self.package).returncode, 0)
         self.assert_unchanged()
 
+    def test_missing_image_changes_no_live_files(self):
+        (self.package / "address-sign.webp").unlink()
+        self.assertNotEqual(self.run_helper("deploy-storefront.sh", self.package).returncode, 0)
+        self.assert_unchanged()
+
+    def test_corrupt_image_checksum_changes_no_live_files(self):
+        (self.package / "address-sign.webp").write_bytes(b"corrupted image\x00\xff")
+        self.assertNotEqual(self.run_helper("deploy-storefront.sh", self.package).returncode, 0)
+        self.assert_unchanged()
+
     def test_rollback_restores_original_absence_of_repair_asset(self):
         (self.public / "repair.js").unlink()
         backup = self.deploy()
         result = self.run_helper("rollback-storefront.sh", backup)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertFalse((self.public / "repair.js").exists())
-        for asset in ASSETS[:-1]:
+        for asset in ASSETS:
+            if asset == "repair.js":
+                continue
             self.assertEqual((self.public / asset).read_bytes(), self.previous[asset])
         self.assertEqual((self.public / "api/keep.txt").read_text(), "existing service")
+        self.assertEqual((self.public / "customer-photo.webp").read_bytes(), b"existing customer image\x00\xff")
+
+    def test_rollback_restores_original_absence_of_product_images(self):
+        for image in IMAGES:
+            (self.public / image).unlink()
+        backup = self.deploy()
+        self.assertEqual(set((backup / "ABSENT_FILES.txt").read_text().splitlines()), set(IMAGES))
+        with tarfile.open(next(self.backups.glob("public_html-full-*.tar.gz"))) as archive:
+            for image in IMAGES:
+                self.assertNotIn("public_html/" + image, archive.getnames())
+        result = self.run_helper("rollback-storefront.sh", backup)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for image in IMAGES:
+            self.assertFalse((self.public / image).exists())
+        for asset in ASSETS:
+            if asset not in IMAGES:
+                self.assertEqual((self.public / asset).read_bytes(), self.previous[asset])
+        self.assertEqual((self.public / "api/keep.txt").read_text(), "existing service")
+        self.assertEqual((self.public / "customer-photo.webp").read_bytes(), b"existing customer image\x00\xff")
+
+    def test_missing_live_image_fails_public_verification(self):
+        curl = self.bin / "curl"
+        curl.write_text('#!/bin/sh\nurl=""\nout=""\nwhile [ "$#" -gt 0 ]; do\n'
+                        '  if [ "$1" = "-o" ]; then shift; out="$1"; fi\n'
+                        '  url="$1"\n  shift\ndone\n'
+                        'body="Mirroried LED Advertising on the Go Sponsor Partner Program sponsors.mirroriedled.com"\n'
+                        'if [ -n "$out" ]; then printf "%s" "$body" > "$out"; else printf "%s" "$body"; fi\n'
+                        'case "$url" in\n'
+                        '  *address-sign.webp) printf "404" ;;\n'
+                        '  *) printf "200" ;;\nesac\n')
+        result = self.run_helper("verify-storefront.sh", "")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("address-sign.webp", result.stderr)
+        self.assert_unchanged()
 
 
 if __name__ == "__main__":

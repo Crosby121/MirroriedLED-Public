@@ -9,12 +9,16 @@ The deployment replaces only:
 - `styles.css`
 - `app.js`
 - `repair.js`
+- `infinity-mirror.webp`
+- `stadium-model.webp`
+- `led-display.webp`
+- `address-sign.webp`
 
 It does not delete or replace the rest of `public_html`.
 
 Before any live file is changed, the deployment now creates **two backups**:
 1. a verified compressed archive of the **entire `public_html` directory**
-2. a lightweight copy of the four storefront files for fast rollback
+2. a lightweight copy of the eight storefront files for fast rollback
 
 ## Default Hostinger path
 
@@ -65,7 +69,7 @@ The deploy script:
 4. creates a storefront-only fast rollback backup
 5. checks JavaScript syntax
 6. stages the new files
-7. installs only the four storefront files
+7. installs only the eight storefront files
 8. verifies the public homepage
 9. prints the backup locations
 
@@ -81,6 +85,7 @@ This verifies:
 - `Advertising on the Go` exists
 - `Sponsor Partner Program` exists
 - Sponsor Portal link exists
+- all eight storefront files, including the four product images, return HTTP 200 with nonempty bodies
 - sponsor subdomain is reachable
 
 ## Fast rollback
@@ -93,8 +98,10 @@ If the storefront deployment has a problem, use the storefront backup path print
 
 Rollback itself creates a pre-rollback copy before restoring the previous storefront files.
 New backups record originally absent files so rollback also restores their absence.
-An older three-file backup must be supplemented with its matching `repair.js`
-from the full-site archive before using the updated rollback helper.
+An older backup must be supplemented with the matching missing assets from its
+full-site archive before using the updated rollback helper. If that archive
+confirms an image or script was originally absent, record its exact filename
+in `ABSENT_FILES.txt`; do not infer absence from an incomplete backup.
 
 ## Full-site disaster recovery
 

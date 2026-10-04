@@ -5,7 +5,7 @@ set -euo pipefail
 mode="${1:-}"
 stage="${2:-}"
 release_name="${3:-}"
-assets=(index.html styles.css app.js repair.js)
+assets=(index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp)
 
 fail() { echo "Refusing staging release: $*" >&2; exit 1; }
 
@@ -37,13 +37,13 @@ fi
 declare -A seen=()
 count=0
 while IFS= read -r line || [[ -n "$line" ]]; do
-  [[ "$line" =~ ^([a-f0-9]{64})\ \ (index\.html|styles\.css|app\.js|repair\.js)$ ]] || fail 'invalid checksum entry'
+  [[ "$line" =~ ^([a-f0-9]{64})\ \ (index\.html|styles\.css|app\.js|repair\.js|infinity-mirror\.webp|stadium-model\.webp|led-display\.webp|address-sign\.webp)$ ]] || fail 'invalid checksum entry'
   asset="${BASH_REMATCH[2]}"
   [[ -z "${seen[$asset]:-}" ]] || fail 'duplicate checksum entry'
   seen["$asset"]=1
   count=$((count + 1))
 done < "$release/SHA256SUMS.txt"
-[[ "$count" == 4 ]] || fail 'checksum manifest must contain all four assets'
+[[ "$count" == "${#assets[@]}" ]] || fail 'checksum manifest must contain all eight assets'
 
 for asset in "${assets[@]}"; do
   [[ -f "$release/$asset" && -s "$release/$asset" && ! -L "$release/$asset" ]] || fail "missing or unsafe uploaded $asset"
@@ -53,11 +53,11 @@ for asset in "${assets[@]}"; do
 done
 (cd "$release" && sha256sum --check --strict --status SHA256SUMS.txt) || fail 'uploaded files failed checksum verification'
 
-# Validate every file before installing any. Only these four staging assets move.
+# Validate every file before installing any. Only these eight staging assets move.
 for asset in "${assets[@]}"; do
   chmod 644 -- "$release/$asset"
   mv -T -- "$release/$asset" "$stage/$asset"
 done
 rm -- "$release/SHA256SUMS.txt"
 rmdir -- "$release"
-echo 'Four storefront files installed in staging; upload checksums verified'
+echo 'Eight storefront files installed in staging; upload checksums verified'

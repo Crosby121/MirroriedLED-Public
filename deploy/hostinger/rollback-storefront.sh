@@ -4,7 +4,7 @@ set -euo pipefail
 PUBLIC_HTML="${PUBLIC_HTML:-$HOME/domains/mirroriedled.com/public_html}"
 BACKUP_DIR="${1:-}"
 DOMAIN="${DOMAIN:-https://mirroriedled.com}"
-required=(index.html styles.css app.js repair.js)
+required=(index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp)
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 
@@ -23,7 +23,11 @@ STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 PRE_ROLLBACK="$BACKUP_DIR/pre-rollback-$STAMP"
 mkdir -p "$PRE_ROLLBACK"
 for f in "${required[@]}"; do
-  [[ -f "$PUBLIC_HTML/$f" ]] && cp -p "$PUBLIC_HTML/$f" "$PRE_ROLLBACK/$f"
+  if [[ -f "$PUBLIC_HTML/$f" ]]; then
+    cp -p "$PUBLIC_HTML/$f" "$PRE_ROLLBACK/$f"
+  else
+    printf '%s\n' "$f" >> "$PRE_ROLLBACK/ABSENT_FILES.txt"
+  fi
 done
 
 for f in "${required[@]}"; do

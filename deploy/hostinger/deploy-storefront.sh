@@ -9,7 +9,7 @@ STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 BACKUP_DIR="$BACKUP_ROOT/storefront-$STAMP"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-required=(index.html styles.css app.js repair.js)
+required=(index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp)
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 
@@ -18,7 +18,7 @@ fail() { echo "ERROR: $*" >&2; exit 1; }
 [[ "$PUBLIC_HTML" != "/" ]] || fail "Refusing to deploy to /"
 
 for f in "${required[@]}"; do
-  [[ -f "$PACKAGE_DIR/$f" ]] || fail "Missing package file: $PACKAGE_DIR/$f"
+  [[ -f "$PACKAGE_DIR/$f" && -s "$PACKAGE_DIR/$f" ]] || fail "Missing or empty package file: $PACKAGE_DIR/$f"
 done
 
 node --check "$PACKAGE_DIR/app.js" >/dev/null
@@ -66,7 +66,9 @@ for f in "${required[@]}"; do
   mv "$PUBLIC_HTML/$f.new" "$PUBLIC_HTML/$f"
 done
 
-chmod 0644 "$PUBLIC_HTML/index.html" "$PUBLIC_HTML/styles.css" "$PUBLIC_HTML/app.js" "$PUBLIC_HTML/repair.js" 2>/dev/null || true
+for f in "${required[@]}"; do
+  chmod 0644 "$PUBLIC_HTML/$f" 2>/dev/null || true
+done
 
 echo "Deployment files installed. Running public verification..."
 if command -v curl >/dev/null 2>&1; then
