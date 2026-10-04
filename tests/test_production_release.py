@@ -1,11 +1,13 @@
 """Verify the complete storefront can deploy and roll back in an isolated webroot."""
 import hashlib
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import tarfile
 import tempfile
+from threading import Thread
 import unittest
 
 SOURCE = Path(__file__).resolve().parents[1]
@@ -153,6 +155,39 @@ class ProductionReleaseTests(unittest.TestCase):
         result = self.run_helper("verify-storefront.sh", "")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("address-sign.webp", result.stderr)
+        self.assert_unchanged()
+
+    @unittest.skipUnless(shutil.which("curl"), "curl is required to exercise HTTP redirects")
+    def test_public_verification_follows_canonical_domain_asset_redirects(self):
+        package = self.package
+
+        class RedirectHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                if not self.path.startswith("/canonical/"):
+                    self.send_response(301)
+                    self.send_header("Location", "/canonical/" + self.path.lstrip("/"))
+                    self.end_headers()
+                    return
+                asset = self.path.removeprefix("/canonical/") or "index.html"
+                body = (package / asset).read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *_args):
+                pass
+
+        server = HTTPServer(("127.0.0.1", 0), RedirectHandler)
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        Thread(target=server.serve_forever, daemon=True).start()
+        self.env.update(PATH=os.environ["PATH"], NO_PROXY="127.0.0.1", no_proxy="127.0.0.1",
+                        DOMAIN=f"http://127.0.0.1:{server.server_port}",
+                        SPONSOR_URL=f"http://127.0.0.1:{server.server_port}/")
+        result = self.run_helper("verify-storefront.sh", "")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PUBLIC STOREFRONT VERIFICATION SUCCESS", result.stdout)
         self.assert_unchanged()
 
 
