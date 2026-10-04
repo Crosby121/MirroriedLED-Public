@@ -209,11 +209,11 @@ final class InfinityBuilder
         $bad=static fn()=>new PortalError('Check the infinity mirror configuration in the builder.',422);
         $catalog=json_decode((string)file_get_contents(__DIR__.'/../../infinity-builder/catalog.json'),true,32,JSON_THROW_ON_ERROR);
         if (!is_array($input)||($input['catalogVersion'] ?? '')!==$catalog['version']||!is_array($input['state'] ?? null)) { throw $bad(); }
-        $s=$input['state'];$size=$s['size'] ?? null;$rim=$s['rim'] ?? null;$art=$s['artwork'] ?? null;
+        $s=$input['state'];$size=$s['size'] ?? null;$rim=$s['rim'] ?? null;$art=$s['artwork'] ?? null;$fulfillment=$s['fulfillment'] ?? 'standard';
         if (($s['version'] ?? null)!==1||!in_array($size,$catalog['sizes'],true)||($s['depthIn'] ?? null)!==3||!in_array($s['finish'] ?? '',['Matte black','Natural birch','White'],true)
             ||!is_array($rim)||!is_bool($rim['enabled'] ?? null)||!is_bool($rim['addressable'] ?? null)||!in_array($rim['rows'] ?? null,[1,2,3],true)
             ||!is_int($rim['countPerRow'] ?? null)||$rim['countPerRow']<24||$rim['countPerRow']>2000||!preg_match('/^#[a-f0-9]{6}$/iD',(string)($rim['color'] ?? ''))
-            ||!is_bool($s['audioReactive'] ?? null)||!in_array($s['rear'] ?? '',['flex','hub75','none'],true)||!is_numeric($s['artScale'] ?? null)||$s['artScale']<20||$s['artScale']>100
+            ||!in_array($fulfillment,['standard','rush'],true)||!is_bool($s['audioReactive'] ?? null)||!in_array($s['rear'] ?? '',['flex','hub75','none'],true)||!is_numeric($s['artScale'] ?? null)||$s['artScale']<20||$s['artScale']>100
             ||!is_array($s['extras'] ?? null)||!is_bool($s['extras']['wallMount'] ?? null)||!is_bool($s['extras']['remote'] ?? null)
             ||!is_array($art)||($art['approved'] ?? null)!==true||!is_string($art['name'] ?? null)||strlen($art['name'])>200||trim($art['name'])===''||!is_string($art['id'] ?? null)||strlen($art['id'])>100
             ||!in_array($art['source'] ?? '',['upload','library','ai'],true)||!is_numeric($art['aspect'] ?? null)||$art['aspect']<=0||$art['aspect']>10) { throw $bad(); }
@@ -252,9 +252,68 @@ final class InfinityBuilder
             $found=array_values(array_filter($layouts,static fn($l)=>$l['key']===$s['layoutKey']));
             if (!$found) { throw $bad(); } $layout=$found[0];
         }
-        $state=['version'=>1,'size'=>$size,'depthIn'=>3,'finish'=>$s['finish'],'rim'=>array_intersect_key($rim,array_flip(['enabled','addressable','rows','countPerRow','color'])),'audioReactive'=>$s['audioReactive'],
+        $state=['version'=>1,'size'=>$size,'depthIn'=>3,'finish'=>$s['finish'],'fulfillment'=>$fulfillment,'rim'=>array_intersect_key($rim,array_flip(['enabled','addressable','rows','countPerRow','color'])),'audioReactive'=>$s['audioReactive'],
             'artwork'=>array_intersect_key($art,array_flip(['id','name','source','serverId','approved','aspect'])),'artScale'=>(float)$s['artScale'],'rear'=>$s['rear'],'controllerId'=>$controller['id'],'rimControllerId'=>$s['rimControllerId'],'layoutKey'=>$s['layoutKey'] ?? 'auto',
             'extras'=>array_intersect_key($s['extras'],array_flip(['wallMount','remote']))];
-        return ['catalogVersion'=>$catalog['version'],'state'=>$state,'artworkBox'=>['x'=>($size[0]-$aw)/2,'y'=>($size[1]-$ah)/2,'width'=>$aw,'height'=>$ah],'panelPlan'=>$layout,'productionStatus'=>'Quote and operator proof required','rules'=>$catalog['rules']['finish']];
+        return ['catalogVersion'=>$catalog['version'],'state'=>$state,'artworkBox'=>['x'=>($size[0]-$aw)/2,'y'=>($size[1]-$ah)/2,'width'=>$aw,'height'=>$ah],'panelPlan'=>$layout,
+            'pricing'=>self::pricing($state,$layout,$controller,$catalog),'productionStatus'=>'Quote and operator proof required','rules'=>$catalog['rules']['finish']];
+    }
+
+    // The staff quote remains authoritative. Never accept customer-supplied prices,
+    // markup, shipping costs or grand totals from the browser or saved build list.
+    private static function pricing(array $s, ?array $layout, array $controller, array $catalog): array
+    {
+        $p=$catalog['pricing'];$rush=$s['fulfillment']==='rush';$lines=[];
+        $add=static function(string $id,string $label,int $quantity,?array $offer,string $detail='') use (&$lines,$p): void {
+            $unit=null;$min=null;$max=null;$markup=0;
+            $hasPrice=is_int($offer['priceCents'] ?? null)&&$offer['priceCents']>=0;
+            $range=$offer['rangeCents'] ?? null;
+            $hasRange=is_array($range)&&count($range)===2&&is_int($range[0])&&is_int($range[1])&&$range[0]>=0&&$range[1]>=$range[0];
+            $purchase=max($quantity,$offer['minimumQuantity'] ?? 1);
+            if ($hasPrice) {
+                $unit=(int)round($offer['priceCents']/($offer['packQuantity'] ?? 1));
+                $markup=$id==='frame'?(int)round($unit*$p['frameMarkupPercent']/100):0;
+                $min=$max=($unit+$markup)*$purchase;
+            } elseif ($hasRange) { $min=$range[0]*$purchase;$max=$range[1]*$purchase; }
+            $lines[]=['id'=>$id,'label'=>$label,'quantity'=>$quantity,'purchaseQuantity'=>$purchase,'supplier'=>$offer['supplier'] ?? 'Mirroried LED','url'=>$offer['url'] ?? null,'offerId'=>$offer['id'] ?? null,
+                'unitCents'=>$unit,'markupCents'=>$markup,'minCents'=>$min,'maxCents'=>$max,'status'=>$min===null?'quote':($hasRange?'range':'estimate'),
+                'detail'=>implode(' ',array_filter([$detail,$offer['note'] ?? ''],static fn($v)=>$v!=='')),'availability'=>$offer['availability'] ?? 'Team confirmation required'];
+        };
+        $frames=array_values(array_filter($p['frames'],static fn($f)=>$f['size']===$s['size']&&in_array($s['finish'],$f['finishes'],true)));
+        $priced=array_values(array_filter($frames,static fn($f)=>is_int($f['priceCents'] ?? null)));
+        usort($priced,static fn($a,$b)=>(int)round($a['priceCents']/($a['packQuantity'] ?? 1))<=>(int)round($b['priceCents']/($b['packQuantity'] ?? 1))?:strcmp($a['id'],$b['id']));
+        $frame=$priced[0] ?? $frames[0] ?? null;
+        $add('frame',implode(' × ',$s['size']).' in frame · '.$s['finish'],1,$frame ?? ['supplier'=>'Michaels','url'=>$p['customFrameUrl'],'note'=>'Exact size and finish require a supplier quote.'],
+            isset($frame['priceCents'])?'One frame allocated from a '.($frame['packQuantity'] ?? 1).'-frame pack. Supplier unit cost + '.$p['frameMarkupPercent'].'% frame markup.':'Supplier frame cost + '.$p['frameMarkupPercent'].'% once quoted.');
+        $add('frame-depth',$s['depthIn'].' in frame depth / extension',1,$p['components']['frame-depth']);
+        $add('mirror','Two-way front mirror + rear mirror',1,$p['components']['mirror']);
+        $add('engraving','Engraving, diffusion + production artwork proof',1,$p['components']['engraving']);
+        $add('backplate','Serviceable backplate + cable channels',1,$p['components']['backplate']);
+        $rimPixels=$s['rim']['enabled']?$s['rim']['rows']*$s['rim']['countPerRow']:0;
+        if ($rimPixels) {
+            $rolls=(int)ceil($rimPixels/$p['rimLedsPerRoll']);
+            $add('rim','Rim LEDs · '.$s['rim']['rows'].' row'.($s['rim']['rows']>1?'s':'').' · '.$rimPixels.' LEDs',$rolls,$rush?$p['rushRim']:$p['standardRim'],
+                $rolls.' × '.$p['rimLedsPerRoll'].'-LED / 5 m rolls budgeted; unused strip is included. LED density and frame fit need confirmation.');
+        }
+        if ($s['rear']!=='none') {
+            $panel=$layout?($p['panels'][$layout['panelId']] ?? null):null;
+            $offer=$layout&&$s['rear']==='flex'&&$rush?($p['rushPanels'][$layout['panelId']] ?? null):$panel;
+            $add('panels',$layout?$layout['name'].' rear panels':'Rear LED panels · awaiting artwork/layout',$layout['count'] ?? 1,
+                $offer ?? ['supplier'=>$s['rear']==='flex'&&$rush?'Amazon':'Alibaba / AliExpress','note'=>'Choose and approve artwork to establish panel quantity.'],
+                $s['rear']==='hub75'?'Seller must confirm WLED-MM-compatible driver, scan mode and measured PCB size. Shipping is quoted separately.':'Exact panel size and 5V WS2812B variant are confirmed before the quote.');
+        }
+        $add('controller',$controller['name'],1,$p['controllers'][$controller['id']]);
+        if ($s['rear']==='hub75'&&$rimPixels) { $add('rim-controller','Separate rim LED controller',1,$p['controllers'][$s['rimControllerId']]); }
+        foreach (['power','wiring'] as $id) { $add($id,$p['components'][$id]['label'],1,$p['components'][$id]); }
+        if (($layout['family'] ?? '')==='hub75') { $add('ribbon','HUB75 ribbon / power leads + panel support',$layout['count'],$p['components']['ribbon']); }
+        if ($s['audioReactive']) { $add('audio','Audio reactive microphone / input',1,$p['components']['audio']); }
+        if ($s['extras']['wallMount']) { $add('mount','Wall mounting kit',1,$p['components']['mount']); }
+        if ($s['extras']['remote']) { $add('remote','Remote / local control option',1,$p['components']['remote']); }
+        foreach (['assembly','shipping','tax'] as $id) { $add($id,$p['components'][$id]['label'],1,$p['components'][$id]); }
+        $pending=count(array_filter($lines,static fn($l)=>$l['minCents']===null));$ranged=count(array_filter($lines,static fn($l)=>$l['status']==='range'));
+        $min=array_sum(array_column($lines,'minCents'));$max=array_sum(array_column($lines,'maxCents'));
+        $alternatives=array_map(static fn($f)=>['id'=>$f['id'],'supplier'=>$f['supplier'],'priceCents'=>$f['priceCents'] ?? null,'packQuantity'=>$f['packQuantity'] ?? 1,'url'=>$f['url'],'note'=>$f['note']],$frames);
+        return ['version'=>$p['version'],'checkedAt'=>$p['checkedAt'],'currency'=>$p['currency'],'frameMarkupPercent'=>$p['frameMarkupPercent'],'fulfillment'=>$rush?'rush':'standard','lines'=>$lines,
+            'subtotalMinCents'=>$min,'subtotalMaxCents'=>$max,'pendingCount'=>$pending,'rangeCount'=>$ranged,'grandTotalCents'=>$pending||$ranged?null:$max,'finalQuoteRequired'=>true,'frameAlternatives'=>$alternatives];
     }
 }

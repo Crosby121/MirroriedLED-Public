@@ -49,6 +49,8 @@
     if (state.rear !== 'none' && state.artwork?.approved && !layout) warnings.push('No catalog panel layout fits this artwork and frame. Reduce artwork size or choose a larger mirror.');
     if (layout && !layout.stockConfirmed) warnings.push('The team will confirm panel stock and measured dimensions.');
     if (layout?.family === 'hub75') warnings.push('The team will verify the panel scan mode, driver and MatrixPortal firmware for this layout.');
+    if (layout?.family === 'hub75' && layout.rows > 1) warnings.push('This multirow HUB75 layout needs custom WLED-MM panel mapping and production validation.');
+    if (layout?.family === 'hub75' && layout.pixels > 4096) warnings.push('This layout exceeds the recommended 64 × 64 pixel budget for this controller configuration. Firmware, memory and refresh performance need review.');
     if (state.audioReactive) warnings.push('Audio response needs a compatible microphone or network audio source and validated firmware.');
     if (!state.rim.enabled && state.rear === 'none') warnings.push('Include rim strips or rear panels to light this mirror.');
     const hardware = [
@@ -74,10 +76,66 @@
       addressableEstimateAmps: round(addressablePixels * 0.06), hub75PowerPending: state.rear === 'hub75',
       ready: !!state.artwork?.approved && (state.rear === 'none' || !!layout) && (state.rim.enabled || state.rear !== 'none') && !!controller };
   }
-  function initial(catalog) {
-    return { version: 1, size: catalog.sizes[0], depthIn: catalog.rules.defaultDepthIn, finish: 'Matte black', rim: { enabled: true, addressable: true, rows: 1, countPerRow: 72, color: '#2dd4bf' }, audioReactive: false, artwork: null, artScale: 65, rear: 'flex', controllerId: 'digi-uno', rimControllerId: 'digi-uno', layoutKey: 'auto', extras: { wallMount: true, remote: false } };
+  // Public supplier snapshots are estimates, not accepted quotes. Unknown prices remain
+  // null. Work in integer cents and include minimum packs, never a mixed-variant floor.
+  function pricing(state, catalog, build = plan(state, catalog)) {
+    const p = catalog.pricing, rush = state.fulfillment === 'rush', lines = [];
+    function add(id, label, quantity, offer, detail = '') {
+      let minCents = null, maxCents = null, unitCents = null, markupCents = 0;
+      const hasPrice = Number.isSafeInteger(offer?.priceCents) && offer.priceCents >= 0;
+      const hasRange = Array.isArray(offer?.rangeCents) && offer.rangeCents.length === 2 && offer.rangeCents.every(n => Number.isSafeInteger(n) && n >= 0) && offer.rangeCents[1] >= offer.rangeCents[0];
+      const purchaseQuantity = Math.max(quantity, offer?.minimumQuantity || 1);
+      if (hasPrice) {
+        unitCents = Math.round(offer.priceCents / (offer.packQuantity || 1));
+        markupCents = id === 'frame' ? Math.round(unitCents * p.frameMarkupPercent / 100) : 0;
+        minCents = maxCents = (unitCents + markupCents) * purchaseQuantity;
+      } else if (hasRange) {
+        minCents = offer.rangeCents[0] * purchaseQuantity;
+        maxCents = offer.rangeCents[1] * purchaseQuantity;
+      }
+      lines.push({ id, label, quantity, purchaseQuantity, supplier: offer?.supplier || 'Mirroried LED', url: offer?.url || null,
+        offerId: offer?.id || null, unitCents, markupCents, minCents, maxCents, status: minCents === null ? 'quote' : hasRange ? 'range' : 'estimate',
+        detail: [detail, offer?.note].filter(Boolean).join(' '), availability: offer?.availability || 'Team confirmation required' });
+    }
+    const frames = p.frames.filter(f => f.size[0] === state.size[0] && f.size[1] === state.size[1] && f.finishes.includes(state.finish));
+    const pricedFrames = frames.filter(f => Number.isSafeInteger(f.priceCents)).sort((a,b) => Math.round(a.priceCents / (a.packQuantity || 1)) - Math.round(b.priceCents / (b.packQuantity || 1)) || a.id.localeCompare(b.id));
+    const frame = pricedFrames[0] || frames[0];
+    add('frame', `${state.size.join(' × ')} in frame · ${state.finish}`, 1, frame || {supplier:'Michaels',url:p.customFrameUrl,note:'Exact size and finish require a supplier quote.'},
+      frame?.priceCents != null ? `One frame allocated from a ${frame.packQuantity || 1}-frame pack. Supplier unit cost + ${p.frameMarkupPercent}% frame markup.` : `Supplier frame cost + ${p.frameMarkupPercent}% once quoted.`);
+    add('frame-depth', `${state.depthIn} in frame depth / extension`, 1, p.components['frame-depth']);
+    add('mirror', 'Two-way front mirror + rear mirror', 1, p.components.mirror);
+    add('engraving', 'Engraving, diffusion + production artwork proof', 1, p.components.engraving);
+    add('backplate', 'Serviceable backplate + cable channels', 1, p.components.backplate);
+    if (build.rimPixels) {
+      const rolls = Math.ceil(build.rimPixels / p.rimLedsPerRoll);
+      add('rim', `Rim LEDs · ${state.rim.rows} row${state.rim.rows > 1 ? 's' : ''} · ${build.rimPixels} LEDs`, rolls, rush ? p.rushRim : p.standardRim,
+        `${rolls} × ${p.rimLedsPerRoll}-LED / 5 m rolls budgeted; unused strip is included. LED density and frame fit need confirmation.`);
+    }
+    if (state.rear !== 'none') {
+      const panel = build.layout && p.panels[build.layout.panelId];
+      add('panels', build.layout ? `${build.layout.name} rear panels` : 'Rear LED panels · awaiting artwork/layout', build.layout?.count || 1,
+        build.layout && state.rear === 'flex' && rush ? p.rushPanels[build.layout.panelId] : panel || {supplier:state.rear === 'flex' && rush ? 'Amazon' : 'Alibaba / AliExpress',note:'Choose and approve artwork to establish panel quantity.'},
+        state.rear === 'hub75' ? 'Seller must confirm WLED-MM-compatible driver, scan mode and measured PCB size. Shipping is quoted separately.' : 'Exact panel size and 5V WS2812B variant are confirmed before the quote.');
+    }
+    add('controller', build.controller?.name || 'Controller review', 1, p.controllers[build.controller?.id]);
+    if (state.rear === 'hub75' && build.rimPixels) add('rim-controller', 'Separate rim LED controller', 1, p.controllers[state.rimControllerId]);
+    for (const id of ['power','wiring']) add(id, p.components[id].label, 1, p.components[id]);
+    if (build.layout?.family === 'hub75') add('ribbon', 'HUB75 ribbon / power leads + panel support', build.layout.count, p.components.ribbon);
+    if (state.audioReactive) add('audio', 'Audio reactive microphone / input', 1, p.components.audio);
+    if (state.extras.wallMount) add('mount', 'Wall mounting kit', 1, p.components.mount);
+    if (state.extras.remote) add('remote', 'Remote / local control option', 1, p.components.remote);
+    for (const id of ['assembly','shipping','tax']) add(id, p.components[id].label, 1, p.components[id]);
+    const quoted = lines.filter(l => l.minCents === null), ranged = lines.filter(l => l.status === 'range');
+    const minCents = lines.reduce((sum,l) => sum + (l.minCents ?? 0), 0), maxCents = lines.reduce((sum,l) => sum + (l.maxCents ?? 0), 0);
+    return {version:p.version,checkedAt:p.checkedAt,currency:p.currency,frameMarkupPercent:p.frameMarkupPercent,fulfillment:rush?'rush':'standard',lines,
+      subtotalMinCents:minCents,subtotalMaxCents:maxCents,pendingCount:quoted.length,rangeCount:ranged.length,
+      grandTotalCents:quoted.length || ranged.length ? null : maxCents,finalQuoteRequired:true,
+      frameAlternatives:frames.map(f=>({id:f.id,supplier:f.supplier,priceCents:f.priceCents ?? null,packQuantity:f.packQuantity || 1,url:f.url,note:f.note}))};
   }
-  const api = { mm, round, interior, artBox, candidates, controllers, plan, initial };
+  function initial(catalog) {
+    return { version: 1, size: catalog.sizes[0], depthIn: catalog.rules.defaultDepthIn, finish: 'Matte black', fulfillment: 'standard', rim: { enabled: true, addressable: true, rows: 1, countPerRow: 72, color: '#2dd4bf' }, audioReactive: false, artwork: null, artScale: 65, rear: 'flex', controllerId: 'digi-uno', rimControllerId: 'digi-uno', layoutKey: 'auto', extras: { wallMount: true, remote: false } };
+  }
+  const api = { mm, round, interior, artBox, candidates, controllers, plan, pricing, initial };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.MirrorBuilderEngine = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

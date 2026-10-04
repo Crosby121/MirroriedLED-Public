@@ -1,6 +1,39 @@
 {
   "version": "2026-10-04.1",
-  "sizes": [[12,12],[20,20],[24,24],[26,26],[30,30],[36,36],[25,30],[25,36]],
+  "sizes": [
+    [
+      12,
+      12
+    ],
+    [
+      20,
+      20
+    ],
+    [
+      24,
+      24
+    ],
+    [
+      26,
+      26
+    ],
+    [
+      30,
+      30
+    ],
+    [
+      36,
+      36
+    ],
+    [
+      25,
+      30
+    ],
+    [
+      25,
+      36
+    ]
+  ],
   "rules": {
     "frameLipIn": 0.6,
     "rowGapIn": 0.25,
@@ -10,22 +43,546 @@
     "panelDimensions": "Nominal dimensions calculated from pitch and pixel count. The team verifies actual PCB size, scan mode, driver, stock and fit before production."
   },
   "controllers": [
-    {"id":"digi-uno","name":"QuinLED Digi-Uno","family":"addressable","available":true,"outputs":2},
-    {"id":"digi-quad","name":"QuinLED Digi-Quad","family":"addressable","available":true,"outputs":4},
-    {"id":"matrixportal-s3","name":"Adafruit MatrixPortal S3","family":"hub75","available":true},
-    {"id":"beast","name":"The Beast","family":"hub75","available":false,"reason":"Available after fabrication, validation and inventory release."}
+    {
+      "id": "digi-uno",
+      "name": "QuinLED Digi-Uno",
+      "family": "addressable",
+      "available": true,
+      "outputs": 2
+    },
+    {
+      "id": "digi-quad",
+      "name": "QuinLED Digi-Quad",
+      "family": "addressable",
+      "available": true,
+      "outputs": 4
+    },
+    {
+      "id": "matrixportal-s3",
+      "name": "Adafruit MatrixPortal S3",
+      "family": "hub75",
+      "available": true
+    },
+    {
+      "id": "beast",
+      "name": "The Beast",
+      "family": "hub75",
+      "available": false,
+      "reason": "Coming Soon · after fabrication, validation and inventory release."
+    }
   ],
   "panels": [
-    {"id":"hub-p3-64x32","name":"P3 · 64 × 32","family":"hub75","pitchMm":3,"pixelsX":64,"pixelsY":32,"widthMm":192,"heightMm":96,"stock":null,"maxAmps":null},
-    {"id":"hub-p319-64x64","name":"P3.19 · 64 × 64","family":"hub75","pitchMm":3.19,"pixelsX":64,"pixelsY":64,"widthMm":204.16,"heightMm":204.16,"stock":null,"maxAmps":null},
-    {"id":"hub-p5-64x32","name":"P5 · 64 × 32","family":"hub75","pitchMm":5,"pixelsX":64,"pixelsY":32,"widthMm":320,"heightMm":160,"stock":null,"maxAmps":null},
-    {"id":"flex-8x8","name":"Flexible · 8 × 8","family":"flex","pitchMm":10,"pixelsX":8,"pixelsY":8,"widthMm":80,"heightMm":80,"stock":null,"maxAmps":null},
-    {"id":"flex-16x16","name":"Flexible · 16 × 16","family":"flex","pitchMm":10,"pixelsX":16,"pixelsY":16,"widthMm":160,"heightMm":160,"stock":null,"maxAmps":null},
-    {"id":"flex-32x8","name":"Flexible · 32 × 8","family":"flex","pitchMm":10,"pixelsX":32,"pixelsY":8,"widthMm":320,"heightMm":80,"stock":null,"maxAmps":null}
+    {
+      "id": "hub-p3-64x32",
+      "name": "P3 · 64 × 32",
+      "family": "hub75",
+      "pitchMm": 3,
+      "pixelsX": 64,
+      "pixelsY": 32,
+      "widthMm": 192,
+      "heightMm": 96,
+      "stock": null,
+      "maxAmps": null
+    },
+    {
+      "id": "hub-p319-64x64",
+      "name": "P3.19 · 64 × 64",
+      "family": "hub75",
+      "pitchMm": 3.19,
+      "pixelsX": 64,
+      "pixelsY": 64,
+      "widthMm": 204.16,
+      "heightMm": 204.16,
+      "stock": null,
+      "maxAmps": null
+    },
+    {
+      "id": "hub-p5-64x32",
+      "name": "P5 · 64 × 32",
+      "family": "hub75",
+      "pitchMm": 5,
+      "pixelsX": 64,
+      "pixelsY": 32,
+      "widthMm": 320,
+      "heightMm": 160,
+      "stock": null,
+      "maxAmps": null
+    },
+    {
+      "id": "flex-8x8",
+      "name": "Flexible · 8 × 8",
+      "family": "flex",
+      "pitchMm": 10,
+      "pixelsX": 8,
+      "pixelsY": 8,
+      "widthMm": 80,
+      "heightMm": 80,
+      "stock": null,
+      "maxAmps": null
+    },
+    {
+      "id": "flex-16x16",
+      "name": "Flexible · 16 × 16",
+      "family": "flex",
+      "pitchMm": 10,
+      "pixelsX": 16,
+      "pixelsY": 16,
+      "widthMm": 160,
+      "heightMm": 160,
+      "stock": null,
+      "maxAmps": null
+    },
+    {
+      "id": "flex-32x8",
+      "name": "Flexible · 32 × 8",
+      "family": "flex",
+      "pitchMm": 10,
+      "pixelsX": 32,
+      "pixelsY": 8,
+      "widthMm": 320,
+      "heightMm": 80,
+      "stock": null,
+      "maxAmps": null
+    }
   ],
   "gallery": [
-    {"id":"orbit","name":"Orbital geometry","category":"Geometric","url":"artwork/orbit.svg","source":"Original studio starter · final proof required"},
-    {"id":"tree","name":"Tree of light","category":"Nature","url":"artwork/tree.svg","source":"Original studio starter · final proof required"},
-    {"id":"wave","name":"Sound & motion","category":"Music","url":"artwork/wave.svg","source":"Original studio starter · final proof required"}
-  ]
+    {
+      "id": "orbit",
+      "name": "Orbital geometry",
+      "category": "Geometric",
+      "url": "artwork/orbit.svg",
+      "source": "Original studio starter · final proof required"
+    },
+    {
+      "id": "tree",
+      "name": "Tree of light",
+      "category": "Nature",
+      "url": "artwork/tree.svg",
+      "source": "Original studio starter · final proof required"
+    },
+    {
+      "id": "wave",
+      "name": "Sound & motion",
+      "category": "Music",
+      "url": "artwork/wave.svg",
+      "source": "Original studio starter · final proof required"
+    }
+  ],
+  "pricing": {
+    "version": "2026-10-04.1",
+    "checkedAt": "2026-10-04",
+    "currency": "USD",
+    "frameMarkupPercent": 20,
+    "customFrameUrl": "https://www.michaelscustomframing.com/",
+    "rimLedsPerRoll": 300,
+    "frames": [
+      {
+        "id": "michaels-12-retail-10545049",
+        "size": [
+          12,
+          12
+        ],
+        "finishes": [
+          "Matte black"
+        ],
+        "supplier": "Michaels",
+        "priceCents": 1199,
+        "packQuantity": 2,
+        "url": "https://www.michaels.com/product/2-pack-fundamentals-12-x-12-black-shadow-boxes-by-studio-decor-10545049",
+        "availability": "Listed online sale · recheck at quote",
+        "note": "Online 2-pack sale; regular pack price $29.99. Mirror fit, finish and usable depth require production review."
+      },
+      {
+        "id": "michaels-12-retail-10545050",
+        "size": [
+          12,
+          12
+        ],
+        "finishes": [
+          "White"
+        ],
+        "supplier": "Michaels",
+        "priceCents": 1199,
+        "packQuantity": 2,
+        "url": "https://www.michaels.com/product/2-pack-fundamentals-12-x-12-white-shadow-boxes-by-studio-decor-10545050",
+        "availability": "Listed online sale · recheck at quote",
+        "note": "Online 2-pack sale; regular pack price $29.99. Mirror fit, finish and usable depth require production review."
+      },
+      {
+        "id": "michaels-12-bulk-MP545049",
+        "size": [
+          12,
+          12
+        ],
+        "finishes": [
+          "Matte black"
+        ],
+        "supplier": "Michaels",
+        "priceCents": 12141,
+        "packQuantity": 18,
+        "url": "https://www.michaels.com/product/9-packs-2-ct-18-total-black-fundamentals-12-x-12-display-case-by-studio-decor-MP545049",
+        "availability": "Bulk procurement · entire 18-frame pack",
+        "note": "Allocated cost per frame from 9 packs of 2. Bulk purchase is for studio stock; one customer build does not purchase 18 frames."
+      },
+      {
+        "id": "michaels-12-bulk-MP545050",
+        "size": [
+          12,
+          12
+        ],
+        "finishes": [
+          "White"
+        ],
+        "supplier": "Michaels",
+        "priceCents": 12141,
+        "packQuantity": 18,
+        "url": "https://www.michaels.com/product/9-packs-2-ct-18-total-white-fundamentals-12-x-12-display-box-by-studio-decor-MP545050",
+        "availability": "Bulk procurement · entire 18-frame pack",
+        "note": "Allocated cost per frame from 9 packs of 2. Bulk purchase is for studio stock; one customer build does not purchase 18 frames."
+      },
+      {
+        "id": "michaels-candidate-0",
+        "size": [
+          20,
+          20
+        ],
+        "finishes": [
+          "Matte black"
+        ],
+        "supplier": "Michaels",
+        "priceCents": null,
+        "packQuantity": 1,
+        "url": "https://www.michaels.com/product/20x20-minimalist-shadow-box-black-picture-frame-uv-acrylic-backing-hanging-hardware-556882057139191837",
+        "availability": "Candidate · quote and fit review required",
+        "note": "Matching nominal opening candidate. Supplier price, exact finish, structural support and 3-inch depth / extension must be verified; no stock is reserved."
+      },
+      {
+        "id": "michaels-candidate-1",
+        "size": [
+          20,
+          20
+        ],
+        "finishes": [
+          "White"
+        ],
+        "supplier": "Michaels",
+        "priceCents": null,
+        "packQuantity": 1,
+        "url": "https://www.michaels.com/product/arttoframes-20x20-inch-shadow-box-picture-frame-with-a-satin-white-100-wide-shadowbox-frame-and-super-white-mat-backing-4655-192116086242689102",
+        "availability": "Candidate · quote and fit review required",
+        "note": "Matching nominal opening candidate. Supplier price, exact finish, structural support and 3-inch depth / extension must be verified; no stock is reserved."
+      },
+      {
+        "id": "michaels-candidate-2",
+        "size": [
+          24,
+          24
+        ],
+        "finishes": [
+          "Matte black"
+        ],
+        "supplier": "Michaels",
+        "priceCents": null,
+        "packQuantity": 1,
+        "url": "https://www.michaels.com/product/24x24-minimalist-shadow-box-black-picture-frame-uv-acrylic-backing-hanging-hardware-556881950494851090",
+        "availability": "Candidate · quote and fit review required",
+        "note": "Matching nominal opening candidate. Supplier price, exact finish, structural support and 3-inch depth / extension must be verified; no stock is reserved."
+      },
+      {
+        "id": "michaels-candidate-3",
+        "size": [
+          26,
+          26
+        ],
+        "finishes": [
+          "Matte black"
+        ],
+        "supplier": "Michaels",
+        "priceCents": null,
+        "packQuantity": 1,
+        "url": "https://www.michaels.com/product/26x26-minimalist-shadow-box-black-picture-frame-uv-acrylic-backing-hanging-hardware-556881923995205641",
+        "availability": "Candidate · quote and fit review required",
+        "note": "Matching nominal opening candidate. Supplier price, exact finish, structural support and 3-inch depth / extension must be verified; no stock is reserved."
+      },
+      {
+        "id": "michaels-candidate-4",
+        "size": [
+          30,
+          30
+        ],
+        "finishes": [
+          "Matte black"
+        ],
+        "supplier": "Michaels",
+        "priceCents": null,
+        "packQuantity": 1,
+        "url": "https://www.michaels.com/product/30x30-minimalist-shadow-box-black-picture-frame-uv-acrylic-backing-hanging-hardware-556881855925960730",
+        "availability": "Candidate · quote and fit review required",
+        "note": "Matching nominal opening candidate. Supplier price, exact finish, structural support and 3-inch depth / extension must be verified; no stock is reserved."
+      },
+      {
+        "id": "michaels-candidate-5",
+        "size": [
+          36,
+          36
+        ],
+        "finishes": [
+          "Matte black"
+        ],
+        "supplier": "Michaels",
+        "priceCents": null,
+        "packQuantity": 1,
+        "url": "https://www.michaels.com/product/simple-flat-matte-black-wood-36x36-picture-frame-460067849714778121",
+        "availability": "Candidate · quote and fit review required",
+        "note": "Matching nominal opening candidate. Supplier price, exact finish, structural support and 3-inch depth / extension must be verified; no stock is reserved."
+      },
+      {
+        "id": "michaels-candidate-6",
+        "size": [
+          25,
+          30
+        ],
+        "finishes": [
+          "Matte black"
+        ],
+        "supplier": "Michaels",
+        "priceCents": null,
+        "packQuantity": 1,
+        "url": "https://www.michaels.com/product/25x30-traditional-picture-frame-with-uvresistant-acrylic-acid-free-backing-available-in-3-finishes-black-brown-gold-380153536999473160",
+        "availability": "Candidate · quote and fit review required",
+        "note": "Matching nominal opening candidate. Supplier price, exact finish, structural support and 3-inch depth / extension must be verified; no stock is reserved."
+      },
+      {
+        "id": "michaels-candidate-7",
+        "size": [
+          25,
+          36
+        ],
+        "finishes": [
+          "Matte black"
+        ],
+        "supplier": "Michaels",
+        "priceCents": null,
+        "packQuantity": 1,
+        "url": "https://www.michaels.com/product/25x36-museum-quality-picture-frame-with-uv-resistant-acrylic-acid-free-backing-available-in-4-finishes---gold-silver-bronze-and-black-402281364525318167",
+        "availability": "Candidate · quote and fit review required",
+        "note": "Matching nominal opening candidate. Supplier price, exact finish, structural support and 3-inch depth / extension must be verified; no stock is reserved."
+      }
+    ],
+    "controllers": {
+      "digi-uno": {
+        "id": "drzzs-uno-onboard",
+        "supplier": "Dr. Zzs",
+        "priceCents": 3500,
+        "url": "https://www.drzzs.com/shop/dig-uno-diy-rgb-led-controller-w-wled-preassembled/",
+        "availability": "Listed in stock · recheck at quote",
+        "note": "Preassembled controller with ESP32, onboard antenna; external antenna / Ethernet variants require a separate quote."
+      },
+      "digi-quad": {
+        "id": "drzzs-quad-onboard",
+        "supplier": "Dr. Zzs",
+        "priceCents": 4400,
+        "url": "https://www.drzzs.com/shop/digquad/",
+        "availability": "Listed in stock · recheck at quote",
+        "note": "Preassembled controller with ESP32, onboard antenna; external antenna / Ethernet variants require a separate quote."
+      },
+      "matrixportal-s3": {
+        "id": "adafruit-5778",
+        "supplier": "Adafruit",
+        "priceCents": 1995,
+        "url": "https://www.adafruit.com/product/5778",
+        "availability": "Supplier out of stock · lead time needs confirmation",
+        "note": "Single-board price. Studio stock and compatible WLED-MM firmware must be confirmed."
+      },
+      "beast": {
+        "id": "beast-coming-soon",
+        "supplier": "Mirroried LED",
+        "priceCents": null,
+        "availability": "Coming Soon",
+        "note": "Unavailable until fabrication, validation and inventory release."
+      }
+    },
+    "components": {
+      "frame-depth": {
+        "label": "Frame depth / extension",
+        "note": "The selected 3-inch build may need an extension. Cost and structural fit are quoted after frame measurement.",
+        "supplier": "Mirroried LED",
+        "priceCents": null
+      },
+      "mirror": {
+        "label": "Mirror glass / acrylic",
+        "note": "Exact mirror material, thickness, coating and cut size require a supplier quote.",
+        "supplier": "Mirroried LED",
+        "priceCents": null
+      },
+      "engraving": {
+        "label": "Engraving + diffusion",
+        "note": "Production proof, engraving and diffuser materials depend on your approved image.",
+        "supplier": "Mirroried LED",
+        "priceCents": null
+      },
+      "backplate": {
+        "label": "Serviceable backplate",
+        "note": "Custom fabrication depends on frame size and panel layout.",
+        "supplier": "Mirroried LED",
+        "priceCents": null
+      },
+      "power": {
+        "label": "5V power supply · sized for this build",
+        "supplier": "Alibaba / AliExpress",
+        "note": "Select rated capacity after the actual panel load is verified; price and delivery need confirmation.",
+        "priceCents": null
+      },
+      "wiring": {
+        "label": "Fuses, wiring, injection + connectors",
+        "supplier": "Alibaba / AliExpress",
+        "note": "Quantities follow the approved power and wiring plan.",
+        "priceCents": null
+      },
+      "ribbon": {
+        "label": "HUB75 leads + support",
+        "supplier": "Alibaba / AliExpress",
+        "note": "Exact lead lengths, connector type and mounting hardware require a quote.",
+        "priceCents": null
+      },
+      "audio": {
+        "label": "Audio reactive input",
+        "supplier": "Alibaba / AliExpress",
+        "note": "Microphone or network bridge selected for the controller and firmware; confirm unit cost.",
+        "priceCents": null
+      },
+      "mount": {
+        "label": "Wall mounting kit",
+        "supplier": "Alibaba / AliExpress",
+        "note": "Hardware rating follows the completed mirror weight.",
+        "priceCents": null
+      },
+      "remote": {
+        "label": "Remote / local control",
+        "supplier": "Alibaba / AliExpress",
+        "note": "Select a controller-compatible option and confirm supplier price.",
+        "priceCents": null
+      },
+      "assembly": {
+        "label": "Assembly + testing",
+        "note": "Labor and production testing are included in the final staff quote.",
+        "supplier": "Mirroried LED",
+        "priceCents": null
+      },
+      "shipping": {
+        "label": "Shipping / import costs",
+        "note": "Supplier freight, duties and customer delivery depend on destination and order speed.",
+        "supplier": "Mirroried LED",
+        "priceCents": null
+      },
+      "tax": {
+        "label": "Applicable tax",
+        "note": "Calculated in the final quote for your location.",
+        "supplier": "Mirroried LED",
+        "priceCents": null
+      }
+    },
+    "panels": {
+      "hub-p3-64x32": {
+        "id": "alibaba-p3-1600188215401",
+        "supplier": "Alibaba",
+        "priceCents": 1100,
+        "note": "Listed 64 × 32 / 192 × 96 mm P3 reference price for 1–499 pieces; driver and scan mode are unverified. Compare landed seller quotes before procurement.",
+        "minimumQuantity": 1,
+        "url": "https://www.alibaba.com/product-detail/LED-Matrix-Panel-P3-Indoor-HD_1600188215401.html",
+        "availability": "Listed unit price · compatibility pending"
+      },
+      "hub-p319-64x64": {
+        "id": "alibaba-hub-p319-64x64",
+        "supplier": "Alibaba / AliExpress",
+        "priceCents": null,
+        "note": "Exact size and compatible shift-register driver / scan mode need a seller-confirmed quote. P3.91 is not substituted for P3.19."
+      },
+      "hub-p5-64x32": {
+        "id": "alibaba-hub-p5-64x32",
+        "supplier": "Alibaba / AliExpress",
+        "priceCents": null,
+        "note": "Exact size and compatible shift-register driver / scan mode need a seller-confirmed quote. P3.91 is not substituted for P3.19."
+      },
+      "flex-8x8": {
+        "id": "alibaba-flex-8x8",
+        "supplier": "Alibaba / AliExpress",
+        "priceCents": null,
+        "url": "https://www.alibaba.com/product-detail/WS2812B-8X8-16X16-8X32-LED-Pixel_1600879579006.html",
+        "note": "Listing has multiple panel variants. Confirm the exact matrix dimensions, LED pitch and delivered unit price; mixed-variant floor prices are not used."
+      },
+      "flex-16x16": {
+        "id": "alibaba-flex-16x16",
+        "supplier": "Alibaba / AliExpress",
+        "priceCents": null,
+        "url": "https://www.alibaba.com/product-detail/WS2812B-8X8-16X16-8X32-LED-Pixel_1600879579006.html",
+        "note": "Listing has multiple panel variants. Confirm the exact matrix dimensions, LED pitch and delivered unit price; mixed-variant floor prices are not used."
+      },
+      "flex-32x8": {
+        "id": "alibaba-flex-32x8",
+        "supplier": "Alibaba / AliExpress",
+        "priceCents": null,
+        "url": "https://www.alibaba.com/product-detail/WS2812B-8X8-16X16-8X32-LED-Pixel_1600879579006.html",
+        "note": "Listing has multiple panel variants. Confirm the exact matrix dimensions, LED pitch and delivered unit price; mixed-variant floor prices are not used."
+      }
+    },
+    "rushPanels": {
+      "flex-8x8": {
+        "id": "amazon-flex-8x8",
+        "supplier": "Amazon",
+        "priceCents": null,
+        "note": "Rush-only procurement. Confirm the exact WS2812B panel size, price and delivery date before accepting a rush quote."
+      },
+      "flex-16x16": {
+        "id": "amazon-flex-16x16",
+        "supplier": "Amazon",
+        "priceCents": null,
+        "note": "Rush-only procurement. Confirm the exact WS2812B panel size, price and delivery date before accepting a rush quote."
+      },
+      "flex-32x8": {
+        "id": "amazon-flex-32x8",
+        "supplier": "Amazon",
+        "priceCents": null,
+        "note": "Rush-only procurement. Confirm the exact WS2812B panel size, price and delivery date before accepting a rush quote."
+      }
+    },
+    "standardRim": {
+      "id": "alibaba-ws2812b-1601573072927",
+      "supplier": "Alibaba / AliExpress",
+      "rangeCents": [
+        995,
+        1150
+      ],
+      "minimumQuantity": 1,
+      "url": "https://www.alibaba.com/product-detail/WS2812B-RGB-Led-5v-12v-Programmable_1601573072927.html",
+      "availability": "Variant / seller quote required",
+      "note": "Supplier lists $1.99–$2.30 per meter, DC5V / 60 LEDs per meter. Budget range is 5 meters per roll; exact IP20 variant, density and delivered price need confirmation."
+    },
+    "rushRim": {
+      "id": "amazon-B01CDTEJBG",
+      "supplier": "Amazon",
+      "priceCents": null,
+      "url": "https://www.amazon.com/dp/B01CDTEJBG",
+      "availability": "Price and quick delivery need confirmation",
+      "note": "BTF-LIGHTING 5V WS2812B 300-LED / 5 m IP30 strip candidate. No readable current USD price was provided; do not use a historical or new-customer price."
+    },
+    "sources": [
+      {
+        "id": "michaels-12-packs",
+        "url": "https://www.michaels.com/shop/seo/frames/shadow-boxes-display-cases/shadow-boxes/multipacks?size=12+in+x+12+in",
+        "note": "Latest retrieved listing: $11.99 / 2 pack; $121.41 / 18-frame bulk pack. Earlier cached results showed $10.49; quote must recheck."
+      },
+      {
+        "id": "wled-mm-hub75",
+        "url": "https://mm.kno.wled.ge/2D/HUB75/",
+        "note": "Multirow grids require custom mapping. Validate controller memory, scan mode and driver."
+      },
+      {
+        "id": "hub75-drivers",
+        "url": "https://github.com/mrcodetastic/ESP32-HUB75-MatrixPanel-DMA",
+        "note": "Seller must confirm supported shift-register driver; ICN2053 / FM6353 require a different implementation."
+      }
+    ],
+    "notice": "Supplier snapshot estimates in USD, checked October 4, 2026. Prices and stock are rechecked in the final quote; no automatic supplier purchase or stock reservation."
+  }
 }

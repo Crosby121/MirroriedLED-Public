@@ -20,6 +20,7 @@
       <aside class="preview-column" aria-label="Live mirror design">
         <div class="preview-card">
           <div class="preview-toolbar"><span><i class="live-dot"></i> LIVE DESIGN</span><div class="view-toggle" role="group" aria-label="Preview view"><button class="active" id="frontView" type="button" aria-pressed="true">Mirror</button><button id="rearView" type="button" aria-pressed="false">Panel layout</button></div></div>
+          <div class="preview-price-strip"><span>Priced items <strong id="previewPrice">—</strong></span><small id="previewPriceStatus">Grand total: quote pending</small></div>
           <div class="mirror-stage"><svg id="mirrorPreview" viewBox="0 0 600 590" role="img" aria-label="Your custom infinity mirror design"><title>Your custom infinity mirror</title></svg></div>
           <div class="preview-caption"><strong id="previewSize">12 × 12 in</strong><span id="previewLabel">1 rim row · 72 LEDs</span></div>
           <div class="preview-stats"><div><span id="statRim">72</span><small>RIM LEDs</small></div><div><span id="statPanels">—</span><small>REAR PANELS</small></div><div><span id="statController">Digi-Uno</span><small>CONTROLLER</small></div></div>
@@ -27,6 +28,14 @@
         <p class="preview-note">Design preview. Final diffusion, colors and depth depend on the approved production proof.</p>
         <ol class="build-progress" id="progressList" aria-label="Your build checklist"><li>Frame</li><li>Rim lighting</li><li>Artwork</li><li>Rear panels</li><li>Controller</li><li>Hardware</li></ol>
         <div class="preview-actions"><button type="button" class="button secondary" id="saveDraft">Save on this device</button><button type="button" class="button text-button" id="downloadSpec">Download build</button></div>
+        <section class="price-tracker" aria-labelledby="priceHeading">
+          <div class="price-heading"><div><p class="eyebrow">YOUR BUILD, ITEM BY ITEM</p><h2 id="priceHeading">Price tracker</h2></div><span class="price-badge">USD</span></div>
+          <div class="price-summary" aria-live="polite" aria-atomic="true"><span id="priceTotalLabel">Priced items estimate</span><strong id="priceSubtotal">—</strong><small id="priceStatus">Updating your build…</small></div>
+          <details class="price-breakdown"><summary>View items & add-ons</summary><ul id="priceLines" aria-label="Build prices"></ul></details>
+          <div class="price-grand"><span>Grand total</span><strong id="priceGrandTotal">Quote pending</strong></div>
+          <p class="price-notice" id="priceNotice"></p>
+          <details class="supplier-details"><summary>Frame pricing & suppliers</summary><p id="supplierPolicy"></p><ul id="frameOffers"></ul><p id="supplierDate"></p></details>
+        </section>
       </aside>
       <div class="controls-column" id="build-controls">
         <section class="build-section" aria-labelledby="frameHeading"><div class="step-heading"><span>01</span><div><h2 id="frameHeading">Start with your frame</h2><p>Mirror size, depth and finish.</p></div><span class="step-tick" id="tick-frame">✓</span></div>
@@ -69,6 +78,7 @@
           <p class="field-note" id="controllerNote">Flexible panels and rim LEDs use an addressable LED controller.</p>
         </section>
         <section class="build-section" aria-labelledby="hardwareHeading"><div class="step-heading"><span>06</span><div><h2 id="hardwareHeading">Finish the build</h2><p>The remaining hardware follows your choices.</p></div><span class="step-tick" id="tick-hardware">✓</span></div>
+          <fieldset><legend>Order speed</legend><div class="choice-row delivery-options"><label><input type="radio" name="fulfillment" value="standard" checked><span>Standard</span></label><label><input type="radio" name="fulfillment" value="rush"><span>Rush request</span></label></div></fieldset><p class="field-note">Standard addressable LEDs: Alibaba / AliExpress. Rush addressable LEDs: Amazon, subject to stock and delivery confirmation. A rush request does not guarantee a delivery date.</p>
           <label class="check-option"><input type="checkbox" id="wallMount" checked><span>Include a wall mounting kit</span></label><label class="check-option"><input type="checkbox" id="remote"><span>Add a compatible remote / local control option</span></label>
           <ul id="hardwareList" class="hardware-list"></ul><div class="power-note" id="powerNote"></div>
           <details><summary>Production review notes</summary><ul id="reviewNotes"></ul><p>Hardware quantities and power ratings are confirmed before the quote and production proof. Artwork approval here does not start fabrication.</p></details>

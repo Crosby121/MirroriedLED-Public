@@ -3,6 +3,8 @@ import copy
 import json
 from pathlib import Path
 import sqlite3
+import shutil
+import subprocess
 import time
 import unittest
 import uuid
@@ -77,6 +79,35 @@ class InfinityBuilderTests(unittest.TestCase):
         for controller in ['beast','digi-uno','digi-quad','invented']:
             c=configuration();c['state']['controllerId']=controller;self.build(c,422)
         c=configuration(rear='flex');self.assertEqual(self.build(c)['order']['items'][0]['builder']['state']['controllerId'],'digi-quad')
+
+    def test_supplier_pricing_is_recomputed_and_never_replaces_the_staff_quote(self):
+        c=configuration(size=(12,12),rear='none');c['state']['controllerId']='digi-uno'
+        c['pricing']={'grandTotalCents':1,'frameMarkupPercent':0,'lines':[{'id':'controller','minCents':1}]}
+        order=self.build(c)['order'];p=order['items'][0]['builder']['pricing']
+        self.assertEqual(p['frameMarkupPercent'],20)
+        self.assertEqual(next(l for l in p['lines'] if l['id']=='frame')['minCents'],720)
+        self.assertEqual(next(l for l in p['lines'] if l['id']=='controller')['minCents'],3500)
+        self.assertIsNone(p['grandTotalCents']);self.assertGreater(p['pendingCount'],0)
+        self.assertTrue(p['finalQuoteRequired']);self.assertIsNone(order['quoteCents'])
+        self.assertEqual(order['status'],'REQUESTED')
+
+    @unittest.skipUnless(shutil.which('node'),'Node is required for cross-language pricing validation')
+    def test_frontend_and_server_supplier_estimates_agree_for_sizes_panels_and_order_speed(self):
+        for size,rear,rush in [((12,12),'none',False),((12,12),'flex',True),((24,24),'hub75',False),((25,36),'hub75',True)]:
+            c=configuration(size=size,rear=rear);c['state']['fulfillment']='rush' if rush else 'standard'
+            c['state']['rim']['countPerRow']=301
+            builder=self.build(c)['order']['items'][0]['builder']
+            script="const E=require('./infinity-builder/engine.js'),c=require('./infinity-builder/catalog.json');let data='';process.stdin.on('data',s=>data+=s);process.stdin.on('end',()=>process.stdout.write(JSON.stringify(E.pricing(JSON.parse(data),c))));"
+            local=subprocess.run(['node','-e',script],cwd=ROOT,input=json.dumps(builder['state']),capture_output=True,text=True,check=True)
+            self.assertEqual(builder['pricing'],json.loads(local.stdout))
+
+    def test_order_speed_is_validated_and_legacy_builds_default_to_standard(self):
+        c=configuration();c['state']['fulfillment']='invented';self.build(c,422)
+        c=configuration();builder=self.build(c)['order']['items'][0]['builder']
+        self.assertEqual(builder['state']['fulfillment'],'standard')
+        c=configuration(rear='flex');c['state']['fulfillment']='rush'
+        p=self.build(c)['order']['items'][0]['builder']['pricing']
+        self.assertEqual(next(l for l in p['lines'] if l['id']=='panels')['supplier'],'Amazon')
 
     def test_invalid_led_counts_art_approval_sizes_and_geometry_are_rejected(self):
         for value in [-1,0,23,2001,24.5,'72']:
