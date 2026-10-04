@@ -14,7 +14,9 @@ PUBLIC_FILES = (
     "index.html", "styles.css", "app.js", "repair.js",
     "infinity-mirror.webp", "stadium-model.webp", "led-display.webp", "address-sign.webp",
     "customer-portal/index.html", "customer-portal/portal.css", "customer-portal/portal.js",
+    "customer-portal/business.css", "customer-portal/business.js", "customer-portal/operations.html",
     "customer-portal/backend/api.php", "customer-portal/backend/portal.php",
+    "customer-portal/backend/business.php",
     "customer-portal/backend/.htaccess", "customer-portal/backend/.user.ini",
 )
 

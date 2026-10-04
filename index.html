@@ -81,8 +81,8 @@
               <p class="eyebrow">LAYERED MODELS</p>
               <h3>Stadium Builds</h3>
               <p>Layered laser-cut stadium models for MLB, NFL, NBA and custom venues.</p>
-              <div class="product-meta"><span>Mini / Mid / Collector</span><span>Custom teams</span></div>
-              <button class="button primary configure-product" data-product="Layered Stadium Model" data-sizes="Mini,Mid,Collector,Custom">Request Build</button>
+              <div class="product-meta"><span>Mini / Medium / Collector</span><span>Custom teams</span></div>
+              <button class="button primary configure-product" data-product="Layered Stadium Model" data-sizes="Mini,Medium,Collector">Request Build</button>
             </div>
           </article>
 
@@ -143,6 +143,8 @@
           <label>Design / artwork
             <input id="customArtwork" type="text" placeholder="Logo, team, photo, address, theme..." required>
           </label>
+          <label>Artwork direction<select id="customArtworkSource"><option value="team-design">Custom designed by Mirroried LED team</option><option value="upload">I will upload my artwork</option></select></label>
+          <p class="form-note">Upload PNG, JPEG, PDF or SVG artwork with your private build request in the Customer Portal.</p>
           <label>Lighting
             <select id="customLighting">
               <option>Addressable LED / WLED</option>
@@ -218,10 +220,10 @@
       <div class="shell">
         <div class="section-heading"><div><p class="eyebrow">CONNECTED ACCESS</p><h2>Choose your portal.</h2></div></div>
         <div class="portal-grid">
-          <article class="portal-card"><span>01</span><h3>Customer Portal</h3><p>Premium access, music and video uploads, and a light-sync preview for Chataigne + WLED-MM setups.</p><a href="customer-portal/">Customer Access</a></article>
+          <article class="portal-card"><span>01</span><h3>Customer Portal</h3><p>Build requests, private artwork, quote and proof approval, order updates, music/video uploads and LED previews.</p><a href="customer-portal/">Customer Access</a></article>
           <article class="portal-card"><span>02</span><h3>Sponsor Partner Portal</h3><p>Approved campaigns, written deliverables, sponsor assets, event visibility and reporting.</p><a href="https://sponsors.mirroriedled.com/" target="_blank" rel="noopener">Sponsor Login</a></article>
           <article class="portal-card"><span>03</span><h3>Advertising Portal</h3><p>Event selection, eligible advertising inventory, creative submission and campaign status.</p><a href="https://sponsors.mirroriedled.com/" target="_blank" rel="noopener">Advertiser Access</a></article>
-          <article class="portal-card"><span>04</span><h3>Support</h3><p>Product support, custom-build questions and technical assistance.</p><a href="#contact" data-contact-topic="Support">Contact Support</a></article>
+          <article class="portal-card"><span>04</span><h3>Support & Service</h3><p>Private support conversations, warranty and return review, build questions and LED setup help.</p><a href="customer-portal/#support">Support Access</a></article>
         </div>
       </div>
     </section>
@@ -266,7 +268,8 @@
     <div id="cartItems" class="cart-items"></div>
     <div class="cart-footer">
       <p>Custom items are quote-based until final design, materials and production requirements are approved.</p>
-      <button id="requestCheckout" class="button primary">Request Checkout / Quote</button>
+      <button id="requestCheckout" class="button primary">Continue in Customer Portal</button>
+      <button id="requestCheckoutEmail" class="button secondary">Request a quote by email</button>
       <button id="clearCart" class="button text-button">Clear Cart</button>
     </div>
   </aside>
@@ -277,6 +280,8 @@
       <div class="dialog-header"><div><p class="eyebrow">CUSTOMIZE PRODUCT</p><h2 id="dialogProductName">Custom Build</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div>
       <label>Size<select id="dialogSize" required></select></label>
       <label>Artwork / theme<input id="dialogArtwork" required placeholder="Describe the artwork or theme"></label>
+      <label>Artwork direction<select id="dialogArtworkSource"><option value="team-design">Custom designed by Mirroried LED team</option><option value="upload">I will upload my artwork</option></select></label>
+      <p class="form-note">Attach your artwork privately when you continue to the Customer Portal.</p>
       <label>Lighting<select id="dialogLighting"><option>Addressable LED / WLED</option><option>Audio-Reactive LEDs</option><option>LED Matrix / HUB75</option><option>Static Lighting</option><option>Recommend one</option></select></label>
       <label>Frame / finish<select id="dialogFinish"><option>Maple / wood frame</option><option>Black frame</option><option>Acrylic / modern finish</option><option>Custom finish</option><option>Recommend one</option></select></label>
       <label>Notes<textarea id="dialogNotes" rows="4" placeholder="Colors, installation location, deadline, special requests..."></textarea></label>
@@ -293,6 +298,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=1d171f10436c" defer></script>
+  <script src="app.js?v=621f360d1360" defer></script>
 </body>
 </html>

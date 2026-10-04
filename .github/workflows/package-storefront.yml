@@ -3,7 +3,7 @@ name: Package Mirroried LED Storefront
 on:
   push:
     branches:
-      - storefront-vnext
+      - main
   workflow_dispatch:
 
 permissions:
@@ -28,6 +28,9 @@ jobs:
           test -s address-sign.webp
           node --check app.js
           node --check repair.js
+          node --check customer-portal/portal.js
+          node --check customer-portal/business.js
+          php -l customer-portal/backend/business.php
 
       - name: Verify deployment tools
         run: |
@@ -43,23 +46,18 @@ jobs:
 
       - name: Build deployment bundle
         run: |
-          mkdir -p dist/mirroriedled-storefront
-          cp index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp dist/mirroriedled-storefront/
-          cp deploy/HOSTINGER_DEPLOYMENT.md dist/mirroriedled-storefront/
-          cp deploy/hostinger/backup-public-html.sh dist/mirroriedled-storefront/
-          cp deploy/hostinger/deploy-storefront.sh dist/mirroriedled-storefront/
-          cp deploy/hostinger/rollback-storefront.sh dist/mirroriedled-storefront/
-          cp deploy/hostinger/verify-storefront.sh dist/mirroriedled-storefront/
-          cp deploy/hostinger/README.md dist/mirroriedled-storefront/HOSTINGER_SAFE_DEPLOY.md
-          chmod +x dist/mirroriedled-storefront/*.sh
-          cd dist/mirroriedled-storefront
-          sha256sum index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp > SHA256SUMS.txt
-          printf 'Mirroried LED public storefront\nCommit: %s\nBuilt: %s UTC\nSafety mode: full public_html backup required before deployment\n' "${GITHUB_SHA}" "$(date -u +'%Y-%m-%d %H:%M:%S')" > BUILD_INFO.txt
+          mkdir -p dist/mirroriedled-website
+          python3 deploy/hostinger/package-customer-portal.py --output dist/mirroriedled-website/MirroriedLED_Automated_Business_Website.zip
+          cp deploy/hostinger/AUTOMATED_BUSINESS_DEPLOYMENT.md dist/mirroriedled-website/
+          cp docs/CUSTOMER_PORTAL_BACKEND.md dist/mirroriedled-website/
+          cd dist/mirroriedled-website
+          sha256sum MirroriedLED_Automated_Business_Website.zip > SHA256SUMS.txt
+          printf 'Mirroried LED website with customer and team operations\nCommit: %s\nBuilt: %s UTC\nPrivate server setup and staging verification required\n' "${GITHUB_SHA}" "$(date -u +'%Y-%m-%d %H:%M:%S')" > BUILD_INFO.txt
 
       - name: Upload storefront artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mirroriedled-storefront-${{ github.sha }}
-          path: dist/mirroriedled-storefront/
+          name: mirroriedled-website-${{ github.sha }}
+          path: dist/mirroriedled-website/
           if-no-files-found: error
           retention-days: 30

@@ -45,15 +45,19 @@ jobs:
           node --check app.js
           node --check repair.js
           node --check customer-portal/portal.js
+          node --check customer-portal/business.js
 
       - name: Validate customer portal PHP
         run: |
           php -l customer-portal/backend/api.php
           php -l customer-portal/backend/portal.php
           php -l customer-portal/backend/config.example.php
+          php -l customer-portal/backend/business.php
           php -m | grep -q pdo_sqlite
           php -m | grep -q fileinfo
+          php -m | grep -q dom
           python3 -m unittest discover -s tests -p 'test_customer_portal_backend.py' -v
+          python3 -m unittest discover -s tests -p 'test_business_backend.py' -v
 
       - name: Verify public customer portal package
         run: |

@@ -45,6 +45,7 @@
   }
 
   function renderSession() {
+    document.dispatchEvent(new CustomEvent('mled-session', { detail: { configured: state.configured, authenticated: state.authenticated, csrf: state.csrf, user: state.user, capabilities: state.capabilities } }));
     $('signedOut').hidden = state.authenticated;
     $('signedIn').hidden = !state.authenticated;
     $('accountState').textContent = state.authenticated ? 'Signed in' : state.configured ? 'Free signup' : 'Preview access';

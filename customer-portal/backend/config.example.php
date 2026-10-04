@@ -6,6 +6,10 @@ declare(strict_types=1);
  * Never place your working configuration, database, sessions or media in public_html.
  */
 return [
+    'business_enabled' => true,
+    // Owner-approved numeric account IDs only. Verify each account before assigning roles.
+    // Never assign staff access by an unverified email or by a signup form field.
+    'staff_users' => [], // Example after verification: 7 => ['admin'].
     'storage_path' => __DIR__ . '/storage',
     'origin' => 'https://mirroriedled.com',
     'allow_insecure_localhost' => false,

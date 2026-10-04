@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/business.php';
+
 final class PortalError extends RuntimeException
 {
     public function __construct(string $message, public readonly int $httpStatus = 400)
@@ -48,8 +50,8 @@ final class CustomerPortal
     {
         $action = (string)($_GET['action'] ?? 'session');
         $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-        $reads = ['session', 'library', 'media'];
-        $writes = ['signup', 'login', 'logout', 'upload', 'delete'];
+        $reads = array_merge(['session', 'library', 'media'], BusinessPortal::READS);
+        $writes = array_merge(['signup', 'login', 'logout', 'upload', 'delete'], BusinessPortal::WRITES);
         if (!in_array($action, array_merge($reads, $writes), true)) {
             throw new PortalError('That portal action is unavailable.', 404);
         }
@@ -66,8 +68,12 @@ final class CustomerPortal
         }
         $data = [];
         if (in_array($action, $writes, true)) {
-            $data = $action === 'upload' ? $_POST : $this->readJson();
+            $data = in_array($action, ['upload', 'business-upload'], true) ? $_POST : $this->readJson($action === 'business-request' ? 131072 : 16384);
             $this->requireCsrf($data);
+        }
+        if (str_starts_with($action, 'business-')) {
+            $business = new BusinessPortal($this->database, $this->config, $this->storage, $this->requireUser());
+            $business->handle($action, $data);
         }
         match ($action) {
             'signup' => $this->signup($data),
@@ -262,6 +268,7 @@ final class CustomerPortal
             'csrf' => $this->configured ? (string)$_SESSION['csrf'] : null,
             'plans' => $this->publicPlans(), 'status' => $this->status,
             'capabilities' => ['signup' => $this->configured, 'upload' => $this->configured,
+                'business' => $this->configured && ($this->config['business_enabled'] ?? false) === true,
                 'hardwareSync' => false, 'payments' => false,
                 'maxFileBytes' => ['audio' => $this->configured ? $this->positiveOption('max_audio_bytes', 67108864) : 67108864,
                     'video' => $this->configured ? $this->positiveOption('max_video_bytes', 134217728) : 134217728]]];
@@ -294,17 +301,18 @@ final class CustomerPortal
     private function publicUser(array $user): array
     {
         return ['id' => (int)$user['id'], 'name' => $user['name'], 'email' => $user['email'],
+            'roles' => BusinessPortal::roles($this->config, $user),
             'requestedPlan' => $user['requested_plan'],
             'effectivePlan' => array_key_exists($user['effective_plan'], $this->plans) ? $user['effective_plan'] : 'free'];
     }
 
-    private function readJson(): array
+    private function readJson(int $limit = 16384): array
     {
         if (!str_starts_with(strtolower((string)($_SERVER['CONTENT_TYPE'] ?? '')), 'application/json')) {
             throw new PortalError('Send this request as JSON.', 415);
         }
-        $body = file_get_contents('php://input', false, null, 0, 16385);
-        if ($body === false || strlen($body) > 16384) {
+        $body = file_get_contents('php://input', false, null, 0, $limit + 1);
+        if ($body === false || strlen($body) > $limit) {
             throw new PortalError('This request is too large.', 413);
         }
         try {

@@ -110,6 +110,7 @@
       const details = [
         item.size && `Size: ${item.size}`,
         item.artwork && `Artwork: ${item.artwork}`,
+        `Artwork direction: ${item.artworkSource === 'upload' ? 'Customer upload' : 'Mirroried LED team design'}`,
         item.lighting && `Lighting: ${item.lighting}`,
         item.finish && `Finish: ${item.finish}`,
         item.notes && `Notes: ${item.notes}`
@@ -161,6 +162,7 @@
     dialogProductName.textContent = activeProduct.product;
     dialogSize.innerHTML = activeProduct.sizes.map(size => `<option>${escapeHtml(size)}</option>`).join('');
     dialogArtwork.value = '';
+    qs('#dialogArtworkSource').value = 'team-design';
     dialogLighting.selectedIndex = 0;
     dialogFinish.selectedIndex = 0;
     dialogNotes.value = '';
@@ -210,6 +212,7 @@
       product: activeProduct.product,
       size: dialogSize.value,
       artwork: dialogArtwork.value.trim(),
+      artworkSource: qs('#dialogArtworkSource').value,
       lighting: dialogLighting.value,
       finish: dialogFinish.value,
       notes: dialogNotes.value.trim()
@@ -233,7 +236,7 @@
       return;
     }
 
-    addToCart({ product, size, artwork, lighting, finish: '', notes });
+    addToCart({ product, size, artwork, artworkSource: qs('#customArtworkSource').value, lighting, finish: '', notes });
     customForm.reset();
     openCart();
   });
@@ -246,6 +249,19 @@
   });
 
   requestCheckout?.addEventListener('click', () => {
+    if (!cart.length) {
+      showToast('Add a build before requesting a quote.');
+      return;
+    }
+    try {
+      sessionStorage.setItem('mirroriedled_quote_draft_v1', JSON.stringify(cart));
+      window.location.href = 'customer-portal/#builds';
+    } catch {
+      showToast('Open Customer Portal to enter your build request.');
+    }
+  });
+
+  qs('#requestCheckoutEmail')?.addEventListener('click', () => {
     if (!cart.length) {
       showToast('Add a build before requesting a quote.');
       return;
