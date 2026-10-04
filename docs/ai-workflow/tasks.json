@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-10-04T22:06:15Z",
+  "tasks": [
+    {
+      "id": "WF-001",
+      "title": "Install the shared workflow foundation",
+      "status": "done",
+      "priority": 1,
+      "owner_session_id": null,
+      "last_session_id": "20261004t215654z-chatgpt-foundation",
+      "depends_on": [],
+      "acceptance": [
+        "Shared app instructions, sourced status, task queue and per-session records exist on GitHub.",
+        "Local status/start/finish helper and CI record validation pass.",
+        "Historical AI identity and unverified live versions remain explicitly unknown."
+      ],
+      "next_action": "Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership.",
+      "evidence": [
+        "AGENTS.md",
+        "docs/ai-workflow/README.md"
+      ]
+    },
+    {
+      "id": "WF-002",
+      "title": "Resolve the main website deployment settings blocker",
+      "status": "blocked",
+      "priority": 2,
+      "owner_session_id": null,
+      "last_session_id": null,
+      "depends_on": [],
+      "acceptance": [
+        "Verify that the matching unattended main-site key and independently verified known-hosts entry are available in the deployment environment without exposing their values.",
+        "Pass the existing settings and host preflight for mirroriedled.com.",
+        "Use the user's authorized release workflow; record a live commit only after exact-source HTTP verification."
+      ],
+      "next_action": "Inspect the failed job and resolve the two reported main-site secret settings; preserve the separate sponsor VPS connection.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537748608",
+        "deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md"
+      ]
+    },
+    {
+      "id": "WF-003",
+      "title": "Connect AI apps to a shared remote workflow service",
+      "status": "ready",
+      "priority": 3,
+      "owner_session_id": null,
+      "last_session_id": null,
+      "depends_on": [
+        "WF-001"
+      ],
+      "acceptance": [
+        "Provide authenticated tools to read state, start a session, reserve a task and record a handoff backed by GitHub.",
+        "Verify actual read/write access separately from declared AI application identity.",
+        "Make reservation conflicts explicit across concurrent clients.",
+        "Test an authorized connection from ChatGPT/Codex, Copilot and Hostinger Agent; mark unavailable clients accurately."
+      ],
+      "next_action": "Implement the shared MCP tools and configure each app's authorized connection; use explicit tool responses for Hostinger Agent.",
+      "evidence": [
+        "docs/ai-workflow/README.md"
+      ]
+    },
+    {
+      "id": "WF-004",
+      "title": "Curate accessible prior AI work into the shared history",
+      "status": "ready",
+      "priority": 4,
+      "owner_session_id": null,
+      "last_session_id": null,
+      "depends_on": [
+        "WF-001"
+      ],
+      "acceptance": [
+        "Import only accessible, relevant, redacted work summaries with their source and timestamp basis.",
+        "Retain unknown app names/access times when the source cannot prove them.",
+        "Keep private transcripts, credentials, customer data and media outside this public repository."
+      ],
+      "next_action": "Use available ChatGPT, Copilot and Hostinger exports or logs to add sourced summaries; the initial GitHub-only baseline is already recorded.",
+      "evidence": [
+        "docs/ai-workflow/history/github-baseline.json"
+      ]
+    }
+  ]
+}

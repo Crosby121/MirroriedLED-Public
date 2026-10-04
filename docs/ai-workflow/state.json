@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-04T22:04:06Z",
+  "repository": {
+    "full_name": "Crosby121/MirroriedLED-Public",
+    "default_branch": "main",
+    "url": "https://github.com/Crosby121/MirroriedLED-Public",
+    "live_url": "https://mirroriedled.com"
+  },
+  "source": {
+    "observed_commit": "778e926615e1168dad4f795bf1da7dcef95904a1",
+    "summary": "Supplier pricing and 20% frame markup merged after the interactive builder and customer/team portal work.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/778e926615e1168dad4f795bf1da7dcef95904a1",
+    "checks": [
+      {
+        "name": "Full public release validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537693924"
+      },
+      {
+        "name": "Storefront CI for supplier pricing",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236842366"
+      },
+      {
+        "name": "Website packaging",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890597"
+      }
+    ]
+  },
+  "deployment": {
+    "live_commit": null,
+    "live_verified_at": null,
+    "verification_evidence": [],
+    "last_attempt": {
+      "status": "failed_before_upload",
+      "commit": "778e926615e1168dad4f795bf1da7dcef95904a1",
+      "run_id": 37236890583,
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537748608",
+      "failed_step": "Verify main website hosting settings",
+      "finding": "The job reported missing HOSTINGER_SSH_PRIVATE_KEY and HOSTINGER_SSH_KNOWN_HOSTS settings. Upload, installation and live verification were skipped.",
+      "upload_performed": false
+    }
+  },
+  "connections": [
+    {
+      "application": "ChatGPT Work / Codex",
+      "github_access": "Read observed; repository reports push permission.",
+      "session_logging": "Explicit local helper or JSON record",
+      "shared_remote_connector": "not_installed"
+    },
+    {
+      "application": "GitHub Copilot",
+      "github_access": "Not tested by this session.",
+      "session_logging": "Repository instructions plus explicit helper or JSON record",
+      "shared_remote_connector": "not_installed"
+    },
+    {
+      "application": "Hostinger Agent",
+      "github_access": "Not connected to this shared workflow by this session.",
+      "session_logging": "Requires authorized GitHub/MCP tools or a curated export",
+      "shared_remote_connector": "not_installed"
+    }
+  ],
+  "next_task_id": "WF-002",
+  "limitations": [
+    "These are dated observations, not a live monitor. Refresh actual GitHub state at each session.",
+    "The starting foundation does not install automatic cross-app chat import or access capture.",
+    "Application identity is declared independently from the authenticated GitHub account.",
+    "Task claims in independent checkouts need coordination until a centralized connector is installed.",
+    "Source checks and GitHub Pages success do not establish a verified Hostinger live commit."
+  ],
+  "product_observations": [
+    {
+      "finding": "Customer account/upload backend and draft tier limits are present; paid billing and live hardware playback are not implemented in this documented repository release.",
+      "basis": "repository_documentation",
+      "evidence": "docs/CUSTOMER_PORTAL_BACKEND.md"
+    },
+    {
+      "finding": "Mirror builder quotes preserve the supplier policy and 20% markup on frame cost; dated supplier snapshots need verification.",
+      "basis": "repository_documentation",
+      "evidence": "docs/INFINITY_MIRROR_BUILDER.md"
+    }
+  ]
+}
