@@ -24,7 +24,7 @@ Evidence snapshot: 2026-10-04T22:54:53Z (UTC). Refresh GitHub at the start of ea
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
 | WF-002 — Resolve the main website deployment settings blocker | blocked | Unclaimed | Inspect the failed job and resolve the two reported main-site secret settings; preserve the separate sponsor VPS connection. |
 | WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Complete CONNECTOR_SETUP.md: provision scoped service credentials, resolve main-site SSH settings, run the manual connector install and verify each app read/write receipt. |
-| WF-006 — Activate automatic private AI chat capture and close recovery | blocked | Unclaimed | Complete AUTO_CAPTURE.md on the persistent PC: private repository/token, trusted hooks, Chrome helper, background worker and actual task/close/upload receipt checks. |
+| WF-006 — Activate automatic private AI chat capture and close recovery | in_progress | 20261004t225858z-4f6e2af3 | Complete AUTO_CAPTURE.md on the persistent PC: private repository/token, trusted hooks, Chrome helper, background worker and actual task/close/upload receipt checks. |
 | WF-004 — Curate accessible prior AI work into the shared history | ready | Unclaimed | Use available ChatGPT, Copilot and Hostinger exports or logs to add sourced summaries; the initial GitHub-only baseline is already recorded. |
 
 ## Continue

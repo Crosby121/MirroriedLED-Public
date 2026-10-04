@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "20261004t225858z-4f6e2af3",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-04T22:58:58Z",
+  "ended_at": null,
+  "status": "active",
+  "task_ids": [
+    "WF-006"
+  ],
+  "branch": "feat/shared-ai-connector-20261004",
+  "base_commit": "c4c1b36dc0306a746ee2e65775ef6604b0147637",
+  "summary": "",
+  "next_action": "",
+  "changed_files": [],
+  "checks": [],
+  "findings": []
+}

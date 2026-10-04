@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T22:56:15Z",
+  "updated_at": "2026-10-04T22:58:58Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -108,9 +108,9 @@
     {
       "id": "WF-006",
       "title": "Activate automatic private AI chat capture and close recovery",
-      "status": "blocked",
+      "status": "in_progress",
       "priority": 4,
-      "owner_session_id": null,
+      "owner_session_id": "20261004t225858z-4f6e2af3",
       "last_session_id": "20261004t222457z-67d4c2b8",
       "depends_on": [
         "WF-001"
