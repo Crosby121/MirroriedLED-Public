@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "id": "20261004t221710z-a0660637",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-04T22:17:10Z",
+  "ended_at": "2026-10-04T22:18:30Z",
+  "status": "completed",
+  "task_ids": [
+    "WF-005"
+  ],
+  "branch": "docs/ai-workflow-foundation-20261004",
+  "base_commit": "778e926615e1168dad4f795bf1da7dcef95904a1",
+  "summary": "Corrected the credential detector for fine-grained GitHub and older OpenAI token formats. Fixed mutable test-fixture ownership, retained the failed attempt, and reran all 13 tests successfully. Copilot review evidence and verified GitHub publication are recorded.",
+  "next_action": "Complete the updated PR checks and merge the foundation; WF-003 is the next independent app-connection task.",
+  "changed_files": [
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/README.md",
+    "docs/ai-workflow/sessions/20261004t221710z-a0660637.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_ai_workflow.py",
+    "tools/ai_workflow.py"
+  ],
+  "checks": [
+    {
+      "name": "Initial regression rerun after adding the review session",
+      "command": "python3 -m unittest discover -s tests -p test_ai_workflow.py -v",
+      "result": "failed",
+      "basis": "observed_local_output",
+      "resolution": "The fixtures closed sessions while retaining their task claims. Normalized all fixture task ownership and used IDs instead of mutable array positions; the rerun below passed."
+    },
+    {
+      "name": "Initial GitHub workflow and storefront CI",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37238783620",
+      "related_evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37238783600",
+      "checked_commit": "1ae144bc807deea9b7bf097c6e4c59498ef29569"
+    },
+    {
+      "name": "python3 tools/ai_workflow.py validate",
+      "command": "python3 tools/ai_workflow.py validate",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 -m unittest discover -s tests -p test_ai_workflow.py -v (13 passed; token formats tested as subcases)",
+      "command": "python3 -m unittest discover -s tests -p test_ai_workflow.py -v (13 passed; token formats tested as subcases)",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "git diff --check",
+      "command": "git diff --check",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": [
+    {
+      "summary": "GitHub Copilot code review found that the credential detector omitted fine-grained GitHub personal access tokens. The review occurred after the first foundation commit.",
+      "basis": "observed_review",
+      "application": "GitHub Copilot code review",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/12#discussion_r4179537729"
+    }
+  ],
+  "remote_base_commit": "1ae144bc807deea9b7bf097c6e4c59498ef29569"
+}

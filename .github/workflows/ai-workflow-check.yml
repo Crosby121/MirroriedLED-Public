@@ -1,0 +1,29 @@
+name: Validate Shared AI Workflow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - AGENTS.md
+      - .github/copilot-instructions.md
+      - .github/PULL_REQUEST_TEMPLATE.md
+      - .github/workflows/ai-workflow-check.yml
+      - docs/ai-workflow/**
+      - tools/ai_workflow.py
+      - tests/test_ai_workflow.py
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate status, task ownership and session records
+        run: python3 tools/ai_workflow.py validate
+      - name: Test session lifecycle and conflicting claims
+        run: python3 -m unittest discover -s tests -p 'test_ai_workflow.py' -v

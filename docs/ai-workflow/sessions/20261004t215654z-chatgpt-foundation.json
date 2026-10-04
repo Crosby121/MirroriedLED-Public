@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "20261004t215654z-chatgpt-foundation",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-04T21:56:54Z",
+  "ended_at": "2026-10-04T22:06:15Z",
+  "status": "completed",
+  "task_ids": [
+    "WF-001"
+  ],
+  "branch": "docs/ai-workflow-foundation-20261004",
+  "base_commit": "778e926615e1168dad4f795bf1da7dcef95904a1",
+  "summary": "Added shared agent instructions, a sourced status snapshot, task queue, GitHub history baseline, session logger and CI validation. Verified the isolated foundation locally; automatic remote app connections remain queued.",
+  "next_action": "Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership.",
+  "changed_files": [
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/copilot-instructions.md",
+    ".github/workflows/ai-workflow-check.yml",
+    "AGENTS.md",
+    "README.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/README.md",
+    "docs/ai-workflow/history/github-baseline.json",
+    "docs/ai-workflow/sessions/20261004t215654z-chatgpt-foundation.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "docs/index.md",
+    "tests/test_ai_workflow.py",
+    "tools/ai_workflow.py"
+  ],
+  "checks": [
+    {
+      "name": "python3 tools/ai_workflow.py validate",
+      "command": "python3 tools/ai_workflow.py validate",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 -m unittest discover -s tests -p test_ai_workflow.py -v (13 passed)",
+      "command": "python3 -m unittest discover -s tests -p test_ai_workflow.py -v (13 passed)",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "git diff --check",
+      "command": "git diff --check",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": [
+    {
+      "summary": "GitHub default branch, merged PRs and current checks were read directly; existing local checkouts contained separate pending work, so this session uses an isolated checkout.",
+      "basis": "observed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public"
+    },
+    {
+      "summary": "The job reported missing HOSTINGER_SSH_PRIVATE_KEY and HOSTINGER_SSH_KNOWN_HOSTS settings. Upload, installation and live verification were skipped.",
+      "basis": "observed_job_output_and_steps",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537748608"
+    },
+    {
+      "summary": "No existing root AGENTS.md, Copilot instruction file or shared work log was present in the observed main tree.",
+      "basis": "observed_repository_tree",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/tree/778e926615e1168dad4f795bf1da7dcef95904a1"
+    }
+  ]
+}
