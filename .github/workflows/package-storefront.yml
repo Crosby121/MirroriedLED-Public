@@ -43,6 +43,7 @@ jobs:
           bash -n deploy/hostinger/deploy-storefront.sh
           bash -n deploy/hostinger/rollback-storefront.sh
           bash -n deploy/hostinger/verify-storefront.sh
+          python3 -m py_compile deploy/hostinger/website-release.py deploy/hostinger/verify-website.py
 
       - name: Build deployment bundle
         run: |
@@ -50,6 +51,7 @@ jobs:
           python3 deploy/hostinger/package-customer-portal.py --output dist/mirroriedled-website/MirroriedLED_Automated_Business_Website.zip
           cp deploy/hostinger/AUTOMATED_BUSINESS_DEPLOYMENT.md dist/mirroriedled-website/
           cp docs/CUSTOMER_PORTAL_BACKEND.md dist/mirroriedled-website/
+          cp deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md dist/mirroriedled-website/
           cd dist/mirroriedled-website
           sha256sum MirroriedLED_Automated_Business_Website.zip > SHA256SUMS.txt
           printf 'Mirroried LED website with customer and team operations\nCommit: %s\nBuilt: %s UTC\nPrivate server setup and staging verification required\n' "${GITHUB_SHA}" "$(date -u +'%Y-%m-%d %H:%M:%S')" > BUILD_INFO.txt
