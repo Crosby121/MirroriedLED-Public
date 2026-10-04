@@ -6,7 +6,8 @@ import tempfile
 import unittest
 
 SCRIPT = Path(__file__).resolve().parents[1] / "deploy/hostinger/staging-release.sh"
-ASSETS = ("index.html", "styles.css", "app.js", "repair.js")
+ASSETS = ("index.html", "styles.css", "app.js", "repair.js",
+          "infinity-mirror.webp", "stadium-model.webp", "led-display.webp", "address-sign.webp")
 
 
 class StagingReleaseTests(unittest.TestCase):
@@ -34,6 +35,7 @@ class StagingReleaseTests(unittest.TestCase):
         for asset in ASSETS:
             (self.stage / asset).write_bytes(b"previous staging " + asset.encode())
             (self.release / asset).write_bytes(b"new staging " + asset.encode())
+        (self.stage / "customer-photo.webp").write_bytes(b"keep staging customer image")
         manifest = "".join(
             hashlib.sha256((self.release / asset).read_bytes()).hexdigest() + "  " + asset + "\n"
             for asset in ASSETS
@@ -47,14 +49,16 @@ class StagingReleaseTests(unittest.TestCase):
     def assert_previous_staging_unchanged(self):
         for asset in ASSETS:
             self.assertEqual((self.stage / asset).read_bytes(), b"previous staging " + asset.encode())
+        self.assertEqual((self.stage / "customer-photo.webp").read_bytes(), b"keep staging customer image")
 
-    def test_staging_release_installs_all_four_assets_without_changing_production(self):
+    def test_staging_release_installs_all_eight_assets_without_changing_production(self):
         self.prepare_bundle()
         result = self.run_script("activate")
         self.assertEqual(result.returncode, 0, result.stderr)
         for asset in ASSETS:
             self.assertEqual((self.stage / asset).read_bytes(), b"new staging " + asset.encode())
         self.assertFalse(self.release.exists())
+        self.assertEqual((self.stage / "customer-photo.webp").read_bytes(), b"keep staging customer image")
         self.assert_production_unchanged()
 
     def test_corrupt_upload_changes_no_files(self):
@@ -71,6 +75,20 @@ class StagingReleaseTests(unittest.TestCase):
         self.assert_previous_staging_unchanged()
         self.assert_production_unchanged()
 
+    def test_missing_image_changes_no_files(self):
+        self.prepare_bundle()
+        (self.release / "address-sign.webp").unlink()
+        self.assertNotEqual(self.run_script("activate").returncode, 0)
+        self.assert_previous_staging_unchanged()
+        self.assert_production_unchanged()
+
+    def test_corrupt_image_upload_changes_no_files(self):
+        self.prepare_bundle()
+        (self.release / "address-sign.webp").write_bytes(b"corrupted image\x00\xff")
+        self.assertNotEqual(self.run_script("activate").returncode, 0)
+        self.assert_previous_staging_unchanged()
+        self.assert_production_unchanged()
+
     def test_checksum_manifest_cannot_target_production(self):
         self.prepare_bundle()
         (self.release / "SHA256SUMS.txt").write_text("0" * 64 + "  ../../index.html\n")
@@ -82,7 +100,7 @@ class StagingReleaseTests(unittest.TestCase):
         self.prepare_bundle()
         manifest = self.release / "SHA256SUMS.txt"
         first_line = manifest.read_text().splitlines()[0]
-        manifest.write_text((first_line + "\n") * 4)
+        manifest.write_text((first_line + "\n") * len(ASSETS))
         self.assertNotEqual(self.run_script("activate").returncode, 0)
         self.assert_previous_staging_unchanged()
 
@@ -107,8 +125,8 @@ class StagingReleaseTests(unittest.TestCase):
 
     def test_symlinked_destination_is_rejected_before_any_file_moves(self):
         self.prepare_bundle()
-        (self.stage / "repair.js").unlink()
-        (self.stage / "repair.js").symlink_to(self.public / "repair.js")
+        (self.stage / "address-sign.webp").unlink()
+        (self.stage / "address-sign.webp").symlink_to(self.public / "address-sign.webp")
         self.assertNotEqual(self.run_script("activate").returncode, 0)
         for asset in ASSETS[:-1]:
             self.assertEqual((self.stage / asset).read_bytes(), b"previous staging " + asset.encode())

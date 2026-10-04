@@ -41,6 +41,10 @@ jobs:
           test -s styles.css
           test -s app.js
           test -s repair.js
+          test -s infinity-mirror.webp
+          test -s stadium-model.webp
+          test -s led-display.webp
+          test -s address-sign.webp
           node --check app.js
           node --check repair.js
           grep -q 'id="products"' index.html
@@ -77,8 +81,8 @@ jobs:
       - name: Prepare checked storefront bundle
         run: |
           mkdir -p "$RUNNER_TEMP/staging-bundle"
-          cp index.html styles.css app.js repair.js "$RUNNER_TEMP/staging-bundle/"
-          (cd "$RUNNER_TEMP/staging-bundle" && sha256sum index.html styles.css app.js repair.js > SHA256SUMS.txt)
+          cp index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp "$RUNNER_TEMP/staging-bundle/"
+          (cd "$RUNNER_TEMP/staging-bundle" && sha256sum index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp > SHA256SUMS.txt)
 
       - name: Configure deployment key
         env:
@@ -111,7 +115,10 @@ jobs:
           REMOTE="$STAGING_USER@$STAGING_HOST"
           ssh "${SSH_OPTIONS[@]}" -p "$STAGING_PORT" "$REMOTE" "bash -s -- prepare '$STAGING_PATH' '$RELEASE_NAME'" < deploy/hostinger/staging-release.sh
           BUNDLE="$RUNNER_TEMP/staging-bundle"
-          scp "${SSH_OPTIONS[@]}" -P "$STAGING_PORT" "$BUNDLE/index.html" "$BUNDLE/styles.css" "$BUNDLE/app.js" "$BUNDLE/repair.js" "$BUNDLE/SHA256SUMS.txt" "$REMOTE:$STAGING_PATH/$RELEASE_NAME/"
+          scp "${SSH_OPTIONS[@]}" -P "$STAGING_PORT" \
+            "$BUNDLE/index.html" "$BUNDLE/styles.css" "$BUNDLE/app.js" "$BUNDLE/repair.js" \
+            "$BUNDLE/infinity-mirror.webp" "$BUNDLE/stadium-model.webp" "$BUNDLE/led-display.webp" "$BUNDLE/address-sign.webp" \
+            "$BUNDLE/SHA256SUMS.txt" "$REMOTE:$STAGING_PATH/$RELEASE_NAME/"
           ssh "${SSH_OPTIONS[@]}" -p "$STAGING_PORT" "$REMOTE" "bash -s -- activate '$STAGING_PATH' '$RELEASE_NAME'" < deploy/hostinger/staging-release.sh
 
       - name: Verify staging URL
@@ -120,7 +127,7 @@ jobs:
           STAGING_URL: ${{ inputs.staging_url }}
         run: |
           mkdir -p "$RUNNER_TEMP/verified-staging"
-          for asset in index.html styles.css app.js repair.js; do
+          for asset in index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp; do
             code="$(curl --fail --silent --show-error --max-time 30 --output "$RUNNER_TEMP/verified-staging/$asset" --write-out '%{http_code}' "${STAGING_URL%/}/$asset")"
             [[ "$code" == 200 ]] || { echo "Staging $asset returned HTTP $code" >&2; exit 1; }
             cmp "$RUNNER_TEMP/staging-bundle/$asset" "$RUNNER_TEMP/verified-staging/$asset"

@@ -28,6 +28,21 @@ check_url "$DOMAIN/" "Sponsor Partner Program"
 home="$(curl -L -sS --max-time 20 "$DOMAIN/")"
 grep -q 'sponsors\.mirroriedled\.com' <<<"$home" || fail "Sponsor portal link missing from public storefront"
 
+echo "Checking storefront files and product images..."
+for asset in index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp; do
+  out="$(mktemp)"
+  code="$(curl --fail --silent --show-error -o "$out" -w '%{http_code}' --max-time 20 "${DOMAIN%/}/$asset")" || {
+    rm -f "$out"
+    fail "$asset could not be downloaded"
+  }
+  if [[ "$code" != "200" || ! -s "$out" ]]; then
+    rm -f "$out"
+    fail "$asset returned HTTP $code or an empty response"
+  fi
+  rm -f "$out"
+  echo "OK ${DOMAIN%/}/$asset"
+done
+
 echo "Checking sponsor portal boundary..."
 code="$(curl -L -sS -o /tmp/mirroriedled-sponsor.html -w '%{http_code}' --max-time 20 "$SPONSOR_URL" || true)"
 case "$code" in

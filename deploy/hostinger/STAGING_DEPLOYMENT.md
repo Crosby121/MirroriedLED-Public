@@ -1,7 +1,8 @@
 # Mirroried LED staging deployment
 
 The `Deploy Storefront to Staging` workflow is manual. It uploads only
-`index.html`, `styles.css`, `app.js`, and `repair.js` into `MLED_v5_TEST`.
+`index.html`, `styles.css`, `app.js`, `repair.js`, `infinity-mirror.webp`,
+`stadium-model.webp`, `led-display.webp`, and `address-sign.webp` into `MLED_v5_TEST`.
 It does not call the production deployment scripts.
 
 ## Before running
@@ -40,11 +41,11 @@ If the server mapping has been confirmed, the optional verification URL is
 `https://mirroriedled.com/MLED_v5_TEST/` (the `www` host is also accepted).
 This is an expected URL shape, not a claim that staging is already deployed.
 When provided, the workflow requires HTTP 200 and an exact byte match for all
-four uploaded assets. It does not follow redirects. If omitted, the run verifies
+eight uploaded assets. It does not follow redirects. If omitted, the run verifies
 server-side checksums only; browser/HTTP acceptance is still outstanding.
 
 Open the verified staging URL and check the mobile navigation, custom-design
-dialog, Cancel/Close controls, quote cart, and sponsor/advertising links.
+dialog, Cancel/Close controls, quote cart, all product images, and sponsor/advertising links.
 Staging remains quote-based. A staging test does not publish the production site.
 
 ## Local checks
@@ -63,6 +64,6 @@ Each upload uses its own `.release-<run-id>-<attempt>` directory. An interrupted
 upload can leave that directory for inspection. Never repurpose a failed upload
 directory or point staging to a symlink; rerun with a new attempt after diagnosing
 the error. Activation validates every asset before installing any, but moves
-the four files separately, so a server/disk failure during installation can leave
+the eight files separately, so a server/disk failure during installation can leave
 a partial staging update. Rerun and complete acceptance checks before relying
 on that staging copy.

@@ -35,6 +35,10 @@ jobs:
           test -s styles.css
           test -s app.js
           test -s repair.js
+          test -s infinity-mirror.webp
+          test -s stadium-model.webp
+          test -s led-display.webp
+          test -s address-sign.webp
 
       - name: Check JavaScript syntax
         run: |

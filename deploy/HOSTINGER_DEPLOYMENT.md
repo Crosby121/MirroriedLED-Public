@@ -6,13 +6,13 @@ This guide deploys the static storefront only. It does not modify the Sponsor Po
 
 - Domain: `https://mirroriedled.com`
 - Hostinger web root: `public_html`
-- Static files to deploy: `index.html`, `styles.css`, `app.js`, `repair.js`
+- Static files to deploy: `index.html`, `styles.css`, `app.js`, `repair.js`, `infinity-mirror.webp`, `stadium-model.webp`, `led-display.webp`, `address-sign.webp`
 - Sponsor Portal target: `https://sponsors.mirroriedled.com/`
 
 ## Safety rule
 
 Use the guarded helpers in `deploy/hostinger` to create a verified full-site backup
-outside `public_html` and a separate four-file storefront backup before installation.
+outside `public_html` and a separate eight-file storefront backup before installation.
 
 ## Pre-deploy checklist
 
@@ -32,7 +32,11 @@ outside `public_html` and a separate four-file storefront backup before installa
    - `styles.css`
    - `app.js`
    - `repair.js`
-5. Use the package's guarded `deploy-storefront.sh` with the verified `PUBLIC_HTML` path to install those four files.
+   - `infinity-mirror.webp`
+   - `stadium-model.webp`
+   - `led-display.webp`
+   - `address-sign.webp`
+5. Use the package's guarded `deploy-storefront.sh` with the verified `PUBLIC_HTML` path to install those eight files.
 6. Do not move or delete unrelated API, portal, WLED bridge, database, configuration, asset, or backup folders.
 
 ## Acceptance checks
@@ -42,6 +46,7 @@ After upload, verify in a private/incognito browser:
 - Home page loads at `https://mirroriedled.com/`
 - Mobile navigation opens and closes
 - Products section is visible
+- Hero and all four product images load without broken image icons
 - Custom Design configurator opens
 - Add-to-cart / quote-cart behavior works
 - Sponsor Partner Program and Advertising on the Go remain distinct sections
@@ -54,11 +59,15 @@ After upload, verify in a private/incognito browser:
 If the storefront fails acceptance:
 
 1. Stop further changes.
-2. Use `rollback-storefront.sh` with the printed storefront backup path to restore all four recorded file states:
+2. Use `rollback-storefront.sh` with the printed storefront backup path to restore all eight recorded file states:
    - `index.html`
    - `styles.css`
    - `app.js`
    - `repair.js`
+   - `infinity-mirror.webp`
+   - `stadium-model.webp`
+   - `led-display.webp`
+   - `address-sign.webp`
 3. Hard-refresh and verify `https://mirroriedled.com/`.
 4. Keep the failed deployment files outside production for diagnosis.
 
