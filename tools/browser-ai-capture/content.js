@@ -35,8 +35,7 @@ async function checkpoint(force = false) {
     const full = force || changedUrl || !previousSnapshot || clock - lastFullAt >= FULL_INTERVAL
       || current.length < previousMessages.length
       || previousMessages.some((message, index) => current[index]?.role !== message.role);
-    const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(fingerprint));
-    const snapshot_id = Array.from(new Uint8Array(hash), x => x.toString(16).padStart(2, "0")).join("");
+    const snapshot_id = Array.from(crypto.getRandomValues(new Uint8Array(32)), x => x.toString(16).padStart(2, "0")).join("");
     const fragments = current.flatMap((message, index) => {
       const old = full ? "" : previousMessages[index]?.text || "";
       if (!full && message.text === old) return [];

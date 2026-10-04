@@ -94,6 +94,8 @@ contain message_count visible messages. Missing parts/base remain incomplete;
 never present them as a full conversation. Offsets and lengths use JavaScript
 UTF-16 units. Emoji boundaries are preserved. Periodic/full close attempts limit
 the length of delta chains; unchanged forced checks do not create duplicate copies.
+Browser credential masks preserve UTF-16 lengths so later edits keep their
+positions. Snapshot IDs are random identifiers, not hashes of unredacted text.
 
 The PC worker caps new archive files at 30 per minute and 360 per hour and honors
 GitHub's retry/reset time with increasing backoff. Deferred records stay queued

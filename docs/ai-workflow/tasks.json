@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T23:33:40Z",
+  "updated_at": "2026-10-04T23:38:24Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -176,10 +176,10 @@
     {
       "id": "WF-009",
       "title": "Preserve browser delta offsets when credentials are masked",
-      "status": "in_progress",
+      "status": "done",
       "priority": 1,
-      "owner_session_id": "20261004t233340z-652dc899",
-      "last_session_id": null,
+      "owner_session_id": null,
+      "last_session_id": "20261004t233340z-652dc899",
       "depends_on": [
         "WF-007"
       ],
@@ -188,7 +188,7 @@
         "Snapshot IDs do not expose a digest of unredacted credential-bearing content.",
         "Regression verifies editing text after a masked credential without retaining the credential."
       ],
-      "next_action": "Make browser masks preserve offsets and use random snapshot IDs; verify delta reconstruction before merging PR #15.",
+      "next_action": "Merge PR #15 after current GitHub checks. Then complete WF-003/WF-006 setup and verify real task and private upload receipts; reconcile the separate PR #14 task references before merging its product changes.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/15"
       ]

@@ -25,7 +25,7 @@ REPOSITORY = "Crosby121/MirroriedLED-AI-History"
 SOURCES = {"copilot": "GitHub Copilot", "codex": "ChatGPT / local Codex", "browser": "Tracked browser AI chat"}
 EXTENSION_ID = "hdecleonacegadhfjjnlioafnamnljkg"
 SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?(?:-----END [A-Z ]*PRIVATE KEY-----|\Z)|(?:gh[pousr]_|github_pat_|sk-)[A-Za-z0-9_-]{30,}|mlwf_[A-Za-z0-9_-]{40,}", re.DOTALL)
-SENSITIVE_NAMES = r"(?:password|passwd|token|bearer|api[_-]?key|access[_-]?token|refresh[_-]?token|authorization|cookie|private[_-]?key|secret|client[_-]?secret|github[_-]?token|workflow[_-]?token)"
+SENSITIVE_NAMES = r"[A-Za-z0-9_.-]*?(?:password|passwd|token|bearer|api[_-]?key|secret[_-]?key|access[_-]?token|refresh[_-]?token|authorization|cookie|private[_-]?key|secret|client[_-]?secret|github[_-]?token|workflow[_-]?token)"
 SENSITIVE_KEY = re.compile(r"^" + SENSITIVE_NAMES + r"$", re.I)
 INLINE_SECRET = re.compile(r'("' + SENSITIVE_NAMES + r'"\s*:\s*)"(?:\\.|[^"\\])*(?:"|\\?\Z)', re.I)
 
@@ -51,16 +51,29 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def redact(value, known_secrets=()):
+def redact(value, known_secrets=(), preserve_length=False):
+    def mask(text):
+        return "\u2588" * (len(text.encode("utf-16-le", errors="surrogatepass")) // 2) if preserve_length else "[REDACTED]"
     if isinstance(value, dict):
-        return {key: "[REDACTED]" if SENSITIVE_KEY.fullmatch(str(key)) else redact(item, known_secrets) for key, item in value.items()}
+        return {
+            key: (mask(item) if isinstance(item, str) else "[REDACTED]") if SENSITIVE_KEY.fullmatch(str(key))
+            else redact(item, known_secrets, preserve_length) for key, item in value.items()}
     if isinstance(value, list):
-        return [redact(item, known_secrets) for item in value]
+        return [redact(item, known_secrets, preserve_length) for item in value]
     if isinstance(value, str):
         for secret in known_secrets:
             if secret and len(secret) >= 12:
-                value = value.replace(secret, "[REDACTED]")
-        return INLINE_SECRET.sub(r'\1"[REDACTED]"', SECRET.sub("[REDACTED]", value))
+                value = value.replace(secret, mask(secret))
+        value = SECRET.sub(lambda match: mask(match.group(0)), value)
+        def inline(match):
+            if not preserve_length:
+                return match.group(1) + '"[REDACTED]"'
+            original, prefix = match.group(0), match.group(1)
+            tail = original[:-1]
+            closed = original.endswith('"') and (len(tail) - len(tail.rstrip('\\'))) % 2 == 0
+            secret = original[len(prefix) + 1:-1] if closed else original[len(prefix) + 1:]
+            return prefix + '"' + mask(secret) + ('"' if closed else '')
+        return INLINE_SECRET.sub(inline, value)
     return value
 
 
@@ -130,7 +143,7 @@ def capture(config, event, source):
         require(event.get("tracking_enabled") is True, "Browser chat must be explicitly tracked")
     spool = safe(config["spool"])
     secrets = [config["github_token"], config.get("workflow_token", "")]
-    cleaned = redact(event, secrets)
+    cleaned = redact(event, secrets, preserve_length=source == "browser")
     transcript = event.get("transcript_path") or event.get("transcriptPath")
     objects = []
     coverage = "available_hook_payload"

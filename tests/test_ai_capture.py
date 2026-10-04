@@ -105,7 +105,7 @@ class CaptureTests(unittest.TestCase):
         self.assertIn("[REDACTED]", text)
 
     def test_opaque_credentials_in_hook_and_json_transcript_keys_are_redacted(self):
-        values = {key: 'opaque-' + key + '-with-"quote' for key in ['token', 'github_token', 'workflow_token', 'private_key', 'passwd', 'refreshToken', 'client_secret']}
+        values = {key: 'opaque-' + key + '-with-"quote' for key in ['token', 'github_token', 'workflow_token', 'private_key', 'passwd', 'refreshToken', 'client_secret', 'STRIPE_SECRET_KEY', 'HOSTINGER_SSH_PRIVATE_KEY']}
         first = json.dumps({"settings": values, "tool_result": json.dumps({"token": "embedded-opaque-value"})})
         second = json.dumps({"text": 'Example {"passwd":"inline-opaque-value"}', "password": 123456789})
         self.transcript.write_text(first + '\n' + second + '\n')
@@ -198,6 +198,25 @@ class CaptureTests(unittest.TestCase):
         event["url"] = "https://unrelated.example/chat"
         with self.assertRaises(ValueError):
             capture.capture(self.config, event, "browser")
+
+    def test_masked_browser_text_retains_utf16_offsets_for_later_deltas(self):
+        raw = 'Prefix 🙂 {"token":"hidden-opaque-credential"} old tail'
+        event = {"url": "https://chatgpt.com/c/example", "tracking_enabled": True, "event": "browser_checkpoint",
+                 "messages": [{"role": "assistant", "text": raw}]}
+        capture.capture(self.config, event, "browser")
+        base = json.loads(self.pending()[0].read_text())["payload"]["messages"][0]["text"]
+        self.assertNotIn('hidden-opaque-credential', base)
+        self.assertEqual(len(base.encode('utf-16-le')), len(raw.encode('utf-16-le')))
+        prefix = raw[:-len('old tail')]
+        offset = len(prefix.encode('utf-16-le')) // 2
+        suffix = 'new tail'
+        event['messages'] = [{"role": "assistant", "text": suffix, "offset": offset, "replace_from": offset}]
+        record_id = capture.capture(self.config, event, "browser")
+        delta = json.loads((Path(self.config['spool']) / 'outbox' / (record_id + '.json')).read_text())['payload']['messages'][0]
+        result = (base.encode('utf-16-le')[:delta['replace_from'] * 2] + delta['text'].encode('utf-16-le')).decode('utf-16-le')
+        self.assertTrue(result.endswith('new tail'))
+        self.assertNotIn('old tail', result)
+        self.assertNotIn('hidden-opaque-credential', result)
 
     def test_stop_requests_one_handoff_retry_and_never_invents_completion(self):
         receipt = {"repository": "Crosby121/MirroriedLED-Public", "authenticated_client_id": "copilot", "commit": "1" * 40,
