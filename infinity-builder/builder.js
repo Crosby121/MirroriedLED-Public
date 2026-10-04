@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id), E = MirrorBuilderEngine;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const endpoint = new URL('../customer-portal/backend/api.php', location.href);
-  let catalog, state, result, candidate = null, approvedMask = null, originalBlob = null, rearView = false;
+  let catalog, state, result, price, candidate = null, approvedMask = null, originalBlob = null, rearView = false;
   let session = { configured: false, authenticated: false, csrf: null, capabilities: {} }, saveTimer, artSequence = 0, aiBusy = false;
   let aiQuestions = [], guideBrief = '', guideFingerprint = '', generationKey = null, generationFingerprint = '', drafting = false;
   const message = (id, text, error = false) => { $(id).textContent = text; $(id).classList.toggle('error', error); };
@@ -110,6 +110,21 @@
     parts.push(`<path d="M${x} ${dy}h${w*scale}M${x} ${dy-4}v8M${x+w*scale} ${dy-4}v8" stroke="#667c94" stroke-width="1"/><text x="300" y="${dy+21}" text-anchor="middle" fill="#a3b3c6" font-size="13">${w} inches</text><text x="${x-20}" y="${y+h*scale/2}" text-anchor="middle" fill="#a3b3c6" font-size="12" transform="rotate(-90 ${x-20} ${y+h*scale/2})">${h} inches</text>`);
     svg.innerHTML=parts.join('');
   }
+  const money = cents => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100);
+  const moneyRange = (min,max) => min===max?money(min):`${money(min)}–${money(max)}`;
+  function renderPricing() {
+    price=E.pricing(state,catalog,result);
+    const subtotal=moneyRange(price.subtotalMinCents,price.subtotalMaxCents);
+    $('priceSubtotal').textContent=subtotal;$('previewPrice').textContent=subtotal;
+    $('priceStatus').textContent=price.pendingCount?`+ ${price.pendingCount} items awaiting a quote${price.rangeCount?' · LED variant range included':''}`:'Supplier estimates · final quote follows';
+    $('priceGrandTotal').textContent=price.grandTotalCents===null?'Quote pending':money(price.grandTotalCents)+' estimate';
+    $('previewPriceStatus').textContent=price.grandTotalCents===null?'Grand total: quote pending':'Grand total estimate: '+money(price.grandTotalCents);
+    $('priceLines').innerHTML=price.lines.map(l=>`<li data-price-item="${esc(l.id)}" class="${l.minCents===null?'price-pending':''}"><div class="price-line-top"><strong>${esc(l.label)}</strong><span>${l.minCents===null?'Quote needed':esc(moneyRange(l.minCents,l.maxCents))}</span></div><small>${esc(l.supplier)} · × ${esc(l.purchaseQuantity)}${l.minCents===null?'':l.status==='range'?' · variant range':' · estimate'}</small>${l.id==='frame'&&l.unitCents!==null?`<small>${esc(money(l.unitCents))} supplier unit cost + ${esc(money(l.markupCents))} markup (${price.frameMarkupPercent}%)</small>`:''}<details><summary>Price basis${l.url?' & source':''}</summary><p>${esc(l.detail)}</p><p>${esc(l.availability)}</p>${l.url?`<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">View supplier listing ↗</a>`:''}</details></li>`).join('');
+    $('priceNotice').textContent=`Frame supplier cost includes your ${price.frameMarkupPercent}% markup. The grand total follows after every quote item, shipping and tax is priced. No payment starts here.`;
+    $('supplierPolicy').textContent=state.fulfillment==='rush'?'Rush addressable strips and flexible panels use Amazon. HUB75 stays with Alibaba / AliExpress. Digi controllers use Dr. Zzs; MatrixPortal uses Adafruit.':'Standard addressable strips and panels use Alibaba / AliExpress. Digi controllers use Dr. Zzs; MatrixPortal uses Adafruit. Amazon is reserved for rush addressable LEDs.';
+    $('frameOffers').innerHTML=price.frameAlternatives.length?price.frameAlternatives.map(f=>`<li>${f.priceCents!==null?`${esc(money(f.priceCents))} / ${f.packQuantity} frames · ${esc(money(Math.round(f.priceCents/f.packQuantity)))} per frame before ${price.frameMarkupPercent}% markup`:'Matching nominal frame candidate · supplier quote needed'} · <a href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">Michaels listing ↗</a></li>`).join(''):`<li>Exact size / finish needs a Michaels quote; supplier cost + ${price.frameMarkupPercent}%.</li>`;
+    $('supplierDate').textContent=catalog.pricing.notice;
+  }
   function render() {
     fitController(); result=E.plan(state,catalog);
     $('previewSize').textContent=`${state.size[0]} × ${state.size[1]} in`;
@@ -127,7 +142,7 @@
     $('panelResult').innerHTML=state.rear==='none'?'<p>Rim lighting only. No rear panels included.</p>':!state.artwork?.approved?'<p>Approve artwork to find the best-fitting panels.</p>':!result.layout?'<p>No complete panel layout fits. Reduce the artwork size or choose a larger mirror.</p>':`<strong>${esc(result.layout.name)} · ${result.layout.count} panels</strong><small>${result.layout.cols} across × ${result.layout.rows} high${result.layout.rotated?' · rotated':''} · ${E.round(result.layout.width)} × ${E.round(result.layout.height)} in coverage</small><small>${result.layout.utilization}% of this layout covers the artwork bounding box</small><div class="coverage-meter"><span style="width:${result.layout.utilization}%"></span></div>`;
     $('controllerOptions').innerHTML=E.controllers(state,catalog).map(c=>`<label class="controller-choice"><input type="radio" name="controller" value="${c.id}" ${c.id===state.controllerId?'checked':''} ${!c.available?'disabled':''}><span><strong>${esc(c.name)}</strong><small>${esc(c.reason || (c.family==='hub75'?'HUB75 / HUB75E matrix output':c.outputs+' addressable LED outputs · layout reviewed by the team'))}</small></span></label>`).join('');
     $('rimControllerField').hidden=state.rear!=='hub75'||!state.rim.enabled;
-    $('controllerNote').textContent=state.rear==='hub75'?'HUB75 uses MatrixPortal S3. Rim strips use a separate Digi-Uno or Digi-Quad. The Beast unlocks after fabrication and inventory validation.':'Flexible panels and rim LEDs use Digi-Uno or Digi-Quad. Output grouping and LED load are verified in the final proof.';
+    $('controllerNote').textContent=state.rear==='hub75'?'HUB75 uses MatrixPortal S3, currently out of stock at Adafruit; studio stock and lead time need confirmation. Rim strips use a separate Digi-Uno or Digi-Quad. The Beast is Coming Soon.':'Flexible panels and rim LEDs use Digi-Uno or Digi-Quad. Output grouping and LED load are verified in the final proof.';
     $('hardwareList').innerHTML=result.hardware.map(h=>`<li><span>${esc(h.label)}</span><small>${h.id==='rim'?h.quantity+' LEDs':'× '+h.quantity}</small></li>`).join('');
     $('powerNote').textContent=`Addressable LEDs: ${result.addressableEstimateAmps} A at 5V for planning, using a conservative 60 mA / pixel assumption.${result.hub75PowerPending?' HUB75 power is additional and awaits the actual panel specification.':''} The team selects the power supply, wire gauges and fuses.`;
     $('reviewNotes').innerHTML=result.warnings.map(w=>`<li>${esc(w)}</li>`).join('');
@@ -136,7 +151,7 @@
     [...$('progressList').children].forEach((node,i)=>node.classList.toggle('done',done[i]));
     $('addBuild').disabled=!result.ready || (state.rim.enabled && !$('ledCount').validity.valid);
     if(!result.ready)message('buildMessage',!state.artwork?.approved?'Choose and approve artwork to complete your build.':!state.rim.enabled&&state.rear==='none'?'Include rim strips or rear panels to light your mirror.':'Adjust the artwork size or frame until a complete panel layout fits.',true);else message('buildMessage','Your design is ready for a quote review.');
-    drawPreview(); clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveLocal(false),600);
+    renderPricing();drawPreview(); clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveLocal(false),600);
   }
   function applyControls() {
     document.querySelector(`input[name=size][value="${state.size.join('x')}"]`).checked=true;
@@ -146,6 +161,7 @@
     $('addressableEffects').checked=state.rim.addressable;
     $('artScale').value=state.artScale;document.querySelector(`input[name=rear][value="${state.rear}"]`).checked=true;
     $('rimController').value=state.rimControllerId;$('wallMount').checked=state.extras.wallMount;$('remote').checked=state.extras.remote;
+    document.querySelector(`input[name=fulfillment][value="${state.fulfillment||'standard'}"]`).checked=true;
   }
   function validSaved(s) {
     return s?.version===1&&catalog.sizes.some(a=>a.join('x')===s.size?.join('x'))&&['Matte black','Natural birch','White'].includes(s.finish)&&s.depthIn===3&&[1,2,3].includes(s.rim?.rows)&&Number.isInteger(s.rim.countPerRow)&&s.rim.countPerRow>=24&&s.rim.countPerRow<=2000&&/^#[a-f0-9]{6}$/i.test(s.rim.color)&&s.artScale>=20&&s.artScale<=100&&['flex','hub75','none'].includes(s.rear)&&s.extras&&(!s.artwork||typeof s.artwork.name==='string'&&s.artwork.name.length<=200&&s.artwork.aspect>0&&s.artwork.aspect<=10);
@@ -157,7 +173,7 @@
   }
   function specification() {
     const clean=JSON.parse(JSON.stringify(state));
-    return {catalogVersion:catalog.version,state:clean,artworkBox:E.artBox(state,catalog),panelPlan:result.layout,hardware:result.hardware,productionStatus:'Quote and operator proof required',rules:catalog.rules.finish};
+    return {catalogVersion:catalog.version,state:clean,artworkBox:E.artBox(state,catalog),panelPlan:result.layout,hardware:result.hardware,pricing:price,productionStatus:'Quote and operator proof required',rules:catalog.rules.finish};
   }
   async function addBuild() {
     if(!result.ready || (state.rim.enabled && !$('ledCount').reportValidity()))return;
@@ -212,7 +228,7 @@
       $('sizeOptions').innerHTML=catalog.sizes.map(s=>`<label><input type="radio" name="size" value="${s.join('x')}"><span>${s.join(' × ')}</span></label>`).join('');
       $('artGallery').innerHTML=catalog.gallery.map(g=>`<button type="button" class="gallery-item" data-gallery="${g.id}" aria-label="Review ${esc(g.name)}"><img src="${esc(g.url)}" alt="${esc(g.name)} engraving design"><span>${esc(g.name)}</span></button>`).join('');
       try {const saved=await MirrorDraftStore.get('active');if(saved?.catalogVersion===catalog.version&&validSaved(saved.state)){
-        state=saved.state;originalBlob=saved.originalBlob;
+        state=saved.state;state.fulfillment=state.fulfillment==='rush'?'rush':'standard';originalBlob=saved.originalBlob;
         if(saved.maskBlob){const url=URL.createObjectURL(saved.maskBlob);try{approvedMask=await maskImage(url,'light');}finally{URL.revokeObjectURL(url);}}else state.artwork=null;
         if(saved.aiDraft){$('aiSubject').value=saved.aiDraft.subject||'';$('aiType').value=saved.aiDraft.type||'other';questionInputs(saved.aiDraft.questions||[]);(saved.aiDraft.answers||[]).forEach((a,i)=>{const el=$('question-q'+i);if(el)el.value=a.answer;});guideFingerprint=$('aiSubject').value.trim()+'|'+$('aiType').value;}
         message('draftStatus','Your saved design has been restored on this device.');
@@ -239,6 +255,7 @@
       $('controllerOptions').addEventListener('change',event=>{state.controllerId=event.target.value;render();});
       $('rimController').addEventListener('change',event=>{state.rimControllerId=event.target.value;render();});
       ['wallMount','remote'].forEach(id=>$(id).addEventListener('change',event=>{state.extras[id]=event.target.checked;render();}));
+      document.querySelectorAll('input[name=fulfillment]').forEach(input=>input.addEventListener('change',()=>{state.fulfillment=input.value;render();}));
       function view(rear){rearView=rear;$('frontView').classList.toggle('active',!rear);$('rearView').classList.toggle('active',rear);$('frontView').setAttribute('aria-pressed',String(!rear));$('rearView').setAttribute('aria-pressed',String(rear));drawPreview();}
       $('frontView').addEventListener('click',()=>view(false));$('rearView').addEventListener('click',()=>view(true));
       $('saveDraft').addEventListener('click',()=>saveLocal(true));

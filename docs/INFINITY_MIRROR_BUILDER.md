@@ -52,6 +52,78 @@ blank outer margin; it keeps the original for the production proof. This is not
 an automatic certification of fine detail or frosted diffusion. PDF/SVG source
 artwork can be attached separately through the Customer Portal.
 
+## Price tracker and supplier policy
+
+The preview shows a running USD estimate. The item breakdown includes quantities,
+supplier links, price basis, optional hardware, and every remaining quote item.
+Prices recalculate when the frame, LED count / rows, panel layout, controller,
+audio input, remote, wall mount or order speed changes. The build JSON, saved
+quote and Customer Portal preserve this breakdown. PHP recomputes it from the
+deployed catalog and validated physical layout; customer-submitted totals and
+markup are discarded. These estimates never set `quoteCents`, accept a payment
+or replace the final staff quote.
+
+`catalog.json.pricing` is a dated supplier snapshot, not a live supplier API.
+Check and update it before accepting quotes. Keep integer USD cents, a source
+URL, exact variant, package quantity and minimum order. Null means **quote
+needed**, not zero. A range is an unconfirmed variant budget. The grand total
+remains pending while any selected item is unpriced or ranged. Fabrication,
+depth extensions, power supply, wiring, audio input, mounts, remote, labor,
+shipping / duties and tax are explicit rows; do not silently omit these costs.
+
+The owner's **20% markup applies only to the supplier frame cost**. Allocate a
+pack's cost per frame, round the unit cost to a cent, then round 20% of that unit
+cost to a cent. Compare retail and bulk on that same basis. This unit allocation
+does not mean an individual customer purchases the full studio inventory pack.
+The October 4, 2026 reference snapshot is:
+
+| Part / offer | Supplier basis | Builder treatment |
+| --- | --- | --- |
+| 12 × 12 black / white Fundamentals frame | Michaels online 2-pack: $11.99; regular $29.99 | $6.00 allocated unit + $1.20 markup = $7.20 frame estimate |
+| 12 × 12 black / white bulk frames | Michaels: $121.41 for 18 frames (9 × 2-packs) | $6.75 allocated unit + $1.35 = $8.10; retail sale currently wins |
+| Digi-Uno, onboard Wi-Fi antenna | Dr. Zzs: $35 preassembled including ESP32 | $35 estimate; other antenna / Ethernet variants need a separate quote |
+| Digi-Quad, onboard Wi-Fi antenna | Dr. Zzs: $44 preassembled including ESP32 | $44 estimate |
+| MatrixPortal S3, quantity 1 | Adafruit product 5778: $19.95, supplier out of stock | Price estimate; confirm studio stock and lead time |
+| 5V WS2812B rim strips | Alibaba Gensheng listing: $1.99–$2.30 / meter, 60 LEDs / meter | $9.95–$11.50 budget per 5 m / 300-LED roll; round required rolls up; confirm exact IP20 variant, density and delivered quote |
+| P3 64 × 32 HUB75, 192 × 96 mm | Alibaba listing 1600188215401: $11 each at 1–499 pieces | Reference estimate only; seller chip / scan verification pending |
+| Flexible panels, P3.19 / P5, remaining hardware | Exact size / variant or landed price not verified | Quote needed; no mixed-variant or ineligible bulk floor prices |
+| The Beast | Fabrication and inventory release pending | Coming Soon; disabled |
+
+An earlier cached Michaels result showed $10.49 / 2-pack; the latest retrieved
+listing showed $11.99. Recheck the sale rather than treating either price as
+permanent. Supplier stock is separate from studio inventory and is not reserved.
+
+Matching nominal Michaels candidates are recorded for 20 × 20, 24 × 24,
+26 × 26, 30 × 30, 36 × 36, 25 × 30 and 25 × 36 black frames, plus a 20 × 20
+white candidate. They need current supplier quotes and fit validation. Shallow
+shadow boxes / flat frames need a separately quoted 3-inch extension and
+structural review. Other finish combinations route to a Michaels custom-frame
+quote. A nearby size is never treated as an exact match. The same 20% rule applies
+when a candidate's verified supplier cost is added to the catalog.
+
+Standard addressable strips / flexible panels use Alibaba or AliExpress. A
+**rush request** switches only those parts to Amazon. No readable current Amazon
+USD price was available for the recorded strip candidate, so the rush line
+requires a quote and delivery confirmation; it cannot inherit the standard
+Alibaba price. HUB75 remains with Alibaba / AliExpress. Digi controllers stay
+with Dr. Zzs and MatrixPortal with Adafruit. Shipping, import costs and rush
+delivery are reviewed separately.
+
+HUB75 pricing does not certify WLED-MM compatibility. Confirm exact pixel count,
+PCB dimensions, shift-register driver, scan mode and controller firmware with
+the seller. ICN2053 / FM6353 panels require another driver implementation and
+must not be substituted into the standard DMA firmware. Multirow physical grids
+need custom WLED-MM mapping; large layouts carry memory / refresh review notes.
+The MatrixPortal S3 uses 8 MB flash / 2 MB PSRAM; do not assume the larger 16 MB
+octal-PSRAM controller limits apply. The physical packing suggestion remains a
+production-review candidate.
+
+Primary sources are linked on each catalog offer. Firmware references:
+
+- https://mm.kno.wled.ge/2D/HUB75/
+- https://github.com/MoonModules/WLED-MM/blob/mdev/platformio.ini
+- https://github.com/mrcodetastic/ESP32-HUB75-MatrixPanel-DMA
+
 ## Private AI activation
 
 Keep the existing private config outside `public_html`. Its optional
