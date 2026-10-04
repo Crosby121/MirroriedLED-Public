@@ -50,7 +50,8 @@ different host even when a similarly named directory exists.
 
 ## Installation and verification
 
-Only the 19 files in the packager's public allowlist are installed. Release
+Only the 29 files in the packager's public allowlist are installed, including
+the Infinity Mirror builder and its private artwork service. Release
 archives, receipts and full-site backups remain outside `public_html` with
 private permissions. The complete backup is verified before a live file is
 changed. Access rules are installed first and the homepage last.

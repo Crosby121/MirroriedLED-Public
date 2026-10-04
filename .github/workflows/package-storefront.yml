@@ -31,6 +31,9 @@ jobs:
           node --check customer-portal/portal.js
           node --check customer-portal/business.js
           php -l customer-portal/backend/business.php
+          php -l customer-portal/backend/builder.php
+          node --check infinity-builder/builder.js
+          node --test tests/infinity-builder.test.cjs
 
       - name: Verify deployment tools
         run: |

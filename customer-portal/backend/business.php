@@ -270,6 +270,12 @@ final class BusinessPortal
                 'artworkSource' => $source, 'lighting' => $this->text($item['lighting'] ?? '', 120, true),
                 'finish' => $this->text($item['finish'] ?? '', 120, true), 'notes' => $this->text($item['notes'] ?? '', 2000, true),
                 'quantity' => $this->integer($item['quantity'] ?? 1, 1, 20)];
+            if (isset($item['builder'])) {
+                if ($item['product'] !== 'Custom Infinity Mirror') { throw new PortalError('Infinity builder configuration requires an infinity mirror.', 422); }
+                $builder = InfinityBuilder::validateConfiguration($item['builder'], $this->db, (int)$this->user['id']);
+                if ($size !== implode('×', $builder['state']['size'])) { throw new PortalError('The mirror size does not match the builder configuration.', 422); }
+                $clean[array_key_last($clean)]['builder'] = $builder;
+            }
         }
         $id = 'MLED-' . bin2hex(random_bytes(10));
         $this->exec('INSERT INTO business_orders(id,user_id,configuration,created_at,updated_at) VALUES(?,?,?,?,?)', [$id, $this->user['id'], json_encode($clean, JSON_THROW_ON_ERROR), time(), time()]);
@@ -336,13 +342,13 @@ final class BusinessPortal
         $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
         $bytes = filesize($file['tmp_name']);
-        $formats = ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'pdf' => ['application/pdf'], 'svg' => ['image/svg+xml','text/xml','application/xml','text/plain'], 'lbrn2' => ['text/xml','application/xml','text/plain']];
+        $formats = ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'webp' => ['image/webp'], 'pdf' => ['application/pdf'], 'svg' => ['image/svg+xml','text/xml','application/xml','text/plain'], 'lbrn2' => ['text/xml','application/xml','text/plain']];
         if (!isset($formats[$ext]) || !in_array($mime, $formats[$ext], true) || ($ext === 'lbrn2' && $purpose !== 'production')
             || ($purpose === 'production' && !in_array($ext, ['svg', 'lbrn2'], true))
             || $bytes === false || $bytes < 1 || $bytes > 10485760 || $bytes !== (int)($file['size'] ?? -1)) {
             throw new PortalError('Upload a PNG, JPEG, PDF or SVG up to 10 MB. Team production files may also use LBRN2.', 422);
         }
-        if (in_array($ext, ['png', 'jpg', 'jpeg'], true) && @getimagesize($file['tmp_name']) === false) {
+        if (in_array($ext, ['png', 'jpg', 'jpeg', 'webp'], true) && @getimagesize($file['tmp_name']) === false) {
             throw new PortalError('This artwork image could not be verified.', 422);
         }
         if (in_array($ext, ['svg','lbrn2'], true)) {

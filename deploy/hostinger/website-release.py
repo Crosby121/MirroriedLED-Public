@@ -23,6 +23,10 @@ PUBLIC_FILES = (
     "customer-portal/backend/api.php", "customer-portal/backend/portal.php",
     "customer-portal/backend/business.php", "customer-portal/backend/.htaccess",
     "customer-portal/backend/.user.ini",
+    "customer-portal/backend/builder.php",
+    "infinity-builder/index.html", "infinity-builder/builder.css", "infinity-builder/builder.js",
+    "infinity-builder/engine.js", "infinity-builder/draft-store.js", "infinity-builder/catalog.json",
+    "infinity-builder/artwork/orbit.svg", "infinity-builder/artwork/tree.svg", "infinity-builder/artwork/wave.svg",
 )
 MANIFEST = "CUSTOMER_PORTAL_SHA256SUMS.txt"
 
@@ -261,7 +265,7 @@ def main() -> None:
         if not args.archive or not args.release_id or not args.expected_homepage_sha:
             parser.error("install needs --archive, --release-id and --expected-homepage-sha")
         install(root, args.archive.absolute(), args.release_id, args.expected_homepage_sha, receipt)
-        print("WEBSITE_RELEASE_INSTALLED: all 19 public files; private records preserved")
+        print(f"WEBSITE_RELEASE_INSTALLED: all {len(PUBLIC_FILES)} public files; private records preserved")
     else:
         no_symlinks(receipt)
         data = json.loads(receipt.read_text())

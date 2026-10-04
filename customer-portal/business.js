@@ -70,7 +70,12 @@
   document.addEventListener('mled-session', event => { session=event.detail; updateAccess(); refresh().catch(error=>message('businessAvailability',error.message,true)); });
 
   function filesHtml(files) { return files.map(file=>`<a href="${esc(file.url)}" download>${esc(file.name)} · ${esc(file.purpose)}</a>`).join('<br>'); }
-  function itemsHtml(items) { return `<ul>${items.map(item=>`<li><strong>${esc(item.product)}</strong> · ${esc(item.size)} · ${esc(item.quantity || 1)}<br>${esc(item.artwork)}<br>${item.artworkSource==='upload'?'Uploaded artwork':'Mirroried LED team design'}${item.notes ? `<br>${esc(item.notes)}`:''}</li>`).join('')}</ul>`; }
+  function builderDetails(builder) {
+    if(!builder?.state)return '';
+    const s=builder.state,p=builder.panelPlan;
+    return `<details><summary>Infinity mirror configuration</summary><p>${esc(s.depthIn)} in depth · ${esc(s.finish)}<br>${s.rim.enabled?`${esc(s.rim.rows)} rim rows × ${esc(s.rim.countPerRow)} LEDs`:'No rim strips'} · ${s.rim.addressable?'addressable effects':'steady glow'}${s.audioReactive?' · audio reactive':''}<br>${p?`${esc(p.name)} × ${esc(p.count)} · ${esc(p.cols)} across × ${esc(p.rows)} high`:'Rim only'}<br>Controller: ${esc(s.controllerId)}${s.rear==='hub75'&&s.rim.enabled?` · rim: ${esc(s.rimControllerId)}`:''}<br>${esc(builder.rules)}</p></details>`;
+  }
+  function itemsHtml(items) { return `<ul>${items.map(item=>`<li><strong>${esc(item.product)}</strong> · ${esc(item.size)} · ${esc(item.quantity || 1)}<br>${esc(item.artwork)}<br>${item.artworkSource==='upload'?'Uploaded artwork':'Mirroried LED team design'}${item.notes ? `<br>${esc(item.notes)}`:''}${builderDetails(item.builder)}</li>`).join('')}</ul>`; }
   function cardHtml(order) {
     return `<article class="build-card" data-order="${esc(order.id)}"><div class="build-meta"><span>${esc(labels[order.status] || order.status)}</span><span>${esc(money(order.quoteCents))}</span></div><h3>${esc(order.id)}</h3>${itemsHtml(order.items)}
       ${order.proof?`<div><h4>Proof ${esc(order.proof.version)} · ${esc(money(Number(order.proof.quote_cents)))}</h4><p class="proof-summary">${esc(order.proof.summary)}</p></div>`:''}
@@ -144,8 +149,20 @@
       let saved;
       try{
         const items=imported||[{product:$('buildProduct').value,size:$('buildSize').value,quantity:Number($('buildQuantity').value),artwork:$('buildArtwork').value,artworkSource:$('buildArtworkSource').value,lighting:$('buildLighting').value,finish:$('buildFinish').value,notes:$('buildNotes').value}];
-        const file=$('buildArtworkFile').files[0];if(items.some(item=>item.artworkSource==='upload')&&!file)throw new Error('Choose the artwork file, or select a Mirroried LED team design.');
+        const file=$('buildArtworkFile').files[0];
+        const builderFiles=[];
+        for(const item of items.filter(item=>item.builderDraftId)){
+          const draft=await window.MirrorDraftStore?.get(item.builderDraftId);
+          if(!draft?.maskBlob)throw new Error('This browser no longer has your engraving image. Return to the Infinity Mirror builder to restore it, or attach the artwork manually.');
+          builderFiles.push(new File([draft.maskBlob],`Infinity-${item.id}-engraving.png`,{type:'image/png'}));
+          if(draft.originalBlob&&draft.state?.artwork?.source==='upload'){
+            const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[draft.originalBlob.type];
+            if(ext)builderFiles.push(new File([draft.originalBlob],`Infinity-${item.id}-source.${ext}`,{type:draft.originalBlob.type}));
+          }
+        }
+        if(items.some(item=>item.artworkSource==='upload'&&!item.builderDraftId)&&!file)throw new Error('Choose the artwork file, or select a Mirroried LED team design.');
         if(file&&file.size>10485760)throw new Error('Artwork files must be 10 MB or smaller.');
+        if(builderFiles.length+(file?1:0)>20||builderFiles.reduce((sum,f)=>sum+f.size,0)+(file?.size||0)>52428800)throw new Error('Split this build list into smaller quote requests so its artwork stays within the 20-file / 50 MB limit.');
         saved=await api('business-request',{items:items.map(item=>({...item,size:item.product==='Layered Stadium Model'&&item.size==='Mid'?'Medium':item.size}))});
         try{
           if(imported){
@@ -156,6 +173,8 @@
           sessionStorage.removeItem(draftKey);
         }catch{}useDraft();$('buildRequestForm').reset();
         if(file)await uploadFile(saved.order.id,'artwork',file);
+        for(const artFile of builderFiles)await uploadFile(saved.order.id,'artwork',artFile);
+        for(const item of items.filter(item=>item.builderDraftId))await window.MirrorDraftStore.remove(item.builderDraftId).catch(()=>{});
         await refresh();message('buildRequestMessage',`Saved ${saved.order.id}. The team will review your quote request.`);
       }catch(error){if(saved){await refresh().catch(()=>{});message('buildRequestMessage',`${saved.order.id} was saved. ${error.message} Attach the file to that request below.`,true);}else message('buildRequestMessage',error.message,true);}
       finally{button.disabled=!ready();}

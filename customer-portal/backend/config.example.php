@@ -28,4 +28,14 @@ return [
         'signup_ip' => 10,
         'window_seconds' => 900,
     ],
+    'infinity_builder' => [
+        // Private, owner-approved activation only. No key is sent to the browser.
+        'ai_enabled' => false,
+        'openai_api_key' => '',
+        'allowed_user_ids' => [],
+        'text_model' => 'gpt-4o-mini',
+        'image_model' => 'gpt-image-1.5',
+        'daily_images_per_user' => 3,
+        'daily_images_total' => 10,
+    ],
 ];

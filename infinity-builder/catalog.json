@@ -1,0 +1,31 @@
+{
+  "version": "2026-10-04.1",
+  "sizes": [[12,12],[20,20],[24,24],[26,26],[30,30],[36,36],[25,30],[25,36]],
+  "rules": {
+    "frameLipIn": 0.6,
+    "rowGapIn": 0.25,
+    "artClearanceIn": 0.5,
+    "defaultDepthIn": 3,
+    "finish": "Frosted / diffused backside engraving; broad continuous light areas; no visible LED dots. Final operator proof required.",
+    "panelDimensions": "Nominal dimensions calculated from pitch and pixel count. The team verifies actual PCB size, scan mode, driver, stock and fit before production."
+  },
+  "controllers": [
+    {"id":"digi-uno","name":"QuinLED Digi-Uno","family":"addressable","available":true,"outputs":2},
+    {"id":"digi-quad","name":"QuinLED Digi-Quad","family":"addressable","available":true,"outputs":4},
+    {"id":"matrixportal-s3","name":"Adafruit MatrixPortal S3","family":"hub75","available":true},
+    {"id":"beast","name":"The Beast","family":"hub75","available":false,"reason":"Available after fabrication, validation and inventory release."}
+  ],
+  "panels": [
+    {"id":"hub-p3-64x32","name":"P3 · 64 × 32","family":"hub75","pitchMm":3,"pixelsX":64,"pixelsY":32,"widthMm":192,"heightMm":96,"stock":null,"maxAmps":null},
+    {"id":"hub-p319-64x64","name":"P3.19 · 64 × 64","family":"hub75","pitchMm":3.19,"pixelsX":64,"pixelsY":64,"widthMm":204.16,"heightMm":204.16,"stock":null,"maxAmps":null},
+    {"id":"hub-p5-64x32","name":"P5 · 64 × 32","family":"hub75","pitchMm":5,"pixelsX":64,"pixelsY":32,"widthMm":320,"heightMm":160,"stock":null,"maxAmps":null},
+    {"id":"flex-8x8","name":"Flexible · 8 × 8","family":"flex","pitchMm":10,"pixelsX":8,"pixelsY":8,"widthMm":80,"heightMm":80,"stock":null,"maxAmps":null},
+    {"id":"flex-16x16","name":"Flexible · 16 × 16","family":"flex","pitchMm":10,"pixelsX":16,"pixelsY":16,"widthMm":160,"heightMm":160,"stock":null,"maxAmps":null},
+    {"id":"flex-32x8","name":"Flexible · 32 × 8","family":"flex","pitchMm":10,"pixelsX":32,"pixelsY":8,"widthMm":320,"heightMm":80,"stock":null,"maxAmps":null}
+  ],
+  "gallery": [
+    {"id":"orbit","name":"Orbital geometry","category":"Geometric","url":"artwork/orbit.svg","source":"Original studio starter · final proof required"},
+    {"id":"tree","name":"Tree of light","category":"Nature","url":"artwork/tree.svg","source":"Original studio starter · final proof required"},
+    {"id":"wave","name":"Sound & motion","category":"Music","url":"artwork/wave.svg","source":"Original studio starter · final proof required"}
+  ]
+}
