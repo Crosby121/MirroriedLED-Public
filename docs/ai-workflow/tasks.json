@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T23:01:20Z",
+  "updated_at": "2026-10-04T23:11:09Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -129,6 +129,29 @@
         "tests/test_ai_capture.py",
         "tests/browser-ai-capture.test.cjs",
         "docs/ai-workflow/AUTO_CAPTURE.md"
+      ]
+    },
+    {
+      "id": "WF-007",
+      "title": "Address workflow capture privacy and streaming review findings",
+      "status": "in_progress",
+      "priority": 1,
+      "owner_session_id": "20261004t231109z-bacf3dd7",
+      "last_session_id": null,
+      "depends_on": [
+        "WF-001"
+      ],
+      "acceptance": [
+        "Reject tokenized evidence URLs before public publication.",
+        "Align structured and transcript credential-key redaction, including opaque values.",
+        "Save browser streaming changes efficiently with recoverable snapshots and preserve deferred uploads under API limits.",
+        "Pass regression tests and GitHub checks; keep live activation status accurate."
+      ],
+      "next_action": "Resolve the three PR #13 automated-review findings and publish the verified fixes.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712048",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712063",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712075"
       ]
     }
   ]

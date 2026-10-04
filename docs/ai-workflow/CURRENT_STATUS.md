@@ -22,6 +22,7 @@ Evidence snapshot: 2026-10-04T22:54:53Z (UTC). Refresh GitHub at the start of ea
 | --- | --- | --- | --- |
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
+| WF-007 — Address workflow capture privacy and streaming review findings | in_progress | 20261004t231109z-bacf3dd7 | Resolve the three PR #13 automated-review findings and publish the verified fixes. |
 | WF-002 — Resolve the main website deployment settings blocker | blocked | Unclaimed | Inspect the failed job and resolve the two reported main-site secret settings; preserve the separate sponsor VPS connection. |
 | WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Complete CONNECTOR_SETUP.md: provision scoped service credentials, resolve main-site SSH settings, run the manual connector install and verify each app read/write receipt. |
 | WF-006 — Activate automatic private AI chat capture and close recovery | blocked | Unclaimed | Complete AUTO_CAPTURE.md on the persistent PC and verify the private repository, trusted hooks, Chrome/native connection, background worker and actual GitHub receipts. Complete CONNECTOR_SETUP.md for task handoffs; do not claim live capture before verification. |
