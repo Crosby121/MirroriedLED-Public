@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-04T22:34:13Z",
+  "observed_at": "2026-10-04T22:57:33Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,25 +9,34 @@
   },
   "source": {
     "observed_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
-    "summary": "Shared AI workflow foundation is merged; limited public product ordering is being implemented on an isolated branch.",
+    "summary": "Main remains at the merged shared workflow foundation. The two-product landing page, builders, quote/delivery terms and Stripe checkout implementation are in draft PR #14; merchant acceptance and main-site deployment are blocked.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/620d57c6c182c19ada124a40722ef52e7474502d",
     "checks": [
       {
-        "name": "Full public release validation",
+        "name": "Historical release: Full public release validation",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537693924"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537693924",
+        "basis": "prior_release_actions_evidence; not a check of the unmerged checkout branch"
       },
       {
-        "name": "Storefront CI for supplier pricing",
+        "name": "Historical release: Storefront CI for supplier pricing",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236842366"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236842366",
+        "basis": "prior_release_actions_evidence; not a check of the unmerged checkout branch"
       },
       {
-        "name": "Website packaging",
+        "name": "Historical release: Website packaging",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890597"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890597",
+        "basis": "prior_release_actions_evidence; not a check of the unmerged checkout branch"
       }
-    ]
+    ],
+    "latest_check_query": {
+      "observed_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
+      "combined_statuses_returned": 0,
+      "pull_request_workflow_runs_returned": 0,
+      "basis": "GitHub connector queries; an empty result does not establish check success"
+    }
   },
   "deployment": {
     "live_commit": null,
@@ -82,6 +91,11 @@
       "finding": "Mirror builder quotes preserve the supplier policy and 20% markup on frame cost; dated supplier snapshots need verification.",
       "basis": "repository_documentation",
       "evidence": "docs/INFINITY_MIRROR_BUILDER.md"
+    },
+    {
+      "finding": "Draft PR #14 implements Infinity Mirror and address-sign custom orders with staff-reviewed product/shipping quotes, fulfillment ranges and canonical Stripe payment reconciliation. Instant final pricing for all configurations, actual merchant acceptance and live Hostinger deployment remain incomplete.",
+      "basis": "local_implementation_and_acceptance_tests",
+      "evidence": "https://github.com/Crosby121/MirroriedLED-Public/pull/14"
     }
   ]
 }

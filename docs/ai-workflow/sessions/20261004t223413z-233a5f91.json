@@ -5,16 +5,125 @@
   "application_identity": "declared",
   "github_account": "Crosby121",
   "started_at": "2026-10-04T22:34:13Z",
-  "ended_at": null,
-  "status": "active",
+  "ended_at": "2026-10-04T22:57:59Z",
+  "status": "blocked",
   "task_ids": [
     "WF-006"
   ],
   "branch": "codex/limited-storefront-checkout",
   "base_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
-  "summary": "",
-  "next_action": "",
-  "changed_files": [],
-  "checks": [],
-  "findings": []
+  "summary": "Implemented the phased-opening homepage and two-product customer ordering flow: saved full builds/artwork, real account requests, staff-confirmed complete product and shipping quotes, proof approval, production/transit ranges, hosted Stripe checkout, signed canonical payment reconciliation, and a live-payment production gate. Local HTTP, builder, packaging and browser checks pass. Real merchant acceptance, universal instant pricing and Hostinger deployment remain incomplete.",
+  "next_action": "Activate and verify the actual merchant sandbox checkout and signed webhook, confirm live tax/product/shipping/production terms, resolve HOSTINGER_SSH_PRIVATE_KEY and HOSTINGER_SSH_KNOWN_HOSTS, then run the full release and verify the exact live commit. Complete the pricing catalog if instant quotes are required. Review draft PR #14.",
+  "changed_files": [
+    ".github/workflows/deploy-hostinger-website.yml",
+    ".github/workflows/storefront-ci.yml",
+    "address-builder/builder.js",
+    "address-builder/index.html",
+    "customer-portal/backend/.htaccess",
+    "customer-portal/backend/business.php",
+    "customer-portal/backend/commerce.php",
+    "customer-portal/backend/config.example.php",
+    "customer-portal/backend/portal.php",
+    "customer-portal/business.js",
+    "customer-portal/index.html",
+    "customer-portal/operations.html",
+    "deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md",
+    "deploy/hostinger/package-customer-portal.py",
+    "deploy/hostinger/verify-storefront.sh",
+    "deploy/hostinger/verify-website.py",
+    "deploy/hostinger/website-release.py",
+    "docs/INFINITY_MIRROR_BUILDER.md",
+    "docs/PHASED_PRODUCT_OPENING.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261004t223413z-233a5f91.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "index.html",
+    "infinity-builder/builder.js",
+    "infinity-builder/index.html",
+    "shop/availability.js",
+    "shop/index.html",
+    "shop/shop.css",
+    "shop/shop.js",
+    "styles.css",
+    "tests/_builder_browser_server.py",
+    "tests/infinity-builder.browser.cjs",
+    "tests/test_business_backend.py",
+    "tests/test_commerce_backend.py",
+    "tests/test_customer_portal_backend.py",
+    "tests/test_production_release.py",
+    "tests/test_public_opening.py",
+    "tests/test_website_verification.py"
+  ],
+  "checks": [
+    {
+      "name": "PATH=/workspace/scratch/aef468820168/bin:$PATH python3 -m unittest discover -s tests -p 'test_*.py'",
+      "command": "PATH=/workspace/scratch/aef468820168/bin:$PATH python3 -m unittest discover -s tests -p 'test_*.py'",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "node --test tests/infinity-builder.test.cjs",
+      "command": "node --test tests/infinity-builder.test.cjs",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "PATH=/workspace/scratch/aef468820168/bin:$PATH NODE_PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules BROWSER_EXECUTABLE=/workspace/scratch/aef468820168/browser-runtime/chrome-headless-shell-linux64/chrome-headless-shell BUILDER_SCREENSHOT_DIR=/workspace/scratch/aef468820168/site-previews node tests/infinity-builder.browser.cjs",
+      "command": "PATH=/workspace/scratch/aef468820168/bin:$PATH NODE_PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules BROWSER_EXECUTABLE=/workspace/scratch/aef468820168/browser-runtime/chrome-headless-shell-linux64/chrome-headless-shell BUILDER_SCREENSHOT_DIR=/workspace/scratch/aef468820168/site-previews node tests/infinity-builder.browser.cjs",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 deploy/hostinger/package-customer-portal.py --output /workspace/scratch/aef468820168/MirroriedLED_Phased_Opening_Release.zip",
+      "command": "python3 deploy/hostinger/package-customer-portal.py --output /workspace/scratch/aef468820168/MirroriedLED_Phased_Opening_Release.zip",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 -m unittest discover -s tests -p 'test_ai_workflow.py' -v",
+      "command": "python3 -m unittest discover -s tests -p 'test_ai_workflow.py' -v",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "JavaScript syntax checks for new storefront and changed builder/team scripts",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "PHP syntax checks for all six backend files",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Actual merchant sandbox/live payment and signed provider webhook acceptance",
+      "result": "not_run",
+      "basis": "merchant credentials and private activation unavailable"
+    },
+    {
+      "name": "Full Hostinger deployment and exact-source live HTTP verification",
+      "result": "not_run",
+      "basis": "prior main-site SSH settings blocker and unverified merchant readiness"
+    }
+  ],
+  "findings": [
+    {
+      "finding": "Browser acceptance completed with a compatible local headless browser: both product handoffs, original/mask uploads, persisted configurations/delivery details, phone overflow and no page errors. All 100 Python HTTP/release/workflow tests and 16 builder tests passed.",
+      "basis": "executed_local_checks"
+    },
+    {
+      "finding": "A deterministic provider double covers canonical payment amount/identity checks, replay/retry behavior, quote locks and test-payment production denial. These tests do not establish a real merchant connection.",
+      "basis": "executed_local_provider_double_tests"
+    },
+    {
+      "finding": "Reviewed custom quotes are implemented because supplier/fabrication data cannot support complete instant pricing for every configuration. No price or production estimate was invented.",
+      "basis": "repository_catalog_and_implementation"
+    },
+    {
+      "finding": "The published work remains draft PR #14. No live website upload, real charge or production release was performed.",
+      "basis": "session_actions",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/14"
+    }
+  ]
 }

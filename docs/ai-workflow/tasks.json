@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T22:34:13Z",
+  "updated_at": "2026-10-04T22:57:59Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -103,18 +103,21 @@
     {
       "id": "WF-006",
       "title": "Open Infinity Mirror and address-sign ordering with a limited-access landing page",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": 1,
-      "owner_session_id": "20261004t223413z-233a5f91",
-      "last_session_id": null,
+      "owner_session_id": null,
+      "last_session_id": "20261004t223413z-233a5f91",
       "depends_on": [],
       "acceptance": [
         "Homepage explains phased opening and offers only Infinity Mirrors and address signs.",
         "Both products save complete customer configurations and expose approved pricing and fulfillment estimates.",
         "Hosted checkout uses server prices and verified provider confirmation; payment and deployment readiness are reported accurately."
       ],
-      "next_action": "Implement the landing page, address-sign builder and product checkout; verify merchant and fulfillment configuration before live activation.",
-      "evidence": []
+      "next_action": "Activate and verify the actual merchant sandbox checkout and signed webhook, confirm live tax/product/shipping/production terms, resolve HOSTINGER_SSH_PRIVATE_KEY and HOSTINGER_SSH_KNOWN_HOSTS, then run the full release and verify the exact live commit. Complete the pricing catalog if instant quotes are required. Review draft PR #14.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+        "docs/PHASED_PRODUCT_OPENING.md"
+      ]
     }
   ]
 }

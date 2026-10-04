@@ -2,11 +2,22 @@
 declare(strict_types=1);
 
 /* Copy to ../mirroriedled-private/customer-portal/config.php OUTSIDE public_html.
- * This example has no credentials. Limits are drafts; billing is disabled.
+ * This example has no credentials. Premium limits are drafts; product checkout is disabled.
  * Never place your working configuration, database, sessions or media in public_html.
  */
 return [
     'business_enabled' => true,
+    'premium_enabled' => false, // Premium media remains closed during the two-product opening.
+    'commerce' => [
+        'enabled' => false,
+        'mode' => 'live', // Use test only for provider sandbox acceptance, never fulfillment.
+        'stripe_secret_key' => getenv('MLED_STRIPE_SECRET_KEY') ?: '',
+        'stripe_webhook_secret' => getenv('MLED_STRIPE_WEBHOOK_SECRET') ?: '',
+        // Set after the merchant's actual registrations, product taxability,
+        // shipping policy, proof process and production capacity are confirmed.
+        'tax_setup_confirmed' => false,
+        'fulfillment_setup_confirmed' => false,
+    ],
     // Owner-approved numeric account IDs only. Verify each account before assigning roles.
     // Never assign staff access by an unverified email or by a signup form field.
     'staff_users' => [], // Example after verification: 7 => ['admin'].

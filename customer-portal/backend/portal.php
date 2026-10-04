@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/business.php';
 require_once __DIR__ . '/builder.php';
+require_once __DIR__ . '/commerce.php';
 
 final class PortalError extends RuntimeException
 {
@@ -51,8 +52,8 @@ final class CustomerPortal
     {
         $action = (string)($_GET['action'] ?? 'session');
         $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-        $reads = array_merge(['session', 'library', 'media'], BusinessPortal::READS, InfinityBuilder::READS);
-        $writes = array_merge(['signup', 'login', 'logout', 'upload', 'delete'], BusinessPortal::WRITES, InfinityBuilder::WRITES);
+        $reads = array_merge(['session', 'commerce-status', 'library', 'media'], BusinessPortal::READS, InfinityBuilder::READS, CommercePortal::READS);
+        $writes = array_merge(['signup', 'login', 'logout', 'upload', 'delete', 'commerce-webhook'], BusinessPortal::WRITES, InfinityBuilder::WRITES, CommercePortal::WRITES);
         if (!in_array($action, array_merge($reads, $writes), true)) {
             throw new PortalError('That portal action is unavailable.', 404);
         }
@@ -64,13 +65,29 @@ final class CustomerPortal
         if ($action === 'session') {
             portal_json($this->sessionData());
         }
+        if ($action === 'commerce-status') {
+            portal_json(['ok'=>true,'accountsAvailable'=>$this->configured,'paymentsAvailable'=>$this->configured && CommercePortal::available($this->config),
+                'paymentMode'=>$this->configured && CommercePortal::available($this->config) ? ($this->config['commerce']['mode']??'live') : null,
+                'products'=>CommercePortal::PRODUCTS]);
+        }
         if (!$this->configured) {
             throw new PortalError($this->status, 503);
+        }
+        if ($action === 'commerce-webhook') {
+            new BusinessPortal($this->database,$this->config,$this->storage,['id'=>0]);
+            session_write_close();
+            (new CommercePortal($this->database,$this->config,null))->webhook();
         }
         $data = [];
         if (in_array($action, $writes, true)) {
             $data = in_array($action, ['upload', 'business-upload'], true) ? $_POST : $this->readJson($action === 'business-request' ? 131072 : 16384);
             $this->requireCsrf($data);
+        }
+        if (str_starts_with($action,'commerce-')) {
+            $user=$this->requireUser();
+            new BusinessPortal($this->database,$this->config,$this->storage,$user);
+            session_write_close();
+            (new CommercePortal($this->database,$this->config,$user))->handle($action,$data);
         }
         if (str_starts_with($action, 'business-')) {
             $business = new BusinessPortal($this->database, $this->config, $this->storage, $this->requireUser());
@@ -79,6 +96,11 @@ final class CustomerPortal
         if (str_starts_with($action, 'builder-')) {
             $builder = new InfinityBuilder($this->database, $this->config, $this->storage, $this->requireUser());
             $builder->handle($action, $data);
+        }
+        if (in_array($action,['library','media','upload','delete'],true)
+            && ($this->config['premium_enabled']??false)!==true
+            && BusinessPortal::roles($this->config,$this->requireUser())===[]) {
+            throw new PortalError('Premium media services are being completed. Infinity Mirror and address-sign orders are available in the Customer Portal.',403);
         }
         match ($action) {
             'signup' => $this->signup($data),
@@ -272,9 +294,9 @@ final class CustomerPortal
             'user' => $user !== null ? $this->publicUser($user) : null,
             'csrf' => $this->configured ? (string)$_SESSION['csrf'] : null,
             'plans' => $this->publicPlans(), 'status' => $this->status,
-            'capabilities' => ['signup' => $this->configured, 'upload' => $this->configured,
+            'capabilities' => ['signup' => $this->configured, 'upload' => $this->configured && ($this->config['premium_enabled']??false)===true,
                 'business' => $this->configured && ($this->config['business_enabled'] ?? false) === true,
-                'hardwareSync' => false, 'payments' => false,
+                'hardwareSync' => false, 'payments' => CommercePortal::available($this->config),
                 'builderAi' => $this->configured && InfinityBuilder::aiAvailable($this->config, $user),
                 'maxFileBytes' => ['audio' => $this->configured ? $this->positiveOption('max_audio_bytes', 67108864) : 67108864,
                     'video' => $this->configured ? $this->positiveOption('max_video_bytes', 134217728) : 134217728]]];

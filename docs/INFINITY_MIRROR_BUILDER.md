@@ -2,6 +2,8 @@
 
 `Choose a build → Build Infinity Mirror → /infinity-builder/`
 
+The public ordering handoff now uses `/shop/`. See [the phased opening](PHASED_PRODUCT_OPENING.md) for final quote review and physical-product payment.
+
 The builder has six linked steps: supported mirror size / frame finish, WS2812B rim
 rows and counts, customer-approved artwork, rear lighting / panel layout,
 compatible controllers, and the remaining hardware. A live SVG preview shows
@@ -172,7 +174,7 @@ Official implementation references:
 
 Use the **Deploy Complete Website to Hostinger** workflow and the expanded
 `package-customer-portal.py` / `website-release.py` public allowlists. This release
-contains 29 public files; private configuration and customer data are excluded.
+contains 36 public files; private configuration and customer data are excluded.
 The older eight-file storefront-only staging/manual helpers do not include this
 builder or the Customer Portal and must not be used to publish this release.
 The complete website installer backs up the entire site, protects `builder.php`

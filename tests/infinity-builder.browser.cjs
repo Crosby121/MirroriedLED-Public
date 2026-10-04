@@ -11,7 +11,7 @@ const {chromium}=require('playwright');
     browser=await chromium.launch({executablePath:process.env.BROWSER_EXECUTABLE||undefined,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
     const context=await browser.newContext({viewport:{width:1440,height:1050}}),page=await context.newPage();
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
-    await page.goto(url);await page.getByRole('link',{name:'Build Infinity Mirror',exact:true}).click();
+    await page.goto(url);await page.getByRole('link',{name:'Build my Infinity Mirror',exact:true}).click();
     await page.waitForSelector('#sizeOptions label');
     assert.equal(new URL(page.url()).pathname,'/infinity-builder/');
     assert.equal(await page.locator('#addBuild').isEnabled(),false);
@@ -79,17 +79,19 @@ const {chromium}=require('playwright');
     // Activate a local test account, without an AI key or any external submission.
     const login=await page.evaluate(async()=>{const s=await (await fetch('../customer-portal/backend/api.php?action=session')).json();return(await fetch('../customer-portal/backend/api.php?action=signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csrf:s.csrf,name:'Browser Fixture',email:'browser-'+crypto.randomUUID()+'@example.com',password:'local fixture password 123',requestedPlan:'free'})})).json();});
     assert.equal(login.ok,true);
-    await page.locator('#addBuild').click();await page.waitForURL('**/customer-portal/#builds');
-    await page.waitForFunction(()=>document.querySelector('#saveBuildRequest').disabled===false);
-    assert.equal(await page.locator('#buildArtworkFile').inputValue(),'');
-    await page.locator('#saveBuildRequest').click();
-    await page.waitForFunction(()=>document.querySelector('#buildRequestMessage').textContent.includes('The team will review'));
-    assert.ok((await page.locator('#customerBuilds').textContent()).includes('3 rim rows × 120 LEDs'));
-    assert.ok((await page.locator('#customerBuilds').textContent()).includes('engraving.png'));
-    assert.ok((await page.locator('#customerBuilds').textContent()).includes('source.png'));
-    assert.ok((await page.locator('#customerBuilds').textContent()).includes('Supplier estimate:'));
-    assert.ok((await page.locator('#customerBuilds').textContent()).includes('Frame markup: 20%'));
-    assert.ok((await page.locator('#customerBuilds').textContent()).includes('Rush request'));
+    await page.locator('#addBuild').click();await page.waitForURL('**/shop/#builds');
+    await page.waitForFunction(()=>document.querySelector('#saveBuild').disabled===false);
+    await page.locator('#saveBuildForm [name=name]').fill('Browser Fixture');await page.locator('#saveBuildForm [name=line1]').fill('100 Test Way');await page.locator('#saveBuildForm [name=city]').fill('West Covina');await page.locator('#saveBuildForm [name=state]').selectOption('CA');await page.locator('#saveBuildForm [name=postalCode]').fill('91790');await page.locator('#designConsent').check();
+    await page.locator('#saveBuild').click();
+    await page.waitForFunction(()=>document.querySelector('#buildMessage').textContent.includes('Build MLED-'));
+    assert.ok((await page.locator('#orderList').textContent()).includes('360 rim LEDs'));
+    const orders=await page.evaluate(async()=>await(await fetch('../customer-portal/backend/api.php?action=business-orders')).json());
+    assert.equal(orders.orders.length,1);assert.ok(orders.orders[0].files.some(f=>f.name.endsWith('engraving.png')));assert.ok(orders.orders[0].files.some(f=>f.name.endsWith('original.png')));assert.equal(orders.orders[0].commerce.address.postalCode,'91790');
+    assert.equal(orders.orders[0].items[0].builder.state.rim.rows,3);assert.equal(orders.orders[0].items[0].builder.pricing.frameMarkupPercent,20);
+    await page.goto(url+'/address-builder/');await page.locator('[name=number]').fill('128');await page.locator('[name=street]').fill('Test Way');await page.locator('#signForm input[type=checkbox]').check();await page.getByRole('button',{name:'Review price & delivery'}).click();await page.waitForURL('**/shop/#builds');
+    assert.ok((await page.locator('#draftItems').textContent()).includes('128 · Test Way'));
+    await page.locator('#saveBuildForm [name=name]').fill('Browser Fixture');await page.locator('#saveBuildForm [name=line1]').fill('100 Test Way');await page.locator('#saveBuildForm [name=city]').fill('West Covina');await page.locator('#saveBuildForm [name=state]').selectOption('CA');await page.locator('#saveBuildForm [name=postalCode]').fill('91790');await page.locator('#designConsent').check();await page.locator('#saveBuild').click();await page.waitForFunction(()=>document.querySelectorAll('.order-card').length===2);
+    if(screenshotDir){await page.screenshot({path:path.join(screenshotDir,'Customer_Orders_Preview.png'),fullPage:false});await page.goto(url);await page.screenshot({path:path.join(screenshotDir,'MirroriedLED_Landing_Page.png'),fullPage:true});}
     // Separate mobile context checks responsive overflow and uploaded artwork approval.
     const mobile=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const phone=await mobile.newPage();phone.on('pageerror',e=>errors.push(e.message));
     await phone.goto(url+'/infinity-builder/');await phone.waitForSelector('#sizeOptions label');
@@ -101,6 +103,7 @@ const {chromium}=require('playwright');
     assert.equal(await phone.locator('#priceLines').isVisible(),true);
     assert.equal(await phone.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
     if(screenshotDir){await phone.screenshot({path:path.join(screenshotDir,'Infinity_Mirror_Builder_Mobile.png'),fullPage:false});}
+    for(const route of ['/','/address-builder/','/shop/']){await phone.goto(url+route);assert.equal(await phone.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
     assert.deepEqual(errors,[]);
     console.log('BROWSER_CHECKS_PASSED: storefront routing; live LED rows/counts/prices; 20% frame markup; rush suppliers; quote estimates; Coming Soon gating; approval; fit; drafts; original/mask uploads; phone layout; no page errors');
     await mobile.close();await context.close();

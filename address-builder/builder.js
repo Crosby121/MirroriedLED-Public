@@ -1,0 +1,8 @@
+(() => {
+  'use strict';
+  const form=document.getElementById('signForm');
+  function values(){return Object.fromEntries(new FormData(form));}
+  function render(){const v=values();document.getElementById('numberPreview').textContent=v.number||'Your number';document.getElementById('streetPreview').textContent=v.street||'Your street';document.getElementById('signSummary').textContent=`${v.size} in · ${v.finish} · ${v.lighting} · ${v.color} · ${v.mount}`;document.getElementById('numberPreview').style.fontFamily=v.font==='Classic'?'Georgia,serif':'system-ui,sans-serif';}
+  form.addEventListener('input',render);form.addEventListener('change',render);
+  form.addEventListener('submit',event=>{event.preventDefault();if(!form.reportValidity())return;const v=values();try{let cart=JSON.parse(localStorage.getItem('mirroriedled_storefront_cart_vnext')||'[]');if(!Array.isArray(cart))cart=[];cart=cart.filter(x=>['Custom Infinity Mirror','Address Sign or Mailbox'].includes(x.product));if(cart.length>=20)throw new Error('Review your existing build list before adding another sign.');const sign={version:1,...Object.fromEntries(['number','street','size','finish','font','color','lighting','mount'].map(k=>[k,v[k]]))};cart.push({id:crypto.randomUUID(),product:'Address Sign or Mailbox',size:v.size,quantity:1,artwork:[v.number,v.street].filter(Boolean).join(' · '),artworkSource:'team-design',lighting:`${v.lighting} · ${v.color}`,finish:v.finish,notes:v.notes||'',addressBuilder:sign});localStorage.setItem('mirroriedled_storefront_cart_vnext',JSON.stringify(cart));sessionStorage.setItem('mirroriedled_quote_draft_v1',JSON.stringify(cart));location.href='../shop/#builds';}catch(error){document.getElementById('signMessage').textContent=error.message;}});render();
+})();
