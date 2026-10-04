@@ -28,6 +28,7 @@ jobs:
         run: |
           bash -n deploy/hostinger/staging-release.sh
           python3 -m unittest discover -s tests -p 'test_*release.py' -v
+          python3 -m unittest discover -s tests -p 'test_website_verification.py' -v
 
       - name: Verify required storefront files
         run: |

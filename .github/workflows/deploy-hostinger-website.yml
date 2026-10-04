@@ -1,0 +1,153 @@
+name: Deploy Complete Website to Hostinger
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - styles.css
+      - app.js
+      - repair.js
+      - '*.webp'
+      - customer-portal/**
+      - deploy/hostinger/website-release.py
+      - deploy/hostinger/verify-website.py
+      - deploy/hostinger/package-customer-portal.py
+      - .github/workflows/deploy-hostinger-website.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hostinger-main-website
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate the complete public release
+        run: |
+          node --check app.js
+          node --check repair.js
+          node --check customer-portal/portal.js
+          node --check customer-portal/business.js
+          for source in customer-portal/backend/*.php; do php -l "$source"; done
+          php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("pdo_sqlite") && extension_loaded("fileinfo") && extension_loaded("dom") ? 0 : 1);'
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
+          python3 deploy/hostinger/package-customer-portal.py --output "$RUNNER_TEMP/MirroriedLED_Automated_Business_Website.zip"
+
+  deploy:
+    needs: validate
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://mirroriedled.com
+    env:
+      SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+      SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+      SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+      PUBLIC_HTML: ${{ secrets.HOSTINGER_PUBLIC_HTML }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Verify main website hosting settings
+        run: |
+          missing=0
+          for setting in SSH_HOST SSH_PORT SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS PUBLIC_HTML; do
+            if [[ -z "${!setting}" ]]; then
+              echo "Missing main website hosting setting: $setting" >&2
+              missing=1
+            fi
+          done
+          if (( missing )); then
+            echo 'The existing STAGING_SSH settings connect to the separate sponsor VPS. This release requires the main website hosting connection.' >&2
+            exit 1
+          fi
+          [[ "$SSH_HOST" =~ ^[A-Za-z0-9][A-Za-z0-9.-]*$ ]] || { echo 'Invalid Hostinger SSH host' >&2; exit 1; }
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( 10#$SSH_PORT >= 1 && 10#$SSH_PORT <= 65535 )) || { echo 'Invalid Hostinger SSH port' >&2; exit 1; }
+          [[ "$SSH_USER" =~ ^u[0-9]+$ ]] || { echo 'Use the main website hosting user, not VPS root' >&2; exit 1; }
+          [[ "$PUBLIC_HTML" == "/home/$SSH_USER/domains/mirroriedled.com/public_html" ]] || { echo 'Webroot must belong to this main website hosting account' >&2; exit 1; }
+          install -m 700 -d "$RUNNER_TEMP/hostinger-ssh"
+          umask 077
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          directory = Path(os.environ['RUNNER_TEMP']) / 'hostinger-ssh'
+          key = os.environ['SSH_PRIVATE_KEY'].lstrip('\ufeff').replace('\r', '').strip()
+          if '\\n' in key and '\n' not in key:
+              key = key.replace('\\n', '\n')
+          (directory / 'key').write_text(key + '\n')
+          (directory / 'known_hosts').write_text(os.environ['SSH_KNOWN_HOSTS'].replace('\r', '').strip() + '\n')
+          PY
+          ssh-keygen -y -P '' -f "$RUNNER_TEMP/hostinger-ssh/key" >/dev/null 2>&1 || {
+            echo 'The website hosting private key is invalid or needs a passphrase' >&2
+            exit 1
+          }
+
+      - name: Check website host and PHP before any upload
+        run: |
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML'" <<'REMOTE'
+          set -euo pipefail
+          test -d "$1"
+          test -f "$1/index.html"
+          command -v python3 >/dev/null
+          command -v php >/dev/null
+          python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
+          php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("pdo_sqlite") && extension_loaded("fileinfo") && extension_loaded("dom") ? 0 : 1);'
+          echo 'MAIN_WEBSITE_HOST_PREFLIGHT_PASSED'
+          REMOTE
+
+      - name: Build the public website package
+        run: |
+          python3 deploy/hostinger/package-customer-portal.py --output "$RUNNER_TEMP/MirroriedLED_Automated_Business_Website.zip"
+          curl --fail --silent --show-error --location --max-time 30 "https://mirroriedled.com/index.html?mled_before=$GITHUB_RUN_ID" --output "$RUNNER_TEMP/live-before.html"
+          printf 'EXPECTED_HOMEPAGE_SHA=%s\n' "$(sha256sum "$RUNNER_TEMP/live-before.html" | cut -d ' ' -f 1)" >> "$GITHUB_ENV"
+          printf 'REMOTE_STAGE=%s\n' "${PUBLIC_HTML%/public_html}/.mirroriedled-release-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+
+      - name: Upload checked release outside public_html
+        run: |
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "umask 077; mkdir '$REMOTE_STAGE'"
+          scp "${SSH_OPTIONS[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/MirroriedLED_Automated_Business_Website.zip" deploy/hostinger/website-release.py "$SSH_USER@$SSH_HOST:$REMOTE_STAGE/"
+
+      - name: Back up and install all website files
+        id: install
+        run: |
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "python3 '$REMOTE_STAGE/website-release.py' install --webroot '$PUBLIC_HTML' --archive '$REMOTE_STAGE/MirroriedLED_Automated_Business_Website.zip' --release-id '$GITHUB_SHA' --expected-homepage-sha '$EXPECTED_HOMEPAGE_SHA' --receipt '$REMOTE_STAGE/receipt.json'"
+
+      - name: Verify the complete live website
+        id: verify
+        run: python3 deploy/hostinger/verify-website.py --source . --release "$GITHUB_SHA"
+
+      - name: Restore previous public files if HTTP verification fails
+        if: ${{ failure() && steps.install.outcome == 'success' && steps.verify.outcome == 'failure' }}
+        run: |
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "python3 '$REMOTE_STAGE/website-release.py' rollback --webroot '$PUBLIC_HTML' --receipt '$REMOTE_STAGE/receipt.json'"
+
+      - name: Report verified deployment
+        run: |
+          printf 'Mirroried LED full public website deployed and verified.\n\nCommit: `%s`\n\nhttps://mirroriedled.com\n\nPrivate accounts, uploads and team records use the existing server configuration.\n' "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove temporary runner credentials and remote package
+        if: ${{ always() }}
+        run: |
+          if [[ -n "${REMOTE_STAGE:-}" && -f "$RUNNER_TEMP/hostinger-ssh/key" ]]; then
+            SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
+            ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "rm -f -- '$REMOTE_STAGE/MirroriedLED_Automated_Business_Website.zip' '$REMOTE_STAGE/website-release.py' '$REMOTE_STAGE/receipt.json'; rmdir '$REMOTE_STAGE'" || echo 'Temporary remote package cleanup needs attention; private backups remain intact'
+          fi
+          rm -f -- "$RUNNER_TEMP/hostinger-ssh/key" "$RUNNER_TEMP/hostinger-ssh/known_hosts"
