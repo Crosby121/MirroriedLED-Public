@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Mirroried LED customer access: a private music and video library, premium plan requests and a synchronized LED preview for Chataigne and WLED-MM setups.">
+  <meta name="color-scheme" content="dark">
+  <title>Customer Portal — Mirroried LED</title>
+  <link rel="stylesheet" href="portal.css?v=8d308800844b">
+  <script src="portal.js?v=c4776ba9d6d2" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="../" aria-label="Mirroried LED home"><span class="brand-mark">M</span><span><strong>MIRRORIED LED</strong><small>Customer Portal</small></span></a>
+      <nav aria-label="Portal navigation"><a href="#plans">Plans</a><a href="#studio">Light studio</a><a href="#connection">Your LEDs</a><a href="../#contact">Support</a></nav>
+      <a class="header-action" href="#account" id="accountLink">Sign up / Log in</a>
+    </div>
+  </header>
+  <main id="main">
+    <div class="shell">
+      <div class="release-note"><span class="status-dot"></span><strong>Draft premium access</strong><span>Plans are being finalized. Billing is off.</span></div>
+      <section class="welcome-grid" aria-labelledby="welcomeTitle">
+        <div class="welcome-copy">
+          <p class="eyebrow">YOUR MUSIC. YOUR VIDEO. YOUR LIGHT.</p>
+          <h1 id="welcomeTitle">Make every<br>beat <span>visible.</span></h1>
+          <p class="lead">Build your media library and see music and video come alive as LED light. Designed for your Chataigne + WLED-MM setup.</p>
+          <div class="hero-actions"><a class="button primary" href="#studio">Try the light studio <span aria-hidden="true">↗</span></a><a class="button secondary" href="#plans">Explore plans</a></div>
+          <div class="feature-line"><span>Music-reactive preview</span><span>Video-to-pixel preview</span><span>Private uploads</span></div>
+        </div>
+        <section class="account-panel panel" id="account" aria-labelledby="accountTitle">
+          <div class="panel-heading"><p class="eyebrow">CUSTOMER ACCESS</p><span class="small-tag" id="accountState">Checking access</span></div>
+          <div id="signedOut">
+            <h2 id="accountTitle">Your next light show<br>starts here.</h2>
+            <p class="muted" id="accountAvailability">Checking account availability…</p>
+            <div class="auth-tabs" aria-label="Account action"><button type="button" id="signupTab" class="active" aria-pressed="true">Sign up</button><button type="button" id="loginTab" aria-pressed="false">Log in</button></div>
+            <form id="accountForm">
+              <label id="nameField">Your name<input name="name" id="accountName" autocomplete="name" maxlength="100" required></label>
+              <label>Email address<input name="email" id="accountEmail" type="email" autocomplete="email" maxlength="254" required></label>
+              <label>Password<input name="password" id="accountPassword" type="password" autocomplete="new-password" minlength="12" maxlength="72" required><small id="passwordHint">Use at least 12 characters.</small></label>
+              <label id="planField">Plan you’re interested in<select id="requestedPlan" name="requestedPlan"><option value="free">Free</option><option value="premium" selected>Premium</option><option value="premium-plus">Premium+</option></select></label>
+              <button class="button primary full-width" id="accountSubmit" type="submit" disabled>Create my account</button>
+              <p class="fine-print" id="signupNote">New accounts begin with Free storage. Premium requests do not start a subscription or charge you.</p>
+            </form>
+          </div>
+          <div id="signedIn" hidden>
+            <h2 id="memberGreeting">Welcome back.</h2><p class="muted" id="memberEmail"></p>
+            <dl class="member-details"><div><dt>Active access</dt><dd id="memberPlan"></dd></div><div><dt>Requested plan</dt><dd id="memberRequest"></dd></div><div><dt>Billing</dt><dd>Off · no charges</dd></div></dl>
+            <a class="button primary full-width" href="#studio">Open my media library</a><button class="text-button" type="button" id="logoutButton">Log out</button>
+            <p class="fine-print">Use Mirroried LED support for account help or to request a change to your access.</p>
+          </div>
+          <p class="form-message" id="accountMessage" role="status" aria-live="polite"></p>
+        </section>
+      </section>
+      <section class="plans-section" id="plans" aria-labelledby="plansTitle">
+        <div class="section-heading"><div><p class="eyebrow">ROOM FOR YOUR NEXT SHOW</p><h2 id="plansTitle">Choose your capacity.</h2></div><p>Draft library limits.<br>Premium pricing to be confirmed.</p></div>
+        <div class="plans-grid" id="planCards">
+          <article class="plan-card"><div class="plan-top"><h3>Free</h3><span class="small-tag">Draft</span></div><p class="plan-description">Try your first light show.</p><div class="plan-capacity"><strong data-plan-songs="free">3</strong> songs <span>+</span> <strong data-plan-videos="free">1</strong> video</div><ul><li>Personal media library</li><li>Music and video LED preview</li></ul><button class="button secondary full-width plan-select" type="button" data-plan="free">Choose Free</button><p class="price-note">No payment required</p></article>
+          <article class="plan-card featured"><div class="plan-top"><h3>Premium</h3><span class="small-tag teal">Draft</span></div><p class="plan-description">More music. More possibilities.</p><div class="plan-capacity"><strong data-plan-songs="premium">25</strong> songs <span>+</span> <strong data-plan-videos="premium">5</strong> videos</div><ul><li>Expanded media capacity</li><li>Chataigne + WLED-MM setup path</li></ul><button class="button primary full-width plan-select" type="button" data-plan="premium">Request Premium</button><p class="price-note">Pricing to be confirmed</p></article>
+          <article class="plan-card"><div class="plan-top"><h3>Premium+</h3><span class="small-tag">Draft</span></div><p class="plan-description">Build a bigger collection.</p><div class="plan-capacity"><strong data-plan-songs="premium-plus">100</strong> songs <span>+</span> <strong data-plan-videos="premium-plus">20</strong> videos</div><ul><li>Our largest draft media library</li><li>Music and video show planning</li></ul><button class="button secondary full-width plan-select" type="button" data-plan="premium-plus">Request Premium+</button><p class="price-note">Pricing to be confirmed</p></article>
+        </div>
+        <p class="section-note">These are proposed storage counts, not a paid offer. Premium access must be approved by the Mirroried LED team.</p>
+      </section>
+      <section class="studio-section" id="studio" aria-labelledby="studioTitle">
+        <div class="section-heading"><div><p class="eyebrow">LIGHT STUDIO</p><h2 id="studioTitle">See the sound.<br>Feel the color.</h2></div><span class="studio-badge">Browser preview</span></div>
+        <div class="studio-grid">
+          <div class="studio-controls panel">
+            <h3>Bring your media.</h3><p class="muted">Choose music or a video, then play it alongside your LED preview.</p>
+            <form id="uploadForm">
+              <label class="file-label" for="mediaFile"><span class="upload-symbol" aria-hidden="true">↑</span><strong>Choose a song or video</strong><span>MP3 · WAV · OGG · MP4 · WebM</span></label>
+              <input type="file" id="mediaFile" name="file" accept=".mp3,.wav,.ogg,.mp4,.webm,audio/mpeg,audio/wav,audio/ogg,video/mp4,video/webm">
+              <p class="selected-file" id="selectedFile">No file selected.</p>
+              <div class="upload-actions"><button class="button secondary" id="localPreviewButton" type="button" disabled>Preview on this device</button><button class="button primary" id="saveMediaButton" type="submit" disabled>Save to my library</button></div>
+              <p class="fine-print" id="uploadAvailability">Local previews work without an account. Sign in to save a private upload.</p>
+              <progress id="uploadProgress" max="100" value="0" aria-label="Upload progress" hidden></progress>
+              <p class="form-message" id="uploadMessage" role="status" aria-live="polite"></p>
+            </form>
+            <div class="preview-settings"><label>Light source<select id="previewMode"><option value="music">Music-reactive</option><option value="video">Video colors</option></select></label><label>Preview brightness <span id="brightnessValue">60%</span><input id="brightness" type="range" min="5" max="100" value="60"></label></div>
+          </div>
+          <div class="preview-panel panel">
+            <div class="preview-heading"><div><p class="eyebrow">LED MATRIX</p><h3 id="previewName">Your light canvas.</h3></div><span class="small-tag" id="previewStatus">Illustration</span></div>
+            <div class="matrix-frame"><canvas id="ledCanvas" width="960" height="540" role="img" aria-label="LED matrix preview. Choose and play music or a video to synchronize the lights."></canvas></div>
+            <div class="player-bar"><p id="playerDescription">Play the demo, or choose your own media.</p><button class="button secondary compact" id="demoButton" type="button">Play demo</button></div>
+            <div id="playerContainer" hidden><video id="mediaPlayer" controls playsinline preload="metadata" aria-label="Music and video preview player"></video></div>
+            <p class="fine-print preview-disclosure" id="previewDisclosure">The matrix above is a browser visualization. Your physical LEDs need a connected local controller bridge.</p>
+          </div>
+        </div>
+        <div class="library-panel panel">
+          <div class="library-heading"><div><p class="eyebrow">YOUR COLLECTION</p><h3>My media library</h3></div><span class="small-tag" id="libraryUsage">Sign in to save media</span></div>
+          <p class="library-empty" id="libraryEmpty">Your saved songs and videos will appear here. Local previews are not uploaded or saved.</p>
+          <ul id="mediaLibrary" class="media-library" aria-label="Saved music and videos"></ul>
+          <p class="form-message" id="libraryMessage" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+      <section class="connection-section panel" id="connection" aria-labelledby="connectionTitle">
+        <div><p class="eyebrow">FROM SCREEN TO REAL LIGHT</p><h2 id="connectionTitle">Chataigne + WLED-MM</h2><p class="muted">Your local show computer handles the music, video and timing. Chataigne coordinates the show; WLED-MM drives your LEDs.</p></div>
+        <div class="connection-state"><span class="small-tag">Setup required</span><h3>Device bridge not connected</h3><p class="muted">Ask the Mirroried LED team to pair your controller and configure your show. This draft portal previews media; it does not send live commands to your lights.</p><a class="button secondary" href="../#contact">Request LED setup</a></div>
+      </section>
+    </div>
+  </main>
+  <footer><div class="shell"><span>© <span id="year">2026</span> Mirroried LED</span><a href="../">Back to the website <span aria-hidden="true">↗</span></a></div></footer>
+</body>
+</html>

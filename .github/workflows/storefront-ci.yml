@@ -44,6 +44,20 @@ jobs:
         run: |
           node --check app.js
           node --check repair.js
+          node --check customer-portal/portal.js
+
+      - name: Validate customer portal PHP
+        run: |
+          php -l customer-portal/backend/api.php
+          php -l customer-portal/backend/portal.php
+          php -l customer-portal/backend/config.example.php
+          php -m | grep -q pdo_sqlite
+          php -m | grep -q fileinfo
+          python3 -m unittest discover -s tests -p 'test_customer_portal_backend.py' -v
+
+      - name: Verify public customer portal package
+        run: |
+          python3 deploy/hostinger/package-customer-portal.py --output "$RUNNER_TEMP/MirroriedLED_Customer_Portal_Draft.zip"
 
       - name: Verify required public sections
         run: |
