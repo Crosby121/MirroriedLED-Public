@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-04T22:04:06Z",
+  "observed_at": "2026-10-04T22:18:30Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -46,15 +46,16 @@
   "connections": [
     {
       "application": "ChatGPT Work / Codex",
-      "github_access": "Read observed; repository reports push permission.",
+      "github_access": "Authenticated GitHub reads, branch publication and PR creation verified for Crosby121.",
       "session_logging": "Explicit local helper or JSON record",
       "shared_remote_connector": "not_installed"
     },
     {
       "application": "GitHub Copilot",
-      "github_access": "Not tested by this session.",
+      "github_access": "GitHub Copilot code review observed on PR #12; local IDE access and session logging are not tested.",
       "session_logging": "Repository instructions plus explicit helper or JSON record",
-      "shared_remote_connector": "not_installed"
+      "shared_remote_connector": "not_installed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/12#pullrequestreview-5408473625"
     },
     {
       "application": "Hostinger Agent",

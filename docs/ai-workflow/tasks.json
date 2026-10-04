@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T22:06:15Z",
+  "updated_at": "2026-10-04T22:18:30Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -79,6 +79,25 @@
       "next_action": "Use available ChatGPT, Copilot and Hostinger exports or logs to add sourced summaries; the initial GitHub-only baseline is already recorded.",
       "evidence": [
         "docs/ai-workflow/history/github-baseline.json"
+      ]
+    },
+    {
+      "id": "WF-005",
+      "title": "Address the credential-filter review finding",
+      "status": "done",
+      "priority": 1,
+      "owner_session_id": null,
+      "last_session_id": "20261004t221710z-a0660637",
+      "depends_on": [
+        "WF-001"
+      ],
+      "acceptance": [
+        "Detect fine-grained GitHub tokens before recording a handoff and during shared-record validation.",
+        "Cover the token format in regression tests and pass the updated GitHub checks."
+      ],
+      "next_action": "Complete the updated PR checks and merge the foundation; WF-003 is the next independent app-connection task.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/12#discussion_r4179537729"
       ]
     }
   ]

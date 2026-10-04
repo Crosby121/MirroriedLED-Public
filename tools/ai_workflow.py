@@ -21,7 +21,7 @@ REL = Path("docs/ai-workflow")
 SESSION_ID = re.compile(r"[a-z0-9][a-z0-9_-]{0,95}")
 TASK_ID = re.compile(r"WF-[0-9]{3,}")
 COMMIT = re.compile(r"[0-9a-f]{40}")
-SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|sk-proj-[A-Za-z0-9_-]{30,}")
+SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9_-]{30,}")
 
 
 def now():

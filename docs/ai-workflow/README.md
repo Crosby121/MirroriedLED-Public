@@ -125,6 +125,9 @@ This is a public repository. Store relevant public work summaries and evidence
 links. Keep private chat exports, credentials, customer identities, recordings,
 media, order data and unredacted logs outside it.
 
+The validator detects recognizable private-key and token formats. It is a
+best-effort guard; review and redact summaries before publication.
+
 The imported baseline records merged PRs and checked workflow outcomes. GitHub
 accounts and merge times are known; AI app identity and earlier access times
 remain unknown unless an explicit trustworthy source supplies them. Available

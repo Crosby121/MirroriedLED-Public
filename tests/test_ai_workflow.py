@@ -25,11 +25,12 @@ class SharedWorkflowTests(unittest.TestCase):
         shutil.copy2(REPO / "AGENTS.md", self.root / "AGENTS.md")
         (self.root / ".github").mkdir()
         shutil.copy2(REPO / ".github/copilot-instructions.md", self.root / ".github/copilot-instructions.md")
-        # Close the foundation fixture so the connection task is ready to claim.
+        # Normalize mutable production records into independent lifecycle fixtures.
         queue = workflow.read(self.root / workflow.REL / "tasks.json")
         for task in queue["tasks"]:
-            if task["id"] == "WF-001":
-                task.update(status="done", owner_session_id=None)
+            task.update(status="done" if task["id"] == "WF-001" else
+                        "blocked" if task["id"] == "WF-002" else "ready",
+                        owner_session_id=None)
         workflow.write(self.root / workflow.REL / "tasks.json", queue)
         for path in (self.root / workflow.REL / "sessions").glob("*.json"):
             record = workflow.read(path)
@@ -94,7 +95,8 @@ class SharedWorkflowTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unknown task"):
             workflow.start(self.root, "Copilot", "WF-999")
         queue = workflow.read(self.root / workflow.REL / "tasks.json")
-        queue["tasks"][0].update(status="blocked", next_action="Fixture prerequisite missing")
+        next(item for item in queue["tasks"] if item["id"] == "WF-001").update(
+            status="blocked", next_action="Fixture prerequisite missing")
         workflow.write(self.root / workflow.REL / "tasks.json", queue)
         workflow.report(self.root)
         with self.assertRaisesRegex(ValueError, "dependencies are unfinished"):
@@ -119,7 +121,7 @@ class SharedWorkflowTests(unittest.TestCase):
 
     def test_stale_readable_status_is_detected_and_can_be_regenerated(self):
         queue = workflow.read(self.root / workflow.REL / "tasks.json")
-        queue["tasks"][1]["next_action"] = "New observed next action"
+        next(item for item in queue["tasks"] if item["id"] == "WF-002")["next_action"] = "New observed next action"
         workflow.write(self.root / workflow.REL / "tasks.json", queue)
         with self.assertRaisesRegex(ValueError, "stale"):
             workflow.validate(self.root)
@@ -150,32 +152,37 @@ class SharedWorkflowTests(unittest.TestCase):
     def test_broken_ownership_and_dependency_cycles_are_detected(self):
         path = self.root / workflow.REL / "tasks.json"
         queue = workflow.read(path)
-        queue["tasks"][2].update(status="in_progress", owner_session_id="missing-session")
+        connection = next(item for item in queue["tasks"] if item["id"] == "WF-003")
+        history = next(item for item in queue["tasks"] if item["id"] == "WF-004")
+        connection.update(status="in_progress", owner_session_id="missing-session")
         workflow.write(path, queue)
         workflow.report(self.root)
         with self.assertRaisesRegex(ValueError, "active recorded session"):
             workflow.validate(self.root)
-        queue["tasks"][2].update(status="ready", owner_session_id=None, depends_on=["WF-004"])
-        queue["tasks"][3]["depends_on"] = ["WF-003"]
+        connection.update(status="ready", owner_session_id=None, depends_on=["WF-004"])
+        history["depends_on"] = ["WF-003"]
         workflow.write(path, queue)
         with self.assertRaisesRegex(ValueError, "dependency cycle"):
             workflow.validate(self.root)
 
     def test_credential_value_is_rejected_before_handoff_writes(self):
         session_id = workflow.start(self.root, "Copilot", "WF-003")
-        with self.assertRaisesRegex(ValueError, "Credentials cannot be recorded"):
-            workflow.finish(self.root, session_id, "blocked", "ghp_" + "X" * 36, "Continue")
-        self.assertEqual(self.record(session_id)["status"], "active")
+        for prefix in ("ghp_", "github_pat_", "sk-proj-", "sk-"):
+            with self.subTest(prefix=prefix), self.assertRaisesRegex(ValueError, "Credentials cannot be recorded"):
+                workflow.finish(self.root, session_id, "blocked", prefix + "X" * 36, "Continue")
+            self.assertEqual(self.record(session_id)["status"], "active")
 
     def test_shared_record_credential_scan_reports_only_the_filename(self):
         path = self.root / workflow.REL / "state.json"
         state = workflow.read(path)
-        token = "ghp_" + "X" * 36
-        state["limitations"].append(token)
-        workflow.write(path, state)
-        with self.assertRaisesRegex(ValueError, "Potential credential in state.json") as failure:
-            workflow.validate(self.root, check_report=False)
-        self.assertNotIn(token, str(failure.exception))
+        for prefix in ("ghp_", "github_pat_", "sk-proj-", "sk-"):
+            token = prefix + "X" * 36
+            state["limitations"].append(token)
+            workflow.write(path, state)
+            with self.subTest(prefix=prefix), self.assertRaisesRegex(ValueError, "Potential credential in state.json") as failure:
+                workflow.validate(self.root, check_report=False)
+            self.assertNotIn(token, str(failure.exception))
+            state["limitations"].pop()
 
 
 if __name__ == "__main__":
