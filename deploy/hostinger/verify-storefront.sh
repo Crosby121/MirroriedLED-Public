@@ -31,7 +31,7 @@ grep -q 'sponsors\.mirroriedled\.com' <<<"$home" || fail "Sponsor portal link mi
 echo "Checking storefront files and product images..."
 for asset in index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp; do
   out="$(mktemp)"
-  code="$(curl --fail --silent --show-error -o "$out" -w '%{http_code}' --max-time 20 "${DOMAIN%/}/$asset")" || {
+  code="$(curl --location --fail --silent --show-error -o "$out" -w '%{http_code}' --max-time 20 "${DOMAIN%/}/$asset")" || {
     rm -f "$out"
     fail "$asset could not be downloaded"
   }
