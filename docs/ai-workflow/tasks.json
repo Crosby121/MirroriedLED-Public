@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T23:01:20Z",
+  "updated_at": "2026-10-05T04:40:09Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -129,6 +129,27 @@
         "tests/test_ai_capture.py",
         "tests/browser-ai-capture.test.cjs",
         "docs/ai-workflow/AUTO_CAPTURE.md"
+      ]
+    },
+    {
+      "id": "WF-011",
+      "title": "Build the Mirroried LED AI knowledge database",
+      "status": "in_progress",
+      "priority": 6,
+      "owner_session_id": "20261005t044009z-ai-database",
+      "last_session_id": null,
+      "depends_on": [
+        "WF-001"
+      ],
+      "acceptance": [
+        "Provide a working, searchable local database for sourced knowledge, products, tasks and declared AI activity.",
+        "Import dated workflow snapshots without replacing shared task reservations or the customer database.",
+        "Test backups, record history, privacy boundaries and idempotent imports; publish code and a reusable download."
+      ],
+      "next_action": "Implement the independent database and private starter records; shared/live connections remain pending activation.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/15"
       ]
     }
   ]

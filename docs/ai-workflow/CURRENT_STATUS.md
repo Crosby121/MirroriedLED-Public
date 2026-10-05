@@ -36,3 +36,4 @@ See [session records](sessions/) and [imported GitHub evidence](history/github-b
 
 This record does not grant account access or capture all chats automatically. Older AI identities remain unknown.
 A green source check or GitHub Pages deployment does not establish the live PHP website's version.
+
