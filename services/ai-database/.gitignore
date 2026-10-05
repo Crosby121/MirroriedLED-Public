@@ -1,0 +1,8 @@
+*.sqlite*
+*-wal
+*-shm
+starter-private.json
+workflow-snapshot/
+reports/
+exports/
+__pycache__/

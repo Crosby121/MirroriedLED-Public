@@ -26,6 +26,7 @@ Evidence snapshot: 2026-10-04T22:54:53Z (UTC). Refresh GitHub at the start of ea
 | WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Complete CONNECTOR_SETUP.md: provision scoped service credentials, resolve main-site SSH settings, run the manual connector install and verify each app read/write receipt. |
 | WF-006 — Activate automatic private AI chat capture and close recovery | blocked | Unclaimed | Complete AUTO_CAPTURE.md on the persistent PC and verify the private repository, trusted hooks, Chrome/native connection, background worker and actual GitHub receipts. Complete CONNECTOR_SETUP.md for task handoffs; do not claim live capture before verification. |
 | WF-004 — Curate accessible prior AI work into the shared history | ready | Unclaimed | Use available ChatGPT, Copilot and Hostinger exports or logs to add sourced summaries; the initial GitHub-only baseline is already recorded. |
+| WF-011 — Build the Mirroried LED AI knowledge database | in_progress | 20261005t044009z-ai-database | Implement the independent database and private starter records; shared/live connections remain pending activation. |
 
 ## Continue
 
@@ -36,4 +37,3 @@ See [session records](sessions/) and [imported GitHub evidence](history/github-b
 
 This record does not grant account access or capture all chats automatically. Older AI identities remain unknown.
 A green source check or GitHub Pages deployment does not establish the live PHP website's version.
-
