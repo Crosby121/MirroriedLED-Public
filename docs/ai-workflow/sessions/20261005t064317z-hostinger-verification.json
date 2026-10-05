@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "id": "20261005t064317z-hostinger-verification",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-05T06:39:55Z",
+  "ended_at": "2026-10-05T06:43:17Z",
+  "status": "completed",
+  "task_ids": [
+    "WF-012"
+  ],
+  "branch": "docs/deployment-readiness-20261005",
+  "base_commit": "4cc19a47dafdcc4ac9d6b843cfe46acf9a6120e6",
+  "summary": "Verified current logs, added and executed a read-only SSH authentication check, and recorded the fresh failure plus public key fingerprint. Valid runner key is rejected by the saved website account. No website upload or remote file change performed.",
+  "next_action": "Confirm matching public-key authorization and enabled SSH for the Hostinger website account; repeat read-only verification before deployment.",
+  "changed_files": [
+    ".github/workflows/verify-hostinger-auth.yml",
+    "docs/DEPLOYMENT_READINESS_20261005.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "docs/ai-workflow/sessions/20261005t064317z-hostinger-verification.json"
+  ],
+  "checks": [
+    {
+      "name": "YAML, Bash and embedded Python parsing",
+      "result": "passed",
+      "basis": "local_execution"
+    },
+    {
+      "name": "Shared workflow validator and lifecycle tests",
+      "result": "passed",
+      "command": "python3 tools/ai_workflow.py validate; python3 -m unittest discover -s tests -p test_ai_workflow.py -q",
+      "basis": "local_execution",
+      "finding": "Validator and all 13 tests passed."
+    },
+    {
+      "name": "Fresh main-site SSH authentication",
+      "result": "failed",
+      "basis": "GitHub Actions",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111646329411",
+      "finding": "Key preparation passes. Public-key-only authentication is denied. Runtime/webroot checks were not reached."
+    }
+  ],
+  "findings": [
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111646329411",
+      "basis": "fresh_read_only_execution",
+      "finding": "Fresh public-key-only SSH check is rejected by the main-site account. The runner parses the configured key and reaches SSH, but host authorization is not established. Authorized key mismatch versus disabled SSH/account access remains undetermined."
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-05T06:26:20Z",
+  "observed_at": "2026-10-05T06:43:17Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -35,7 +35,7 @@
       "run_attempt": 2,
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432",
       "failed_step": "Check website host and PHP before any upload",
-      "finding": "Latest attempt passes hosting-setting and private-key-format checks but SSH authentication is rejected with Permission denied (publickey,password). Upload, installation and live verification are skipped. The earlier missing-setting finding is superseded by this retry.",
+      "finding": "The latest deployment retry passed settings but failed SSH authentication before upload. A fresh read-only authentication run at 2026-10-05T06:42:59Z reproduced Permission denied (publickey,password). No upload or installation occurred.",
       "upload_performed": false
     }
   },
@@ -137,6 +137,18 @@
       "readiness": "blocked",
       "finding": "Six unresolved review threads. Reproduced credential guard bypasses and fractional timestamp comparison; other findings concern SQLite sidecar permissions, import replay provenance and JSON-type replay equality."
     }
-  ]
+  ],
+  "ssh_verification": {
+    "checked_at": "2026-10-05T06:43:17Z",
+    "commit": "749a3dac3a1d9698dda940cdc87d753e0e6281c2",
+    "run_id": 37273814509,
+    "result": "authentication_rejected",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111646329411",
+    "public_key_fingerprint": "SHA256:9abf5Se5+p8Em9rCEhsN2KXStEJ4DVagcUpCK9EB8X0",
+    "key_type": "ED25519",
+    "key_format_valid": true,
+    "remote_preflight_passed": false,
+    "remote_writes_performed": false,
+    "finding": "Fresh public-key-only SSH check is rejected by the main-site account. The runner parses the configured key and reaches SSH, but host authorization is not established. Authorized key mismatch versus disabled SSH/account access remains undetermined."
+  }
 }
-

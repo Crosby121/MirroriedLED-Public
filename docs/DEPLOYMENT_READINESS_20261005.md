@@ -54,3 +54,9 @@ The Hostinger AI Builder connector returned no Agentic websites. It does not inv
 - [Latest failed SSH job](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432)
 
 
+
+## Fresh SSH verification — October 4, 11:43 PM Pacific
+
+A dedicated [read-only check](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111646329411) ran using the existing production key and trusted host settings. Key preparation passed; public-key-only SSH authentication was rejected. Webroot/PHP tests were not reached and no website writes were attempted.
+
+Verified deployment public key: ED25519, `SHA256:9abf5Se5+p8Em9rCEhsN2KXStEJ4DVagcUpCK9EB8X0`. Compare this fingerprint with the key authorized for the Hostinger website account. The private key was never printed or retrieved by this session. The result cannot distinguish a key mismatch from account SSH-access settings.
