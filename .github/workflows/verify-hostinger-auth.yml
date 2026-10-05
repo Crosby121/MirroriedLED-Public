@@ -1,0 +1,107 @@
+name: Verify Main Hostinger SSH Authentication
+
+on:
+  push:
+    branches: [docs/deployment-readiness-20261005]
+    paths:
+      - .github/workflows/verify-hostinger-auth.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    environment: production
+    env:
+      SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+      SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+      SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+      PUBLIC_HTML: ${{ secrets.HOSTINGER_PUBLIC_HTML }}
+      SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Prepare the existing key for a read-only login check
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+          profile = json.loads(Path('deploy/hostinger/main-website.json').read_text())
+          assert profile['domain'] == 'mirroriedled.com'
+          values = {name: os.environ.get(name) or str(profile[field]) for name, field in {
+              'SSH_HOST': 'ssh_host', 'SSH_PORT': 'ssh_port', 'SSH_USER': 'ssh_user',
+              'PUBLIC_HTML': 'public_html', 'REMOTE_PYTHON': 'python_executable'}.items()}
+          assert re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.-]*', values['SSH_HOST'])
+          assert values['SSH_PORT'].isdigit() and 1 <= int(values['SSH_PORT']) <= 65535
+          assert re.fullmatch(r'u[0-9]+', values['SSH_USER'])
+          assert values['PUBLIC_HTML'] == '/home/' + values['SSH_USER'] + '/domains/mirroriedled.com/public_html'
+          assert values['REMOTE_PYTHON'] in {'python3', '/opt/alt/python311/bin/python3', '/opt/alt/python38/bin/python3'}
+          key = os.environ.get('SSH_PRIVATE_KEY', '').lstrip('\ufeff').replace('\r', '').strip()
+          if '\\n' in key and '\n' not in key:
+              key = key.replace('\\n', '\n')
+          hosts = os.environ.get('SSH_KNOWN_HOSTS', '').replace('\r', '').strip()
+          if not key or not hosts:
+              raise SystemExit('Main-site private key or trusted host setting is unavailable')
+          folder = Path(os.environ['RUNNER_TEMP']) / 'mled-readonly-auth'
+          folder.mkdir(mode=0o700)
+          for name, value in [('key', key), ('known_hosts', hosts)]:
+              target = folder / name
+              target.touch(mode=0o600)
+              target.write_text(value + '\n')
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              for name, value in values.items():
+                  output.write(name + '=' + value + '\n')
+          PY
+          ssh-keygen -y -P '' -f "$RUNNER_TEMP/mled-readonly-auth/key" > "$RUNNER_TEMP/mled-readonly-auth/public"
+          echo 'Deployment key public fingerprint:'
+          ssh-keygen -lf "$RUNNER_TEMP/mled-readonly-auth/public" -E sha256 | awk '{print $1, $2, $NF}'
+      - name: Verify authenticated SSH and hosting runtime without writing files
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$RUNNER_TEMP/mled-readonly-auth/key" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o PreferredAuthentications=publickey \
+            -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
+            -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts" \
+            -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML' '$REMOTE_PYTHON'" <<'REMOTE'
+          set -euo pipefail
+          echo 'MLED_SSH_AUTHENTICATED'
+          failed=0
+          check() {
+            label="$1"; shift
+            if "$@"; then
+              printf 'PASS: %s\n' "$label"
+            else
+              printf 'FAIL: %s\n' "$label" >&2
+              failed=1
+            fi
+          }
+          check 'Website directory exists' test -d "$1"
+          check 'Existing index.html is present' test -f "$1/index.html"
+          check 'Configured Python executable is available' command -v "$2"
+          if command -v "$2" >/dev/null; then
+            "$2" --version
+            check 'Configured Python is at least 3.8' "$2" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
+          fi
+          check 'PHP executable is available' command -v php
+          if command -v php >/dev/null; then
+            php -r 'echo "PHP_VERSION=" . PHP_VERSION . PHP_EOL;'
+            check 'PHP is at least 8.2' php -r 'exit(PHP_VERSION_ID >= 80200 ? 0 : 1);'
+            for extension in pdo_sqlite fileinfo dom; do
+              check "PHP extension $extension is enabled" php -r 'exit(extension_loaded($argv[1]) ? 0 : 1);' "$extension"
+            done
+          fi
+          if [ "$failed" -ne 0 ]; then exit 1; fi
+          echo 'MLED_READ_ONLY_HOST_PREFLIGHT_PASSED'
+          REMOTE
+      - name: Remove temporary runner credentials
+        if: ${{ always() }}
+        shell: bash
+        run: rm -rf -- "$RUNNER_TEMP/mled-readonly-auth"

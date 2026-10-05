@@ -76,7 +76,7 @@ jobs:
           from pathlib import Path
           profile = json.loads(Path('deploy/hostinger/main-website.json').read_text())
           assert profile['domain'] == 'mirroriedled.com'
-          mapping = {'SSH_HOST': 'ssh_host', 'SSH_PORT': 'ssh_port', 'SSH_USER': 'ssh_user', 'PUBLIC_HTML': 'public_html'}
+          mapping = {'SSH_HOST': 'ssh_host', 'SSH_PORT': 'ssh_port', 'SSH_USER': 'ssh_user', 'PUBLIC_HTML': 'public_html', 'REMOTE_PYTHON': 'python_executable'}
           with open(os.environ['GITHUB_ENV'], 'a') as output:
               for environment, field in mapping.items():
                   value = os.environ.get(environment) or str(profile[field])
@@ -88,7 +88,7 @@ jobs:
       - name: Verify main website hosting settings
         run: |
           missing=0
-          for setting in SSH_HOST SSH_PORT SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS PUBLIC_HTML; do
+          for setting in SSH_HOST SSH_PORT SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS PUBLIC_HTML REMOTE_PYTHON; do
             if [[ -z "${!setting}" ]]; then
               echo "Missing main website hosting setting: $setting" >&2
               missing=1
@@ -102,6 +102,7 @@ jobs:
           [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( 10#$SSH_PORT >= 1 && 10#$SSH_PORT <= 65535 )) || { echo 'Invalid Hostinger SSH port' >&2; exit 1; }
           [[ "$SSH_USER" =~ ^u[0-9]+$ ]] || { echo 'Use the main website hosting user, not VPS root' >&2; exit 1; }
           [[ "$PUBLIC_HTML" == "/home/$SSH_USER/domains/mirroriedled.com/public_html" ]] || { echo 'Webroot must belong to this main website hosting account' >&2; exit 1; }
+          [[ "$REMOTE_PYTHON" == python3 || "$REMOTE_PYTHON" == /opt/alt/python311/bin/python3 || "$REMOTE_PYTHON" == /opt/alt/python38/bin/python3 ]] || { echo 'Invalid hosting Python executable' >&2; exit 1; }
           install -m 700 -d "$RUNNER_TEMP/hostinger-ssh"
           umask 077
           python3 - <<'PY'
@@ -122,13 +123,13 @@ jobs:
       - name: Check website host and PHP before any upload
         run: |
           SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
-          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML'" <<'REMOTE'
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML' '$REMOTE_PYTHON'" <<'REMOTE'
           set -euo pipefail
           test -d "$1"
           test -f "$1/index.html"
-          command -v python3 >/dev/null
+          command -v "$2" >/dev/null
           command -v php >/dev/null
-          python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
+          "$2" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
           php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("pdo_sqlite") && extension_loaded("fileinfo") && extension_loaded("dom") ? 0 : 1);'
           echo 'MAIN_WEBSITE_HOST_PREFLIGHT_PASSED'
           REMOTE
@@ -150,7 +151,7 @@ jobs:
         id: install
         run: |
           SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
-          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "python3 '$REMOTE_STAGE/website-release.py' install --webroot '$PUBLIC_HTML' --archive '$REMOTE_STAGE/MirroriedLED_Automated_Business_Website.zip' --release-id '$GITHUB_SHA' --expected-homepage-sha '$EXPECTED_HOMEPAGE_SHA' --receipt '$REMOTE_STAGE/receipt.json'"
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' '$REMOTE_STAGE/website-release.py' install --webroot '$PUBLIC_HTML' --archive '$REMOTE_STAGE/MirroriedLED_Automated_Business_Website.zip' --release-id '$GITHUB_SHA' --expected-homepage-sha '$EXPECTED_HOMEPAGE_SHA' --receipt '$REMOTE_STAGE/receipt.json'"
 
       - name: Verify the complete live website
         id: verify
@@ -160,7 +161,7 @@ jobs:
         if: ${{ failure() && steps.install.outcome == 'success' && steps.verify.outcome == 'failure' }}
         run: |
           SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
-          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "python3 '$REMOTE_STAGE/website-release.py' rollback --webroot '$PUBLIC_HTML' --receipt '$REMOTE_STAGE/receipt.json'"
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' '$REMOTE_STAGE/website-release.py' rollback --webroot '$PUBLIC_HTML' --receipt '$REMOTE_STAGE/receipt.json'"
 
       - name: Report verified deployment
         run: |

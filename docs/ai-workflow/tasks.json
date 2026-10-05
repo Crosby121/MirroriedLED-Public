@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T23:01:20Z",
+  "updated_at": "2026-10-05T08:04:41Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -27,17 +27,21 @@
       "status": "blocked",
       "priority": 2,
       "owner_session_id": null,
-      "last_session_id": null,
+      "last_session_id": "20261005t075408z-ssh-key-activation",
       "depends_on": [],
       "acceptance": [
         "Verify that the matching unattended main-site key and independently verified known-hosts entry are available in the deployment environment without exposing their values.",
         "Pass the existing settings and host preflight for mirroriedled.com.",
         "Use the user's authorized release workflow; record a live commit only after exact-source HTTP verification."
       ],
-      "next_action": "Inspect the failed job and resolve the two reported main-site secret settings; preserve the separate sponsor VPS connection.",
+      "next_action": "Apply PR #17 to main so deployment preflight, installation and rollback use the verified Python 3.11 executable, then run the authorized complete website release and verify its exact live commit. Keep sponsor VPS credentials separate.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537748608",
-        "deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md"
+        "deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md",
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432",
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111646329411",
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281128606/job/111669230359",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/17"
       ]
     },
     {
@@ -129,6 +133,25 @@
         "tests/test_ai_capture.py",
         "tests/browser-ai-capture.test.cjs",
         "docs/ai-workflow/AUTO_CAPTURE.md"
+      ]
+    },
+    {
+      "id": "WF-012",
+      "title": "Check current builds for deployment readiness",
+      "status": "done",
+      "priority": 2,
+      "owner_session_id": null,
+      "last_session_id": "20261005t064317z-hostinger-verification",
+      "depends_on": [],
+      "acceptance": [
+        "Refresh current GitHub builds, checks and latest deployment attempt.",
+        "Separate passing source checks from deployment and unresolved review findings.",
+        "Publish a redacted handoff with concrete next actions."
+      ],
+      "next_action": "Resolve WF-002 SSH authentication. Repair and verify the reproduced PR 15/16 review defects before merging those builds; retain checkout PR 14 as draft until launch acceptance.",
+      "evidence": [
+        "docs/DEPLOYMENT_READINESS_20261005.md",
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432"
       ]
     }
   ]

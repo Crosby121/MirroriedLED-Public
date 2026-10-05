@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-04T22:54:53Z",
+  "observed_at": "2026-10-05T08:04:41Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,19 +8,19 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
-    "summary": "Shared workflow foundation merged after the supplier pricing and 20% frame markup release. The checked source is separate from the unknown Hostinger live version.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/620d57c6c182c19ada124a40722ef52e7474502d",
+    "observed_commit": "3b1e04aae7277239e14a216bbfe4557e80e5da29",
+    "summary": "Configurator, supplier pricing and shared connector are merged. Current main packaging passes; checkout PR 14, capture fixes PR 15 and AI database PR 16 remain open. Hostinger live revision is unverified.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/3b1e04aae7277239e14a216bbfe4557e80e5da29",
     "checks": [
       {
-        "name": "Main shared workflow validation",
+        "name": "Current main website packaging",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703708"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37242502555"
       },
       {
-        "name": "Main website packaging",
+        "name": "Current main shared workflow validation",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703753"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37242502505"
       }
     ]
   },
@@ -32,9 +32,10 @@
       "status": "failed_before_upload",
       "commit": "778e926615e1168dad4f795bf1da7dcef95904a1",
       "run_id": 37236890583,
-      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537748608",
-      "failed_step": "Verify main website hosting settings",
-      "finding": "The job reported missing HOSTINGER_SSH_PRIVATE_KEY and HOSTINGER_SSH_KNOWN_HOSTS settings. Upload, installation and live verification were skipped.",
+      "run_attempt": 2,
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432",
+      "failed_step": "Check website host and PHP before any upload",
+      "finding": "The historical deployment failed before upload. The replacement SSH key now authenticates, and read-only webroot/Python/PHP preflight passes on PR #17 using /opt/alt/python311/bin/python3. Main still needs that configuration fix before release. No upload or installation was performed; live revision remains unverified.",
       "upload_performed": false
     }
   },
@@ -110,5 +111,47 @@
     ],
     "recovery": "Persistent local queues and a PC retry worker; browser final shutdown events are best effort",
     "current_hosted_chat_archived": false
+  },
+  "build_readiness": [
+    {
+      "pr": 14,
+      "commit": "554c118724eaa02cc9bc410cb8597293cff45dd5",
+      "state": "draft",
+      "ci": "passed",
+      "readiness": "blocked",
+      "finding": "Checkout launch requires merchant sandbox/webhook acceptance, private live activation, confirmed fulfillment and SSH authentication."
+    },
+    {
+      "pr": 15,
+      "commit": "8e59fa929bb400665bdfa26cc7275cf515eb2602",
+      "state": "open",
+      "ci": "passed",
+      "readiness": "blocked",
+      "finding": "Two unresolved privacy defects reproduced from exact source: plaintext multiline key bodies survive redaction, and streamed sensitive values lose redaction context."
+    },
+    {
+      "pr": 16,
+      "commit": "caf12c902c2e98fa31e370e34915fc33f8333bce",
+      "state": "open",
+      "ci": "passed",
+      "readiness": "blocked",
+      "finding": "Six unresolved review threads. Reproduced credential guard bypasses and fractional timestamp comparison; other findings concern SQLite sidecar permissions, import replay provenance and JSON-type replay equality."
+    }
+  ],
+  "ssh_verification": {
+    "checked_at": "2026-10-05T08:02:08Z",
+    "commit": "929ec0b8d6e2e80704f9ad68b75ec4e93c758617",
+    "run_id": 37281128606,
+    "result": "passed",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281128606/job/111669230359",
+    "public_key_fingerprint": "SHA256:lUQfuZRVSm+Odyk+i4LmKt9TfcRXAKZ5WaWvFCShTEo",
+    "key_type": "ED25519",
+    "key_format_valid": true,
+    "remote_preflight_passed": true,
+    "remote_writes_performed": false,
+    "finding": "Strict-host-key public-key authentication, expected webroot/index.html, Python 3.8+ and PHP 8.2+ with pdo_sqlite/fileinfo/dom all pass. The hosting default python3 is 3.6.8; PR #17 configures the independently executed Python 3.11 path for website and connector deployment plus rollback. No live release was installed.",
+    "python_executable": "/opt/alt/python311/bin/python3",
+    "python_version": "3.11.16",
+    "php_version": "8.3.33"
   }
 }
