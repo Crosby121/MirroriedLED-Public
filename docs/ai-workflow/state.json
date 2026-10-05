@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-05T07:56:59Z",
+  "observed_at": "2026-10-05T08:04:41Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -35,7 +35,7 @@
       "run_attempt": 2,
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432",
       "failed_step": "Check website host and PHP before any upload",
-      "finding": "Historical deployment attempt failed before upload. Current read-only verification authenticates with the replacement key, but a later hosting preflight requirement fails and is under diagnosis. No deployment or remote writes performed.",
+      "finding": "The historical deployment failed before upload. The replacement SSH key now authenticates, and read-only webroot/Python/PHP preflight passes on PR #17 using /opt/alt/python311/bin/python3. Main still needs that configuration fix before release. No upload or installation was performed; live revision remains unverified.",
       "upload_performed": false
     }
   },
@@ -139,16 +139,19 @@
     }
   ],
   "ssh_verification": {
-    "checked_at": "2026-10-05T07:54:23Z",
-    "commit": "749a3dac3a1d9698dda940cdc87d753e0e6281c2",
-    "run_id": 37273814509,
-    "result": "authenticated_preflight_failed",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111666770098",
+    "checked_at": "2026-10-05T08:02:08Z",
+    "commit": "929ec0b8d6e2e80704f9ad68b75ec4e93c758617",
+    "run_id": 37281128606,
+    "result": "passed",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281128606/job/111669230359",
     "public_key_fingerprint": "SHA256:lUQfuZRVSm+Odyk+i4LmKt9TfcRXAKZ5WaWvFCShTEo",
     "key_type": "ED25519",
     "key_format_valid": true,
-    "remote_preflight_passed": false,
+    "remote_preflight_passed": true,
     "remote_writes_performed": false,
-    "finding": "The newly generated ED25519 deployment key authenticated successfully after user-reported Hostinger authorization and GitHub secret update. The later remote preflight exits 1; the original check does not identify which requirement failed. Read-only diagnostics are being expanded. No upload or remote writes performed."
+    "finding": "Strict-host-key public-key authentication, expected webroot/index.html, Python 3.8+ and PHP 8.2+ with pdo_sqlite/fileinfo/dom all pass. The hosting default python3 is 3.6.8; PR #17 configures the independently executed Python 3.11 path for website and connector deployment plus rollback. No live release was installed.",
+    "python_executable": "/opt/alt/python311/bin/python3",
+    "python_version": "3.11.16",
+    "php_version": "8.3.33"
   }
 }

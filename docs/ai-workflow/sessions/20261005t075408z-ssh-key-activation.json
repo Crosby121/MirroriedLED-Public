@@ -5,29 +5,72 @@
   "application_identity": "declared",
   "github_account": "Crosby121",
   "started_at": "2026-10-05T07:54:08Z",
-  "ended_at": null,
-  "status": "active",
+  "ended_at": "2026-10-05T08:04:41Z",
+  "status": "completed",
   "task_ids": [
     "WF-002"
   ],
   "branch": "docs/deployment-readiness-20261005",
   "base_commit": "d875ff20488dd9e351d768b3b5382e7afb62d539",
-  "summary": "SSH key authenticated; diagnosing remote runtime preflight.",
-  "next_action": "Run named read-only remote checks.",
+  "summary": "Generated a replacement ED25519 key outside this public repository; the user reported authorizing its public key on website hosting and updating the matching repository secret. Verified the new fingerprint and authenticated SSH. Diagnosed default Python 3.6.8, found and verified Python 3.11.16, and published the explicit remote interpreter setting for website/connector preflight, installation and rollback. Full read-only host preflight now passes. Main and the live website are unchanged.",
+  "next_action": "Apply PR #17 to main so deployment preflight, installation and rollback use the verified Python 3.11 executable, then run the authorized complete website release and verify its exact live commit. Keep sponsor VPS credentials separate.",
   "changed_files": [
-    ".github/workflows/verify-hostinger-auth.yml"
+    ".github/workflows/verify-hostinger-auth.yml",
+    ".github/workflows/deploy-hostinger-website.yml",
+    ".github/workflows/deploy-ai-workflow-connector.yml",
+    "deploy/hostinger/main-website.json",
+    "deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md",
+    "docs/DEPLOYMENT_READINESS_20261005.md",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261005t075408z-ssh-key-activation.json"
   ],
   "checks": [
     {
-      "name": "Replacement key SSH authentication",
+      "name": "YAML, Bash and embedded Python parsing for the three changed workflows",
       "result": "passed",
-      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111666770098"
+      "basis": "local_execution"
     },
     {
-      "name": "Original hosting runtime preflight",
-      "result": "failed",
-      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111666770098"
+      "name": "Shared workflow validator and all 13 lifecycle tests",
+      "result": "passed",
+      "basis": "local_execution"
+    },
+    {
+      "name": "Replacement key authentication and host preflight with configured Python 3.11",
+      "result": "passed",
+      "basis": "GitHub Actions",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281128606/job/111669230359"
+    },
+    {
+      "name": "Storefront CI for Python selection fix",
+      "result": "passed",
+      "basis": "GitHub Actions",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281133203"
+    },
+    {
+      "name": "Shared workflow CI for Python selection fix",
+      "result": "passed",
+      "basis": "GitHub Actions",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281133181"
     }
   ],
-  "findings": []
+  "findings": [
+    {
+      "basis": "user_report",
+      "source": "Current authorized task conversation",
+      "finding": "Owner reports enabling website SSH, no existing website keys, replacement public-key addition and matching GitHub secret update. Browser account originally inspected did not contain the website hosting."
+    },
+    {
+      "basis": "GitHub Actions fresh execution",
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281128606/job/111669230359",
+      "finding": "Strict-host-key public-key authentication, expected webroot/index.html, Python 3.8+ and PHP 8.2+ with pdo_sqlite/fileinfo/dom all pass. The hosting default python3 is 3.6.8; PR #17 configures the independently executed Python 3.11 path for website and connector deployment plus rollback. No live release was installed."
+    },
+    {
+      "basis": "published_source",
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/commit/929ec0b8d6e2e80704f9ad68b75ec4e93c758617",
+      "finding": "Python selection changes are published on PR #17, not merged. Main remains 3b1e04aae7277239e14a216bbfe4557e80e5da29."
+    }
+  ]
 }

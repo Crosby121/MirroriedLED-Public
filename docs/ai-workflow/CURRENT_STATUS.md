@@ -1,6 +1,6 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-05T07:56:59Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-05T08:04:41Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
@@ -8,7 +8,7 @@ Evidence snapshot: 2026-10-05T07:56:59Z (UTC). Refresh GitHub at the start of ea
 | Observed website source | [3b1e04a](https://github.com/Crosby121/MirroriedLED-Public/commit/3b1e04aae7277239e14a216bbfe4557e80e5da29) · Configurator, supplier pricing and shared connector are merged. Current main packaging passes; checkout PR 14, capture fixes PR 15 and AI database PR 16 remain open. Hostinger live revision is unverified. |
 | Verified live Hostinger commit | Unknown — no verified live commit recorded |
 | Last Hostinger attempt | [failed_before_upload](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432) · Check website host and PHP before any upload |
-| Deployment blocker | Historical deployment attempt failed before upload. Current read-only verification authenticates with the replacement key, but a later hosting preflight requirement fails and is under diagnosis. No deployment or remote writes performed. |
+| Deployment blocker | The historical deployment failed before upload. The replacement SSH key now authenticates, and read-only webroot/Python/PHP preflight passes on PR #17 using /opt/alt/python311/bin/python3. Main still needs that configuration fix before release. No upload or installation was performed; live revision remains unverified. |
 | Shared app connections | Shared MCP connector and private capture tools implemented and locally tested; endpoint, PC installation and individual app connections are not activated. |
 
 ## Source checks
@@ -22,7 +22,7 @@ Evidence snapshot: 2026-10-05T07:56:59Z (UTC). Refresh GitHub at the start of ea
 | --- | --- | --- | --- |
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
-| WF-002 — Resolve the main website deployment settings blocker | in_progress | 20261005t075408z-ssh-key-activation | Identify the failed authenticated hosting preflight requirement using named read-only checks; retain the verified SSH key and separate sponsor VPS access. |
+| WF-002 — Resolve the main website deployment settings blocker | blocked | Unclaimed | Apply PR #17 to main so deployment preflight, installation and rollback use the verified Python 3.11 executable, then run the authorized complete website release and verify its exact live commit. Keep sponsor VPS credentials separate. |
 | WF-012 — Check current builds for deployment readiness | done | Unclaimed | Resolve WF-002 SSH authentication. Repair and verify the reproduced PR 15/16 review defects before merging those builds; retain checkout PR 14 as draft until launch acceptance. |
 | WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Complete CONNECTOR_SETUP.md: provision scoped service credentials, resolve main-site SSH settings, run the manual connector install and verify each app read/write receipt. |
 | WF-006 — Activate automatic private AI chat capture and close recovery | blocked | Unclaimed | Complete AUTO_CAPTURE.md on the persistent PC and verify the private repository, trusted hooks, Chrome/native connection, background worker and actual GitHub receipts. Complete CONNECTOR_SETUP.md for task handoffs; do not claim live capture before verification. |

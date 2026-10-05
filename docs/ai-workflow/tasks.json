@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-05T07:56:59Z",
+  "updated_at": "2026-10-05T08:04:41Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -24,22 +24,24 @@
     {
       "id": "WF-002",
       "title": "Resolve the main website deployment settings blocker",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": 2,
-      "owner_session_id": "20261005t075408z-ssh-key-activation",
-      "last_session_id": null,
+      "owner_session_id": null,
+      "last_session_id": "20261005t075408z-ssh-key-activation",
       "depends_on": [],
       "acceptance": [
         "Verify that the matching unattended main-site key and independently verified known-hosts entry are available in the deployment environment without exposing their values.",
         "Pass the existing settings and host preflight for mirroriedled.com.",
         "Use the user's authorized release workflow; record a live commit only after exact-source HTTP verification."
       ],
-      "next_action": "Identify the failed authenticated hosting preflight requirement using named read-only checks; retain the verified SSH key and separate sponsor VPS access.",
+      "next_action": "Apply PR #17 to main so deployment preflight, installation and rollback use the verified Python 3.11 executable, then run the authorized complete website release and verify its exact live commit. Keep sponsor VPS credentials separate.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537748608",
         "deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md",
         "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432",
-        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111646329411"
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111646329411",
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281128606/job/111669230359",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/17"
       ]
     },
     {
