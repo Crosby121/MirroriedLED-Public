@@ -57,7 +57,7 @@ jobs:
           profile = json.loads(Path('deploy/hostinger/main-website.json').read_text())
           assert profile['domain'] == 'mirroriedled.com'
           with open(os.environ['GITHUB_ENV'], 'a') as output:
-              for name, field in [('SSH_HOST','ssh_host'),('SSH_PORT','ssh_port'),('SSH_USER','ssh_user'),('PUBLIC_HTML','public_html')]:
+              for name, field in [('SSH_HOST','ssh_host'),('SSH_PORT','ssh_port'),('SSH_USER','ssh_user'),('PUBLIC_HTML','public_html'),('REMOTE_PYTHON','python_executable')]:
                   value = str(profile[field])
                   assert '\n' not in value and '\r' not in value
                   output.write(f'{name}={value}\n')
@@ -71,11 +71,13 @@ jobs:
           [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( 10#$SSH_PORT >= 1 && 10#$SSH_PORT <= 65535 ))
           [[ "$SSH_USER" =~ ^u[0-9]+$ ]]
           [[ "$PUBLIC_HTML" == "/home/$SSH_USER/domains/mirroriedled.com/public_html" ]]
+          [[ "$REMOTE_PYTHON" == python3 || "$REMOTE_PYTHON" == /opt/alt/python311/bin/python3 || "$REMOTE_PYTHON" == /opt/alt/python38/bin/python3 ]] || { echo 'Invalid hosting Python executable' >&2; exit 1; }
           SSH_OPTIONS=(-i "$RUNNER_TEMP/ai-workflow-stage/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/ai-workflow-stage/known_hosts")
-          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML'" <<'REMOTE'
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML' '$REMOTE_PYTHON'" <<'REMOTE'
           set -euo pipefail
           test -f "$1/index.html"
-          command -v python3 >/dev/null
+          command -v "$2" >/dev/null
+          "$2" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
           php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("curl") ? 0 : 1);'
           REMOTE
           curl --fail --silent --show-error --max-time 30 "https://mirroriedled.com/index.html?ai_preflight=$GITHUB_RUN_ID" --output "$RUNNER_TEMP/ai-workflow-stage/live-before.html"
@@ -92,7 +94,7 @@ jobs:
         id: install
         run: |
           SSH_OPTIONS=(-i "$RUNNER_TEMP/ai-workflow-stage/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/ai-workflow-stage/known_hosts")
-          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "python3 '$REMOTE_STAGE/ai-workflow-release.py' install --webroot '$PUBLIC_HTML' --source '$REMOTE_STAGE' --config '$REMOTE_STAGE/config.json' --release '$GITHUB_SHA' --expected-homepage-sha '$EXPECTED_HOMEPAGE_SHA' --receipt '$REMOTE_STAGE/receipt.json'"
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' '$REMOTE_STAGE/ai-workflow-release.py' install --webroot '$PUBLIC_HTML' --source '$REMOTE_STAGE' --config '$REMOTE_STAGE/config.json' --release '$GITHUB_SHA' --expected-homepage-sha '$EXPECTED_HOMEPAGE_SHA' --receipt '$REMOTE_STAGE/receipt.json'"
 
       - name: Verify anonymous denial and authenticated GitHub read
         id: verify
@@ -104,7 +106,7 @@ jobs:
         if: ${{ failure() && steps.install.outcome == 'success' && steps.verify.outcome == 'failure' }}
         run: |
           SSH_OPTIONS=(-i "$RUNNER_TEMP/ai-workflow-stage/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/ai-workflow-stage/known_hosts")
-          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "python3 '$REMOTE_STAGE/ai-workflow-release.py' rollback --webroot '$PUBLIC_HTML' --receipt '$REMOTE_STAGE/receipt.json'"
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' '$REMOTE_STAGE/ai-workflow-release.py' rollback --webroot '$PUBLIC_HTML' --receipt '$REMOTE_STAGE/receipt.json'"
 
       - name: Report connector verification
         run: |

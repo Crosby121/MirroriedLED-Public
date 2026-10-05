@@ -3,5 +3,6 @@
   "ssh_host": "82.180.171.18",
   "ssh_port": 65002,
   "ssh_user": "u655491421",
-  "public_html": "/home/u655491421/domains/mirroriedled.com/public_html"
+  "public_html": "/home/u655491421/domains/mirroriedled.com/public_html",
+  "python_executable": "/opt/alt/python311/bin/python3"
 }

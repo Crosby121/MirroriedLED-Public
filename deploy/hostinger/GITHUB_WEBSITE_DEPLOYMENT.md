@@ -44,7 +44,10 @@ The workflow does not create keys, change Hostinger access, read secret values,
 reuse the sponsor VPS credentials or disable SSH host-key verification.
 Missing settings fail before any upload or website modification.
 Python 3.8+ and PHP 8.2+ with `pdo_sqlite`, `fileinfo` and `dom` are checked on
-the destination before installation. The remotely installed homepage must
+the destination before installation. The profile selects the verified
+`/opt/alt/python311/bin/python3` (Python 3.11) for remote preflight, installation
+and rollback, because the hosting account default `python3` is 3.6.8. Runner-local
+packaging and HTTP verification continue to use the runner Python. The remotely installed homepage must
 match the current live domain's checksum, preventing installation on a
 different host even when a similarly named directory exists.
 
@@ -78,7 +81,7 @@ files and a verified full-site archive. The same release helper can restore
 the prior public files using that retained receipt:
 
 ```bash
-python3 website-release.py rollback \
+/opt/alt/python311/bin/python3 website-release.py rollback \
   --webroot /home/WEBSITE_USER/domains/mirroriedled.com/public_html \
   --receipt /PRIVATE_BACKUP_DIRECTORY/receipt.json
 ```

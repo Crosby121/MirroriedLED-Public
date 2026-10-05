@@ -37,11 +37,12 @@ jobs:
           assert profile['domain'] == 'mirroriedled.com'
           values = {name: os.environ.get(name) or str(profile[field]) for name, field in {
               'SSH_HOST': 'ssh_host', 'SSH_PORT': 'ssh_port', 'SSH_USER': 'ssh_user',
-              'PUBLIC_HTML': 'public_html'}.items()}
+              'PUBLIC_HTML': 'public_html', 'REMOTE_PYTHON': 'python_executable'}.items()}
           assert re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.-]*', values['SSH_HOST'])
           assert values['SSH_PORT'].isdigit() and 1 <= int(values['SSH_PORT']) <= 65535
           assert re.fullmatch(r'u[0-9]+', values['SSH_USER'])
           assert values['PUBLIC_HTML'] == '/home/' + values['SSH_USER'] + '/domains/mirroriedled.com/public_html'
+          assert values['REMOTE_PYTHON'] in {'python3', '/opt/alt/python311/bin/python3', '/opt/alt/python38/bin/python3'}
           key = os.environ.get('SSH_PRIVATE_KEY', '').lstrip('\ufeff').replace('\r', '').strip()
           if '\\n' in key and '\n' not in key:
               key = key.replace('\\n', '\n')
@@ -69,7 +70,7 @@ jobs:
             -o BatchMode=yes -o IdentitiesOnly=yes -o PreferredAuthentications=publickey \
             -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
             -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts" \
-            -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML'" <<'REMOTE'
+            -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML' '$REMOTE_PYTHON'" <<'REMOTE'
           set -euo pipefail
           echo 'MLED_SSH_AUTHENTICATED'
           failed=0
@@ -84,17 +85,11 @@ jobs:
           }
           check 'Website directory exists' test -d "$1"
           check 'Existing index.html is present' test -f "$1/index.html"
-          check 'Python executable is available' command -v python3
-          if command -v python3 >/dev/null; then
-            python3 --version
-            check 'Python is at least 3.8' python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
+          check 'Configured Python executable is available' command -v "$2"
+          if command -v "$2" >/dev/null; then
+            "$2" --version
+            check 'Configured Python is at least 3.8' "$2" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
           fi
-          echo 'Checking installed alternative Python interpreters:'
-          for candidate in python3.14 python3.13 python3.12 python3.11 python3.10 python3.9 python3.8 /opt/alt/python{38,39,310,311,312,313,314}/bin/python3 /usr/local/bin/python3; do
-            if command -v "$candidate" >/dev/null 2>&1; then
-              "$candidate" -c 'import sys; print("MLED_PYTHON_CANDIDATE=" + sys.executable + " VERSION=" + sys.version.split()[0])' || true
-            fi
-          done
           check 'PHP executable is available' command -v php
           if command -v php >/dev/null; then
             php -r 'echo "PHP_VERSION=" . PHP_VERSION . PHP_EOL;'
