@@ -85,7 +85,11 @@ class InfinityBuilderTests(unittest.TestCase):
         c['pricing']={'grandTotalCents':1,'frameMarkupPercent':0,'lines':[{'id':'controller','minCents':1}]}
         order=self.build(c)['order'];p=order['items'][0]['builder']['pricing']
         self.assertEqual(p['frameMarkupPercent'],20)
-        self.assertEqual(next(l for l in p['lines'] if l['id']=='frame')['minCents'],720)
+        self.assertEqual(next(l for l in p['lines'] if l['id']=='frame')['minCents'],2040)
+        mirror=next(l for l in p['lines'] if l['id']=='mirror')
+        self.assertEqual((mirror['quantity'],mirror['unitCents'],mirror['minCents'],mirror['markupCents']),(1,600,600,0))
+        rim=next(l for l in p['lines'] if l['id']=='rim')
+        self.assertEqual((rim['minCents'],rim['maxCents'],rim['quantity']),(500,3000,1))
         self.assertEqual(next(l for l in p['lines'] if l['id']=='controller')['minCents'],3500)
         self.assertIsNone(p['grandTotalCents']);self.assertGreater(p['pendingCount'],0)
         self.assertTrue(p['finalQuoteRequired']);self.assertIsNone(order['quoteCents'])
@@ -93,7 +97,7 @@ class InfinityBuilderTests(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which('node'),'Node is required for cross-language pricing validation')
     def test_frontend_and_server_supplier_estimates_agree_for_sizes_panels_and_order_speed(self):
-        for size,rear,rush in [((12,12),'none',False),((12,12),'flex',True),((24,24),'hub75',False),((25,36),'hub75',True)]:
+        for size,rear,rush in [((12,12),'none',False),((12,12),'flex',False),((12,12),'flex',True),((24,24),'hub75',False),((24,24),'flex',False),((25,36),'hub75',True)]:
             c=configuration(size=size,rear=rear);c['state']['fulfillment']='rush' if rush else 'standard'
             c['state']['rim']['countPerRow']=301
             builder=self.build(c)['order']['items'][0]['builder']

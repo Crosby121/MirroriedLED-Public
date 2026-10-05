@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-04.1",
+  "version": "2026-10-05.1",
   "sizes": [
     [
       12,
@@ -40,7 +40,10 @@
     "artClearanceIn": 0.5,
     "defaultDepthIn": 3,
     "finish": "Frosted / diffused backside engraving; broad continuous light areas; no visible LED dots. Final operator proof required.",
-    "panelDimensions": "Nominal dimensions calculated from pitch and pixel count. The team verifies actual PCB size, scan mode, driver, stock and fit before production."
+    "panelDimensions": "Nominal dimensions calculated from pitch and pixel count. The team verifies actual PCB size, scan mode, driver, stock and fit before production.",
+    "mirrorPiecesBySize": {
+      "12x12": 1
+    }
   },
   "controllers": [
     {
@@ -169,7 +172,7 @@
     }
   ],
   "pricing": {
-    "version": "2026-10-04.1",
+    "version": "2026-10-05.1",
     "checkedAt": "2026-10-04",
     "currency": "USD",
     "frameMarkupPercent": 20,
@@ -177,68 +180,22 @@
     "rimLedsPerRoll": 300,
     "frames": [
       {
-        "id": "michaels-12-retail-10545049",
+        "id": "owner-michaels-12-frame",
         "size": [
           12,
           12
         ],
         "finishes": [
-          "Matte black"
-        ],
-        "supplier": "Michaels",
-        "priceCents": 1199,
-        "packQuantity": 2,
-        "url": "https://www.michaels.com/product/2-pack-fundamentals-12-x-12-black-shadow-boxes-by-studio-decor-10545049",
-        "availability": "Listed online sale · recheck at quote",
-        "note": "Online 2-pack sale; regular pack price $29.99. Mirror fit, finish and usable depth require production review."
-      },
-      {
-        "id": "michaels-12-retail-10545050",
-        "size": [
-          12,
-          12
-        ],
-        "finishes": [
+          "Matte black",
           "White"
         ],
         "supplier": "Michaels",
-        "priceCents": 1199,
-        "packQuantity": 2,
-        "url": "https://www.michaels.com/product/2-pack-fundamentals-12-x-12-white-shadow-boxes-by-studio-decor-10545050",
-        "availability": "Listed online sale · recheck at quote",
-        "note": "Online 2-pack sale; regular pack price $29.99. Mirror fit, finish and usable depth require production review."
-      },
-      {
-        "id": "michaels-12-bulk-MP545049",
-        "size": [
-          12,
-          12
-        ],
-        "finishes": [
-          "Matte black"
-        ],
-        "supplier": "Michaels",
-        "priceCents": 12141,
-        "packQuantity": 18,
-        "url": "https://www.michaels.com/product/9-packs-2-ct-18-total-black-fundamentals-12-x-12-display-case-by-studio-decor-MP545049",
-        "availability": "Bulk procurement · entire 18-frame pack",
-        "note": "Allocated cost per frame from 9 packs of 2. Bulk purchase is for studio stock; one customer build does not purchase 18 frames."
-      },
-      {
-        "id": "michaels-12-bulk-MP545050",
-        "size": [
-          12,
-          12
-        ],
-        "finishes": [
-          "White"
-        ],
-        "supplier": "Michaels",
-        "priceCents": 12141,
-        "packQuantity": 18,
-        "url": "https://www.michaels.com/product/9-packs-2-ct-18-total-white-fundamentals-12-x-12-display-box-by-studio-decor-MP545050",
-        "availability": "Bulk procurement · entire 18-frame pack",
-        "note": "Allocated cost per frame from 9 packs of 2. Bulk purchase is for studio stock; one customer build does not purchase 18 frames."
+        "priceCents": 1700,
+        "packQuantity": 1,
+        "url": "https://www.michaelscustomframing.com/",
+        "availability": "Approximate cost · finish, fit and stock need confirmation",
+        "priceBasis": "owner-estimate",
+        "note": "Owner estimate: about $17 per 12-inch frame, before the 20% frame-only markup. Exact Michaels model, selected finish and usable depth require production review."
       },
       {
         "id": "michaels-candidate-0",
@@ -375,24 +332,27 @@
         "supplier": "Dr. Zzs",
         "priceCents": 3500,
         "url": "https://www.drzzs.com/shop/dig-uno-diy-rgb-led-controller-w-wled-preassembled/",
-        "availability": "Listed in stock · recheck at quote",
-        "note": "Preassembled controller with ESP32, onboard antenna; external antenna / Ethernet variants require a separate quote."
+        "availability": "Approximate cost · confirm variant, stock and lead time",
+        "note": "Owner estimate: about $35 per controller. Preassembled controller with ESP32, onboard antenna; external antenna / Ethernet variants require a separate quote.",
+        "priceBasis": "owner-estimate"
       },
       "digi-quad": {
         "id": "drzzs-quad-onboard",
         "supplier": "Dr. Zzs",
-        "priceCents": 4400,
+        "priceCents": 5000,
         "url": "https://www.drzzs.com/shop/digquad/",
-        "availability": "Listed in stock · recheck at quote",
-        "note": "Preassembled controller with ESP32, onboard antenna; external antenna / Ethernet variants require a separate quote."
+        "availability": "Approximate cost · confirm variant, stock and lead time",
+        "note": "Owner estimate: about $50 per controller. Preassembled controller with ESP32, onboard antenna; external antenna / Ethernet variants require a separate quote.",
+        "priceBasis": "owner-estimate"
       },
       "matrixportal-s3": {
         "id": "adafruit-5778",
         "supplier": "Adafruit",
-        "priceCents": 1995,
+        "priceCents": 2000,
         "url": "https://www.adafruit.com/product/5778",
-        "availability": "Supplier out of stock · lead time needs confirmation",
-        "note": "Single-board price. Studio stock and compatible WLED-MM firmware must be confirmed."
+        "availability": "Supplier listed out of stock in October 4 snapshot · confirm studio stock and lead time",
+        "note": "Owner estimate: about $20 per controller. Single-board price. Studio stock and compatible WLED-MM firmware must be confirmed.",
+        "priceBasis": "owner-estimate"
       },
       "beast": {
         "id": "beast-coming-soon",
@@ -430,7 +390,7 @@
       "power": {
         "label": "5V power supply · sized for this build",
         "supplier": "Alibaba / AliExpress",
-        "note": "Select rated capacity after the actual panel load is verified; price and delivery need confirmation.",
+        "note": "Size the supply from the actual LED count, exact panel load, controller/accessory consumption and wiring plan. Procurement references are excluded until a suitable exact voltage/capacity, physical fit and landed price are confirmed. Do not apply a 20A or mixed-variant listing to every build.",
         "priceCents": null
       },
       "wiring": {
@@ -486,44 +446,59 @@
       "hub-p3-64x32": {
         "id": "alibaba-p3-1600188215401",
         "supplier": "Alibaba",
-        "priceCents": 1100,
-        "note": "Listed 64 × 32 / 192 × 96 mm P3 reference price for 1–499 pieces; driver and scan mode are unverified. Compare landed seller quotes before procurement.",
+        "priceCents": 1400,
+        "note": "Owner estimate: about $14 per 64 × 32 panel. Exact pixel pitch, measured board dimensions, compatible driver and scan mode require confirmation; P3.91 is not substituted for P3.19.",
         "minimumQuantity": 1,
         "url": "https://www.alibaba.com/product-detail/LED-Matrix-Panel-P3-Indoor-HD_1600188215401.html",
-        "availability": "Listed unit price · compatibility pending"
+        "availability": "Approximate cost · exact panel variant and stock need confirmation",
+        "priceBasis": "owner-estimate"
       },
       "hub-p319-64x64": {
         "id": "alibaba-hub-p319-64x64",
         "supplier": "Alibaba / AliExpress",
-        "priceCents": null,
-        "note": "Exact size and compatible shift-register driver / scan mode need a seller-confirmed quote. P3.91 is not substituted for P3.19."
+        "priceCents": 1400,
+        "note": "Owner estimate: about $14 per 64 × 64 panel. Exact pixel pitch, measured board dimensions, compatible driver and scan mode require confirmation; P3.91 is not substituted for P3.19.",
+        "priceBasis": "owner-estimate",
+        "availability": "Approximate cost · exact panel variant and stock need confirmation"
       },
       "hub-p5-64x32": {
         "id": "alibaba-hub-p5-64x32",
         "supplier": "Alibaba / AliExpress",
-        "priceCents": null,
-        "note": "Exact size and compatible shift-register driver / scan mode need a seller-confirmed quote. P3.91 is not substituted for P3.19."
+        "priceCents": 1400,
+        "note": "Owner estimate: about $14 per 64 × 32 panel. Exact pixel pitch, measured board dimensions, compatible driver and scan mode require confirmation; P3.91 is not substituted for P3.19.",
+        "priceBasis": "owner-estimate",
+        "availability": "Approximate cost · exact panel variant and stock need confirmation"
       },
       "flex-8x8": {
         "id": "alibaba-flex-8x8",
         "supplier": "Alibaba / AliExpress",
-        "priceCents": null,
+        "priceCents": 400,
         "url": "https://www.alibaba.com/product-detail/WS2812B-8X8-16X16-8X32-LED-Pixel_1600879579006.html",
-        "note": "Listing has multiple panel variants. Confirm the exact matrix dimensions, LED pitch and delivered unit price; mixed-variant floor prices are not used."
+        "note": "Owner estimate: about $4 per 8 × 8 flexible panel. Confirm exact dimensions, LED pitch, voltage and delivered price.",
+        "priceBasis": "owner-estimate",
+        "availability": "Approximate cost · exact panel variant and stock need confirmation"
       },
       "flex-16x16": {
         "id": "alibaba-flex-16x16",
         "supplier": "Alibaba / AliExpress",
         "priceCents": null,
         "url": "https://www.alibaba.com/product-detail/WS2812B-8X8-16X16-8X32-LED-Pixel_1600879579006.html",
-        "note": "Listing has multiple panel variants. Confirm the exact matrix dimensions, LED pitch and delivered unit price; mixed-variant floor prices are not used."
+        "note": "Owner estimate: about $16–$18 per 16 × 16 flexible panel. Retain the range until the exact variant and delivered price are confirmed.",
+        "rangeCents": [
+          1600,
+          1800
+        ],
+        "priceBasis": "owner-estimate",
+        "availability": "Approximate range · final panel cost needs confirmation"
       },
       "flex-32x8": {
         "id": "alibaba-flex-32x8",
         "supplier": "Alibaba / AliExpress",
-        "priceCents": null,
+        "priceCents": 1600,
         "url": "https://www.alibaba.com/product-detail/WS2812B-8X8-16X16-8X32-LED-Pixel_1600879579006.html",
-        "note": "Listing has multiple panel variants. Confirm the exact matrix dimensions, LED pitch and delivered unit price; mixed-variant floor prices are not used."
+        "note": "Owner estimate: about $16 per 8 × 32 (or 32 × 8 when rotated) flexible panel. Confirm exact dimensions, LED pitch, voltage and delivered price.",
+        "priceBasis": "owner-estimate",
+        "availability": "Approximate cost · exact panel variant and stock need confirmation"
       }
     },
     "rushPanels": {
@@ -549,14 +524,11 @@
     "standardRim": {
       "id": "alibaba-ws2812b-1601573072927",
       "supplier": "Alibaba / AliExpress",
-      "rangeCents": [
-        995,
-        1150
-      ],
       "minimumQuantity": 1,
       "url": "https://www.alibaba.com/product-detail/WS2812B-RGB-Led-5v-12v-Programmable_1601573072927.html",
-      "availability": "Variant / seller quote required",
-      "note": "Supplier lists $1.99–$2.30 per meter, DC5V / 60 LEDs per meter. Budget range is 5 meters per roll; exact IP20 variant, density and delivered price need confirmation."
+      "availability": "LED count and strip price pending",
+      "note": "Owner deferred strip pricing until the required LED count and actual strip cost are established. Roll quantity is a planning allowance only; the previous supplier range is not used in the active estimate.",
+      "priceCents": null
     },
     "rushRim": {
       "id": "amazon-B01CDTEJBG",
@@ -583,6 +555,304 @@
         "note": "Seller must confirm supported shift-register driver; ICN2053 / FM6353 require a different implementation."
       }
     ],
-    "notice": "Supplier snapshot estimates in USD, checked October 4, 2026. Prices and stock are rechecked in the final quote; no automatic supplier purchase or stock reservation."
+    "notice": "Approximate owner component costs recorded October 4, 2026, in USD. Frame cost includes 20% markup; other component estimates do not. These are partial build estimates. Exact variants, glass types, stock, labor, shipping and tax are confirmed in the final quote.",
+    "historicalSupplierSnapshot": {
+      "checkedAt": "2026-10-04",
+      "sourceBasis": "supplier-web-snapshot",
+      "note": "Superseded reference prices; excluded from active estimates. Recheck exact variants before procurement.",
+      "frames": [
+        {
+          "id": "michaels-12-retail-10545049",
+          "size": [
+            12,
+            12
+          ],
+          "finishes": [
+            "Matte black"
+          ],
+          "supplier": "Michaels",
+          "priceCents": 1199,
+          "packQuantity": 2,
+          "url": "https://www.michaels.com/product/2-pack-fundamentals-12-x-12-black-shadow-boxes-by-studio-decor-10545049",
+          "availability": "Listed online sale · recheck at quote",
+          "note": "Online 2-pack sale; regular pack price $29.99. Mirror fit, finish and usable depth require production review."
+        },
+        {
+          "id": "michaels-12-retail-10545050",
+          "size": [
+            12,
+            12
+          ],
+          "finishes": [
+            "White"
+          ],
+          "supplier": "Michaels",
+          "priceCents": 1199,
+          "packQuantity": 2,
+          "url": "https://www.michaels.com/product/2-pack-fundamentals-12-x-12-white-shadow-boxes-by-studio-decor-10545050",
+          "availability": "Listed online sale · recheck at quote",
+          "note": "Online 2-pack sale; regular pack price $29.99. Mirror fit, finish and usable depth require production review."
+        },
+        {
+          "id": "michaels-12-bulk-MP545049",
+          "size": [
+            12,
+            12
+          ],
+          "finishes": [
+            "Matte black"
+          ],
+          "supplier": "Michaels",
+          "priceCents": 12141,
+          "packQuantity": 18,
+          "url": "https://www.michaels.com/product/9-packs-2-ct-18-total-black-fundamentals-12-x-12-display-case-by-studio-decor-MP545049",
+          "availability": "Bulk procurement · entire 18-frame pack",
+          "note": "Allocated cost per frame from 9 packs of 2. Bulk purchase is for studio stock; one customer build does not purchase 18 frames."
+        },
+        {
+          "id": "michaels-12-bulk-MP545050",
+          "size": [
+            12,
+            12
+          ],
+          "finishes": [
+            "White"
+          ],
+          "supplier": "Michaels",
+          "priceCents": 12141,
+          "packQuantity": 18,
+          "url": "https://www.michaels.com/product/9-packs-2-ct-18-total-white-fundamentals-12-x-12-display-box-by-studio-decor-MP545050",
+          "availability": "Bulk procurement · entire 18-frame pack",
+          "note": "Allocated cost per frame from 9 packs of 2. Bulk purchase is for studio stock; one customer build does not purchase 18 frames."
+        }
+      ],
+      "controllers": {
+        "digi-uno": {
+          "id": "drzzs-uno-onboard",
+          "supplier": "Dr. Zzs",
+          "priceCents": 3500,
+          "url": "https://www.drzzs.com/shop/dig-uno-diy-rgb-led-controller-w-wled-preassembled/",
+          "availability": "Listed in stock · recheck at quote",
+          "note": "Preassembled controller with ESP32, onboard antenna; external antenna / Ethernet variants require a separate quote."
+        },
+        "digi-quad": {
+          "id": "drzzs-quad-onboard",
+          "supplier": "Dr. Zzs",
+          "priceCents": 4400,
+          "url": "https://www.drzzs.com/shop/digquad/",
+          "availability": "Listed in stock · recheck at quote",
+          "note": "Preassembled controller with ESP32, onboard antenna; external antenna / Ethernet variants require a separate quote."
+        },
+        "matrixportal-s3": {
+          "id": "adafruit-5778",
+          "supplier": "Adafruit",
+          "priceCents": 1995,
+          "url": "https://www.adafruit.com/product/5778",
+          "availability": "Supplier out of stock · lead time needs confirmation",
+          "note": "Single-board price. Studio stock and compatible WLED-MM firmware must be confirmed."
+        },
+        "beast": {
+          "id": "beast-coming-soon",
+          "supplier": "Mirroried LED",
+          "priceCents": null,
+          "availability": "Coming Soon",
+          "note": "Unavailable until fabrication, validation and inventory release."
+        }
+      },
+      "panels": {
+        "hub-p3-64x32": {
+          "id": "alibaba-p3-1600188215401",
+          "supplier": "Alibaba",
+          "priceCents": 1100,
+          "note": "Listed 64 × 32 / 192 × 96 mm P3 reference price for 1–499 pieces; driver and scan mode are unverified. Compare landed seller quotes before procurement.",
+          "minimumQuantity": 1,
+          "url": "https://www.alibaba.com/product-detail/LED-Matrix-Panel-P3-Indoor-HD_1600188215401.html",
+          "availability": "Listed unit price · compatibility pending"
+        },
+        "hub-p319-64x64": {
+          "id": "alibaba-hub-p319-64x64",
+          "supplier": "Alibaba / AliExpress",
+          "priceCents": null,
+          "note": "Exact size and compatible shift-register driver / scan mode need a seller-confirmed quote. P3.91 is not substituted for P3.19."
+        },
+        "hub-p5-64x32": {
+          "id": "alibaba-hub-p5-64x32",
+          "supplier": "Alibaba / AliExpress",
+          "priceCents": null,
+          "note": "Exact size and compatible shift-register driver / scan mode need a seller-confirmed quote. P3.91 is not substituted for P3.19."
+        },
+        "flex-8x8": {
+          "id": "alibaba-flex-8x8",
+          "supplier": "Alibaba / AliExpress",
+          "priceCents": null,
+          "url": "https://www.alibaba.com/product-detail/WS2812B-8X8-16X16-8X32-LED-Pixel_1600879579006.html",
+          "note": "Listing has multiple panel variants. Confirm the exact matrix dimensions, LED pitch and delivered unit price; mixed-variant floor prices are not used."
+        },
+        "flex-16x16": {
+          "id": "alibaba-flex-16x16",
+          "supplier": "Alibaba / AliExpress",
+          "priceCents": null,
+          "url": "https://www.alibaba.com/product-detail/WS2812B-8X8-16X16-8X32-LED-Pixel_1600879579006.html",
+          "note": "Listing has multiple panel variants. Confirm the exact matrix dimensions, LED pitch and delivered unit price; mixed-variant floor prices are not used."
+        },
+        "flex-32x8": {
+          "id": "alibaba-flex-32x8",
+          "supplier": "Alibaba / AliExpress",
+          "priceCents": null,
+          "url": "https://www.alibaba.com/product-detail/WS2812B-8X8-16X16-8X32-LED-Pixel_1600879579006.html",
+          "note": "Listing has multiple panel variants. Confirm the exact matrix dimensions, LED pitch and delivered unit price; mixed-variant floor prices are not used."
+        }
+      },
+      "standardRim": {
+        "id": "alibaba-ws2812b-1601573072927",
+        "supplier": "Alibaba / AliExpress",
+        "rangeCents": [
+          995,
+          1150
+        ],
+        "minimumQuantity": 1,
+        "url": "https://www.alibaba.com/product-detail/WS2812B-RGB-Led-5v-12v-Programmable_1601573072927.html",
+        "availability": "Variant / seller quote required",
+        "note": "Supplier lists $1.99–$2.30 per meter, DC5V / 60 LEDs per meter. Budget range is 5 meters per roll; exact IP20 variant, density and delivered price need confirmation."
+      }
+    },
+    "sourceBasis": "owner-component-cost-estimates",
+    "mirrorPieces": {
+      "12x12": {
+        "id": "owner-12x12-mirror-piece",
+        "supplier": "Mirroried LED",
+        "priceCents": 600,
+        "packQuantity": 1,
+        "priceBasis": "owner-estimate",
+        "availability": "Approximate cost · material and coating need confirmation",
+        "note": "Owner estimate: about $6 per 12 × 12 in mirror piece. The owner specifies one mirror for the 12-inch build. Exact material, coating, fit and delivered cost are confirmed in the final quote."
+      }
+    },
+    "referenceCosts": {
+      "adafruit-controller-unidentified": {
+        "label": "Adafruit controller · exact model pending",
+        "supplier": "Adafruit",
+        "priceCents": 2300,
+        "priceBasis": "owner-estimate",
+        "note": "Owner estimate: about $23. Exact model is unresolved; retained separately from the $20 MatrixPortal S3 and excluded from compatible controller choices until identified."
+      },
+      "amazon-ws2811-beads-300": {
+        "label": "WS2811 beads · 300 LEDs",
+        "supplier": "Amazon",
+        "priceCents": 2800,
+        "packQuantity": 300,
+        "priceBasis": "owner-estimate",
+        "note": "Owner reference: about $28 for 300 WS2811 bead LEDs. Exact listing, voltage, spacing and connectors are pending. This is not substituted for the current WS2812B strip offer."
+      }
+    },
+    "rimBudgetsBySize": {
+      "12x12": {
+        "id": "owner-12x12-rim-budget",
+        "rangeCents": [
+          500,
+          3000
+        ],
+        "maximumLeds": 300,
+        "priceBasis": "owner-build-budget",
+        "availability": "Provisional build allowance · exact LEDs and price need confirmation",
+        "note": "Owner planning range: about $5–$30 for LEDs in a recommended 12 × 12 build. One build allowance, not a per-roll or per-LED price. The allowance is shown only up to 300 LEDs, matching the stated pack reference; greater quantities need a new quote. Controller and rear panels have separate price lines. Exact type, voltage, layout and supplier determine the final amount."
+      }
+    },
+    "procurementReferences": {
+      "observedAt": "2026-10-05",
+      "status": "review_required_not_checkout_prices",
+      "notes": "See docs/LED_AND_POWER_SUPPLY_PRICING.md for scope, capacity calculations, voltage matching, minimum orders and retrieval limits. These offers are excluded from active pricing until an appropriate exact part and landed quote are approved.",
+      "leds": [
+        {
+          "supplier": "Amazon",
+          "type": "WS2811 beads",
+          "packLedCount": 300,
+          "priceCents": 2800,
+          "sourceBasis": "owner-estimate",
+          "variantConfirmed": false,
+          "note": "Owner reference only; matching current listing, voltage and spacing are unresolved."
+        },
+        {
+          "supplier": "Alibaba",
+          "type": "KTRLIGHT 5V WS2811 seed pixels",
+          "rangeCents": [
+            4,
+            5
+          ],
+          "priceUnit": "listed piece; seller must confirm whether one piece is one LED",
+          "minimumQuantity": 1,
+          "sourceBasis": "supplier-category-preview",
+          "url": "https://www.alibaba.com/product-detail/Outdoor-Waterproof-Led-WS2811-3PIN-White_1601104270269.html",
+          "variantConfirmed": false
+        },
+        {
+          "supplier": "AliExpress",
+          "type": "WS2811 seed pixels, 100/200/300-count candidate",
+          "priceCents": null,
+          "url": "https://www.aliexpress.com/item/1005012942317837.html",
+          "sourceBasis": "direct-retrieval-unavailable",
+          "variantConfirmed": false
+        }
+      ],
+      "powerSupplies": [
+        {
+          "supplier": "Amazon",
+          "model": "BTF B01D8FM4N4",
+          "voltage": 5,
+          "ratedAmps": 6,
+          "ratedWatts": 30,
+          "priceCents": null,
+          "url": "https://www.amazon.com/dp/B01D8FM4N4",
+          "sourceBasis": "product-candidate-selected-offer-price-unavailable"
+        },
+        {
+          "supplier": "Amazon",
+          "model": "Aclorol B07KC55TJF",
+          "voltage": 5,
+          "ratedAmps": 20,
+          "ratedWatts": 100,
+          "priceCents": null,
+          "url": "https://www.amazon.com/dp/B07KC55TJF",
+          "sourceBasis": "product-candidate-selected-offer-price-unavailable"
+        },
+        {
+          "supplier": "Alibaba",
+          "model": "Weihao S-100-5",
+          "voltage": 5,
+          "ratedAmps": 20,
+          "ratedWatts": 100,
+          "rangeCents": [
+            661,
+            771
+          ],
+          "minimumQuantity": 1,
+          "url": "https://www.alibaba.com/pla/S-100-5-100W-5V-20A-AC-to_11000028989355.html",
+          "sourceBasis": "supplier-listing",
+          "note": "Freight, duties, enclosure and installation excluded; exact fit, stock and quote need confirmation."
+        },
+        {
+          "supplier": "Alibaba",
+          "model": "S-150-5 bulk reference",
+          "voltage": 5,
+          "ratedAmps": 30,
+          "ratedWatts": 150,
+          "rangeCents": [
+            480,
+            540
+          ],
+          "minimumQuantity": 50,
+          "url": "https://www.alibaba.com/wholesale/switching-power-supply-module-5v.html",
+          "sourceBasis": "indexed-supplier-listing",
+          "note": "Minimum 50-unit order, $240–$270 before shipping; not a single-build purchase price."
+        },
+        {
+          "supplier": "AliExpress",
+          "model": "Multiple 5V amperage variants, exact variant pending",
+          "priceCents": null,
+          "url": "https://www.aliexpress.com/item/1005005710838777.html",
+          "sourceBasis": "direct-retrieval-unavailable"
+        }
+      ]
+    }
   }
 }

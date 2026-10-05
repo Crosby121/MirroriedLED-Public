@@ -144,7 +144,7 @@
         "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
         "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
       ],
-      "next_action": "Review draft PR #14. Reconcile its original WF-006 product task/session references to shared WF-008 while preserving main capture WF-006 and connection records. Complete documented merchant and launch prerequisites before release.",
+      "next_action": "Review draft PR #14; its product task/session references now use WF-008, with capture WF-006 preserved. Verify the actual merchant sandbox and signed webhook, confirm complete product/shipping/production terms, resolve main-site SSH settings and verify an exact live release before opening paid ordering.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"
@@ -152,7 +152,7 @@
     },
     {
       "id": "WF-010",
-      "title": "Update owner-estimated Infinity Mirror component costs",
+      "title": "Update owner component costs and 12-inch LED/power-supply research",
       "status": "in_progress",
       "priority": 1,
       "owner_session_id": "20261005t015322z-2a5fd60a",
@@ -161,7 +161,8 @@
       "acceptance": [
         "Record approximate owner costs with the 20 percent frame-only markup.",
         "Price 12 by 12 mirror pieces by quantity without applying their cost to other sizes.",
-        "Retain flexible-panel ranges, deferred strip pricing and final quote/payment guards; verify JavaScript and PHP parity."
+        "Retain flexible-panel ranges, deferred strip pricing and final quote/payment guards; verify JavaScript and PHP parity.",
+        "Preserve sourced procurement comparisons, appropriate voltage/load recommendations and unverified supplier prices accurately."
       ],
       "next_action": "Update the builder catalog and quantity-aware pricing; test and publish on draft PR #14.",
       "evidence": [
