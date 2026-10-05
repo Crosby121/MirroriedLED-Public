@@ -89,6 +89,12 @@ jobs:
             python3 --version
             check 'Python is at least 3.8' python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
           fi
+          echo 'Checking installed alternative Python interpreters:'
+          for candidate in python3.14 python3.13 python3.12 python3.11 python3.10 python3.9 python3.8 /opt/alt/python{38,39,310,311,312,313,314}/bin/python3 /usr/local/bin/python3; do
+            if command -v "$candidate" >/dev/null 2>&1; then
+              "$candidate" -c 'import sys; print("MLED_PYTHON_CANDIDATE=" + sys.executable + " VERSION=" + sys.version.split()[0])' || true
+            fi
+          done
           check 'PHP executable is available' command -v php
           if command -v php >/dev/null; then
             php -r 'echo "PHP_VERSION=" . PHP_VERSION . PHP_EOL;'
