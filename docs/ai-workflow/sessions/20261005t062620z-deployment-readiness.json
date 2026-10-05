@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "id": "20261005t062620z-deployment-readiness",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-05T06:22:02Z",
+  "ended_at": "2026-10-05T06:26:20Z",
+  "status": "completed",
+  "task_ids": [
+    "WF-012"
+  ],
+  "branch": "docs/deployment-readiness-20261005",
+  "base_commit": "3b1e04aae7277239e14a216bbfe4557e80e5da29",
+  "summary": "Checked current source, CI, packaging and latest deployment retry. Replaced stale missing-secret status with observed SSH authentication failure before upload. Independently reproduced privacy blockers in PRs 15/16 and fractional timestamp comparison in PR 16. Published readiness findings; no product code or live service changed.",
+  "next_action": "Resolve WF-002 SSH authentication. Repair and verify the reproduced PR 15/16 review defects before merging those builds; retain checkout PR 14 as draft until launch acceptance.",
+  "changed_files": [
+    "docs/DEPLOYMENT_READINESS_20261005.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "docs/ai-workflow/sessions/20261005t062620z-deployment-readiness.json"
+  ],
+  "checks": [
+    {
+      "name": "Shared workflow validator and lifecycle tests",
+      "result": "passed",
+      "command": "python3 tools/ai_workflow.py validate; python3 -m unittest discover -s tests -p test_ai_workflow.py -v",
+      "basis": "local_execution",
+      "finding": "Renderer generated through the documented connector-only fallback; validator passed and all 13 lifecycle tests passed."
+    },
+    {
+      "name": "Exact-source targeted defect reproduction with synthetic inputs",
+      "command": "python3 deployment_check_tmp/reproduce.py",
+      "result": "passed",
+      "basis": "local_execution",
+      "finding": "All six suspected behaviors reproduced; this check confirms defects, not readiness."
+    },
+    {
+      "name": "Latest deployment job log and skipped upload/install",
+      "result": "failed",
+      "basis": "GitHub Actions",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432"
+    },
+    {
+      "name": "Current main packaging",
+      "result": "passed",
+      "basis": "GitHub Actions",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37242502555"
+    },
+    {
+      "name": "Live HTTP and hardware acceptance",
+      "result": "not_run",
+      "finding": "No authenticated host connection or live source comparison established."
+    }
+  ],
+  "findings": [
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432",
+      "basis": "latest_attempt_log",
+      "finding": "Latest attempt passes hosting-setting and private-key-format checks but SSH authentication is rejected with Permission denied (publickey,password). Upload, installation and live verification are skipped. The earlier missing-setting finding is superseded by this retry."
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/15",
+      "basis": "source_review_and_local_reproduction",
+      "finding": "Two unresolved secret-redaction findings reproduced."
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/16",
+      "basis": "source_review_and_local_reproduction",
+      "finding": "Six unresolved review findings; credential and timestamp defects reproduced, remaining findings inspected statically."
+    }
+  ]
+}
