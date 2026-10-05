@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-05T08:04:41Z",
+  "observed_at": "2026-10-05T08:09:13Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,35 +8,42 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "3b1e04aae7277239e14a216bbfe4557e80e5da29",
-    "summary": "Configurator, supplier pricing and shared connector are merged. Current main packaging passes; checkout PR 14, capture fixes PR 15 and AI database PR 16 remain open. Hostinger live revision is unverified.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/3b1e04aae7277239e14a216bbfe4557e80e5da29",
+    "observed_commit": "6c390ecea7d238cd6cb0b686272ebf45d819332a",
+    "summary": "PR #17 SSH verification and remote Python selection fix merged. Exact-source website release installed and verified on Hostinger. Earlier checkout/capture/AI database review findings remain dated observations.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/6c390ecea7d238cd6cb0b686272ebf45d819332a",
     "checks": [
       {
-        "name": "Current main website packaging",
+        "name": "Complete website release validation and verified deployment",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37242502555"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167"
       },
       {
-        "name": "Current main shared workflow validation",
+        "name": "Merged main website packaging",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37242502505"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592151"
+      },
+      {
+        "name": "Merged main shared workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592312"
       }
     ]
   },
   "deployment": {
-    "live_commit": null,
-    "live_verified_at": null,
-    "verification_evidence": [],
+    "live_commit": "6c390ecea7d238cd6cb0b686272ebf45d819332a",
+    "live_verified_at": "2026-10-05T08:07:17Z",
+    "verification_evidence": [
+      "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167/job/111670834522"
+    ],
     "last_attempt": {
-      "status": "failed_before_upload",
-      "commit": "778e926615e1168dad4f795bf1da7dcef95904a1",
-      "run_id": 37236890583,
-      "run_attempt": 2,
-      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432",
-      "failed_step": "Check website host and PHP before any upload",
-      "finding": "The historical deployment failed before upload. The replacement SSH key now authenticates, and read-only webroot/Python/PHP preflight passes on PR #17 using /opt/alt/python311/bin/python3. Main still needs that configuration fix before release. No upload or installation was performed; live revision remains unverified.",
-      "upload_performed": false
+      "status": "verified",
+      "commit": "6c390ecea7d238cd6cb0b686272ebf45d819332a",
+      "run_id": 37281592167,
+      "run_attempt": 1,
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167/job/111670834522",
+      "failed_step": "No failed step",
+      "finding": "SSH/settings/Python/PHP preflight passed, the public release was uploaded, backed up and installed, and exact-source HTTPS verification passed for storefront, customer portal, team page, assets and PHP access rules. No rollback was needed. Separate billing, connector credentials and hardware activation are not established by this release.",
+      "upload_performed": true
     }
   },
   "connections": [
@@ -63,7 +70,7 @@
       "automatic_capture": "local_helpers_prepared_not_installed_or_verified"
     }
   ],
-  "next_task_id": "WF-002",
+  "next_task_id": "WF-003",
   "limitations": [
     "Dated observations require an actual GitHub refresh at each session.",
     "The MCP endpoint and app connections are implemented but not installed or verified on Hostinger.",
@@ -72,7 +79,7 @@
     "Application names are declared separately from the authenticated GitHub account or configured capture source.",
     "Local fallback task claims remain advisory across separate checkouts until the central connector is activated.",
     "Chat capture does not commit unsaved source files; each app must publish code and verify its commit/PR before a completed handoff.",
-    "Source checks and packaging success do not establish a verified Hostinger live commit."
+    "Hostinger live commit is verified by the linked release run; this does not establish paid billing, email delivery, connector credentials or physical hardware activation."
   ],
   "product_observations": [
     {

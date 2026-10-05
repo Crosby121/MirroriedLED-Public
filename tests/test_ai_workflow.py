@@ -131,6 +131,9 @@ class SharedWorkflowTests(unittest.TestCase):
     def test_source_success_does_not_supply_missing_live_deployment_evidence(self):
         path = self.root / workflow.REL / "state.json"
         state = workflow.read(path)
+        # This case requires missing live evidence regardless of the production snapshot.
+        state["deployment"].update(live_commit=None, live_verified_at=None,
+                                   verification_evidence=[])
         self.assertIsNone(state["deployment"]["live_commit"])
         state["deployment"]["live_commit"] = state["source"]["observed_commit"]
         workflow.write(path, state)

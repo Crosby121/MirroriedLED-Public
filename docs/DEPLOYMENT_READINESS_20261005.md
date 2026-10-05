@@ -2,7 +2,7 @@
 
 Checked October 4, 2026, 11:26 PM America/Los_Angeles (October 5, 06:26 UTC).
 
-**SSH access and hosting preflight are verified.** The replacement key authenticates, and Python 3.11/PHP 8.3 checks pass. PR #17 contains the remote Python selection fix; it must reach main before the release workflow can use it. No live deployment was performed. Earlier build-review findings below remain dated observations.
+**Deployed and verified on Hostinger.** PR #17 is merged, and automatic release run 37281592167 passed backup, installation and exact-source HTTPS verification for commit `6c390ecea7d238cd6cb0b686272ebf45d819332a`. Verification completed October 5 at 1:07 AM Pacific. Earlier failures and build-review findings below are preserved as historical observations.
 
 ## Build status
 
@@ -70,3 +70,11 @@ Read-only checks found Python 3.8.20 and 3.11.16 installed at explicit alternati
 [Successful full read-only preflight](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281128606/job/111669230359): authenticated SSH; expected directory and existing index.html; Python 3.11.16; PHP 8.3.33; pdo_sqlite, fileinfo and dom. [Storefront CI](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281133203) and [workflow CI](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281133181) pass for fix commit `929ec0b8d6e2e80704f9ad68b75ec4e93c758617`. Local YAML/Bash/embedded-Python checks and all 13 workflow lifecycle tests pass.
 
 The change is published in [PR #17](https://github.com/Crosby121/MirroriedLED-Public/pull/17), not merged. Apply the configuration fix before running the authorized website release. The live revision remains unknown; no upload, installation, payment activation or hardware connection occurred. Generated private-key material remains outside the public repository.
+
+## PR #17 merged and website deployed — October 5, 1:07 AM Pacific
+
+The user authorized merging PR #17. Final-head Storefront CI and shared workflow validation both passed before the merge. Merge commit `6c390ecea7d238cd6cb0b686272ebf45d819332a` triggered [complete website release run 37281592167](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167). Its validate and deploy jobs concluded success.
+
+The deploy job passed saved settings, SSH/runtime preflight, packaging, upload outside public_html, full-site backup and public-file installation. Exact-source HTTPS verification emitted `LIVE_WEBSITE_VERIFIED` for the storefront, customer portal, team page, assets and PHP access rules at 2026-10-05T08:07:17Z. Rollback was skipped; credential and remote package cleanup passed. [Deployment evidence](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167/job/111670834522).
+
+The verified live website commit is now known. Main website SSH/Python deployment blocker WF-002 is complete. Scoped connector credentials, individual AI-app receipts, paid billing and physical LED playback retain their separate activation requirements; this release does not establish them.

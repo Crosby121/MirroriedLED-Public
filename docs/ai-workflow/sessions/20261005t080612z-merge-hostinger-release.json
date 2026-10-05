@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "id": "20261005t080612z-merge-hostinger-release",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-05T08:06:12Z",
+  "ended_at": "2026-10-05T08:09:13Z",
+  "status": "completed",
+  "task_ids": [
+    "WF-002"
+  ],
+  "branch": "main",
+  "base_commit": "3b1e04aae7277239e14a216bbfe4557e80e5da29",
+  "summary": "Merged PR #17 at the exact reviewed head after both required source checks passed. Monitored the automatic complete website deployment through backup, installation and successful exact-source HTTPS verification. Recorded verified live commit 6c390ecea7d238cd6cb0b686272ebf45d819332a. The merge was expressly authorized by the user. Normalized the missing-evidence regression fixture so the first verified production release does not break the test; timestamp and evidence rejection assertions remain intact.",
+  "next_action": "Continue WF-003 connector activation after provisioning its scoped private service credentials; then verify individual app read/write receipts. Paid subscriptions and live hardware playback require their separate acceptance steps.",
+  "changed_files": [
+    "docs/DEPLOYMENT_READINESS_20261005.md",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261005t080612z-merge-hostinger-release.json",
+    "tests/test_ai_workflow.py"
+  ],
+  "checks": [
+    {
+      "name": "PR #17 final-head Storefront CI",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281477219"
+    },
+    {
+      "name": "PR #17 final-head workflow CI",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281477248"
+    },
+    {
+      "name": "Complete release validation, SSH/runtime preflight, install and HTTPS verification",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167/job/111670834522"
+    },
+    {
+      "name": "Final shared-record validation and 13 lifecycle tests",
+      "result": "passed",
+      "basis": "local_execution"
+    }
+  ],
+  "findings": [
+    {
+      "basis": "GitHub merge receipt",
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/17",
+      "finding": "Merge receipt identifies commit 6c390ecea7d238cd6cb0b686272ebf45d819332a."
+    },
+    {
+      "basis": "Fresh GitHub Actions execution",
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167/job/111670834522",
+      "finding": "Deploy job concluded success; all upload/backup/install/verification/cleanup steps passed. LIVE_WEBSITE_VERIFIED emitted at 2026-10-05T08:07:17Z; rollback skipped."
+    },
+    {
+      "basis": "local_execution_and_fixture_correction",
+      "source": "tests/test_ai_workflow.py",
+      "finding": "The missing-live-evidence regression previously assumed the copied production record had never been deployed. It now explicitly seeds missing live evidence in the isolated fixture, preserving its guard checks after the first successful real deployment."
+    }
+  ]
+}
