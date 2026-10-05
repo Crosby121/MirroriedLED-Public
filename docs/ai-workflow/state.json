@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-04T22:54:53Z",
+  "observed_at": "2026-10-05T02:09:17Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,21 +8,41 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
-    "summary": "Shared workflow foundation merged after the supplier pricing and 20% frame markup release. The checked source is separate from the unknown Hostinger live version.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/620d57c6c182c19ada124a40722ef52e7474502d",
+    "observed_commit": "3b1e04aae7277239e14a216bbfe4557e80e5da29",
+    "summary": "Main includes the shared workflow connector and private capture implementation. The phased two-product storefront and checkout remain in draft PR #14. This session updates owner-estimated component costs; no live Hostinger release or actual merchant payment is verified.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/3b1e04aae7277239e14a216bbfe4557e80e5da29",
     "checks": [
       {
         "name": "Main shared workflow validation",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703708"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703708",
+        "basis": "historical_checks_of_620d57c; not checks of the refreshed main or pricing branch"
       },
       {
         "name": "Main website packaging",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703753"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703753",
+        "basis": "historical_checks_of_620d57c; not checks of the refreshed main or pricing branch"
       }
-    ]
+    ],
+    "branch_observation": {
+      "branch": "codex/limited-storefront-checkout",
+      "implementation_commit": "bfba791392c5a95ea747ab439be7c3f10daf2522",
+      "pull_request": "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+      "checks": [
+        {
+          "name": "Storefront CI",
+          "result": "passed",
+          "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37254108965"
+        },
+        {
+          "name": "Shared AI Workflow",
+          "result": "passed",
+          "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37254108982"
+        }
+      ],
+      "basis": "Published GitHub PR head and completed workflow jobs verified separately from the observed default branch and unknown live commit."
+    }
   },
   "deployment": {
     "live_commit": null,
@@ -83,6 +103,16 @@
       "finding": "Mirror builder quotes preserve the supplier policy and 20% markup on frame cost; dated supplier snapshots need verification.",
       "basis": "repository_documentation",
       "evidence": "docs/INFINITY_MIRROR_BUILDER.md"
+    },
+    {
+      "finding": "Draft PR #14 implements Infinity Mirror and address-sign custom orders with staff-reviewed product/shipping quotes, fulfillment ranges and canonical Stripe payment reconciliation. Instant final pricing for all configurations, actual merchant acceptance and live Hostinger deployment remain incomplete.",
+      "basis": "local_implementation_and_acceptance_tests",
+      "evidence": "https://github.com/Crosby121/MirroriedLED-Public/pull/14"
+    },
+    {
+      "finding": "Draft owner-cost update uses one $6 mirror for a 12-inch build, a $17 frame plus frame-only 20% markup, quantity-based controller/panel estimates, and provisional/ranged LED costs. Exact power/fabrication/shipping/tax quotes, actual merchant acceptance and live deployment remain incomplete.",
+      "basis": "owner_cost_instructions_and_verified_draft_implementation",
+      "evidence": "https://github.com/Crosby121/MirroriedLED-Public/commit/bfba791392c5a95ea747ab439be7c3f10daf2522"
     }
   ],
   "connector": {

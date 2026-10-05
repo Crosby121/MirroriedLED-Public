@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T23:01:20Z",
+  "updated_at": "2026-10-05T02:15:32Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -129,6 +129,45 @@
         "tests/test_ai_capture.py",
         "tests/browser-ai-capture.test.cjs",
         "docs/ai-workflow/AUTO_CAPTURE.md"
+      ]
+    },
+    {
+      "id": "WF-008",
+      "title": "Open phased Infinity Mirror and address-sign ordering (PR #14)",
+      "status": "in_progress",
+      "priority": 1,
+      "owner_session_id": "20261005t021532z-1f6eeadc",
+      "last_session_id": "20261004t223413z-233a5f91",
+      "depends_on": [],
+      "acceptance": [
+        "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
+        "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
+        "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
+      ],
+      "next_action": "Review draft PR #14; its product task/session references now use WF-008, with capture WF-006 preserved. Verify the actual merchant sandbox and signed webhook, confirm complete product/shipping/production terms, resolve main-site SSH settings and verify an exact live release before opening paid ordering.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+        "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"
+      ]
+    },
+    {
+      "id": "WF-010",
+      "title": "Update owner component costs and 12-inch LED/power-supply research",
+      "status": "done",
+      "priority": 1,
+      "owner_session_id": null,
+      "last_session_id": "20261005t015322z-2a5fd60a",
+      "depends_on": [],
+      "acceptance": [
+        "Record approximate owner costs with the 20 percent frame-only markup.",
+        "Price 12 by 12 mirror pieces by quantity without applying their cost to other sizes.",
+        "Retain flexible-panel ranges, deferred strip pricing and final quote/payment guards; verify JavaScript and PHP parity.",
+        "Preserve sourced procurement comparisons, appropriate voltage/load recommendations and unverified supplier prices accurately."
+      ],
+      "next_action": "Continue WF-008: confirm exact LED/glass/power/fabrication/shipping/tax costs and production capacity, verify actual merchant sandbox checkout and signed webhook, configure live merchant settings and resolve main-site SSH deployment settings before an exact live release.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+        "docs/INFINITY_MIRROR_BUILDER.md"
       ]
     }
   ]

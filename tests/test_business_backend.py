@@ -248,10 +248,10 @@ class BusinessTests(unittest.TestCase):
 
     def test_stadium_has_only_three_sizes_and_quantities_are_server_validated(self):
         for size in ['Custom','Mid','Huge']:
-            self.post(self.customer,'business-request',{'items':[{'product':'Layered Stadium Model','size':size,'artwork':'Venue','quantity':1}]},422)
+            self.post(self.staff,'business-request',{'items':[{'product':'Layered Stadium Model','size':size,'artwork':'Venue','quantity':1}]},422)
         for size in ['Mini','Medium','Collector']:
-            self.post(self.customer,'business-request',{'items':[{'product':'Layered Stadium Model','size':size,'artwork':'Venue','quantity':1}]})
-        self.post(self.customer,'business-request',{'items':[{'product':'Other Custom Build','size':'Custom','artwork':'Theme','quantity':-2}]},422)
+            self.post(self.staff,'business-request',{'items':[{'product':'Layered Stadium Model','size':size,'artwork':'Venue','quantity':1}]})
+        self.post(self.staff,'business-request',{'items':[{'product':'Other Custom Build','size':'Custom','artwork':'Theme','quantity':-2}]},422)
 
 
 if __name__ == '__main__':

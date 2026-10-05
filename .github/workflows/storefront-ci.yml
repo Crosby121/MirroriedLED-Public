@@ -43,6 +43,9 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
+          node --check shop/shop.js
+          node --check shop/availability.js
+          node --check address-builder/builder.js
           node --check app.js
           node --check repair.js
           node --check customer-portal/portal.js
@@ -59,32 +62,24 @@ jobs:
           php -l customer-portal/backend/config.example.php
           php -l customer-portal/backend/business.php
           php -l customer-portal/backend/builder.php
+          php -l customer-portal/backend/commerce.php
           php -m | grep -q pdo_sqlite
           php -m | grep -q fileinfo
           php -m | grep -q dom
           python3 -m unittest discover -s tests -p 'test_customer_portal_backend.py' -v
           python3 -m unittest discover -s tests -p 'test_business_backend.py' -v
           python3 -m unittest discover -s tests -p 'test_infinity_builder_backend.py' -v
+          python3 -m unittest discover -s tests -p 'test_commerce_backend.py' -v
 
       - name: Verify public customer portal package
         run: |
           python3 deploy/hostinger/package-customer-portal.py --output "$RUNNER_TEMP/MirroriedLED_Customer_Portal_Draft.zip"
 
-      - name: Verify required public sections
+      - name: Verify phased public opening
         run: |
-          grep -q 'id="products"' index.html
-          grep -q 'id="custom"' index.html
-          grep -q 'id="advertising"' index.html
-          grep -q 'id="sponsors"' index.html
-          grep -q 'id="events"' index.html
-          grep -q 'id="portals"' index.html
-          grep -q 'id="contact"' index.html
-
-      - name: Verify Sponsor Portal integration
-        run: |
-          grep -q 'https://sponsors.mirroriedled.com/' index.html
-          grep -q 'Advertising on the Go' index.html
-          grep -q 'Sponsor Partner Program' index.html
+          test -s shop/index.html
+          test -s address-builder/index.html
+          python3 -m unittest discover -s tests -p 'test_public_opening.py' -v
 
       - name: Verify brand spelling in staged site
         run: |

@@ -26,6 +26,9 @@ PUBLIC_FILES = (
     "customer-portal/backend/builder.php",
     "infinity-builder/index.html", "infinity-builder/builder.css", "infinity-builder/builder.js",
     "infinity-builder/engine.js", "infinity-builder/draft-store.js", "infinity-builder/catalog.json",
+    "customer-portal/backend/commerce.php",
+    "shop/index.html", "shop/shop.css", "shop/shop.js", "shop/availability.js",
+    "address-builder/index.html", "address-builder/builder.js",
     "infinity-builder/artwork/orbit.svg", "infinity-builder/artwork/tree.svg", "infinity-builder/artwork/wave.svg",
 )
 MANIFEST = "CUSTOMER_PORTAL_SHA256SUMS.txt"

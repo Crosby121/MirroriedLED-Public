@@ -187,7 +187,7 @@
       const item={id,product:'Custom Infinity Mirror',size:state.size.join('×'),quantity:1,artwork:`${state.artwork.name} · ${description} · customer approved`,artworkSource:'upload',lighting:`${result.rimPixels} rim LEDs · ${state.rear}${state.audioReactive?' · audio reactive':''}`,finish:state.finish,notes:`${state.depthIn} in depth. ${result.layout?result.layout.name+' × '+result.layout.count:'Rim only'}. ${result.controller.name}. ${catalog.rules.finish}`,builder:specification(),builderDraftId:id};
       cart.push(item);localStorage.setItem('mirroriedled_storefront_cart_vnext',JSON.stringify(cart));
       sessionStorage.setItem('mirroriedled_quote_draft_v1',JSON.stringify(cart));
-      location.href='../customer-portal/#builds';
+      location.href='../shop/#builds';
     } catch(error){message('buildMessage',error.message||'The build could not be saved. Try downloading your build.',true);drafting=false;$('addBuild').disabled=false;}
   }
   function fallbackQuestions(type) {

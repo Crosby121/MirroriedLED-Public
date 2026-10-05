@@ -22,11 +22,8 @@ check_url() {
 }
 
 check_url "$DOMAIN/" "Mirroried LED"
-check_url "$DOMAIN/" "Advertising on the Go"
-check_url "$DOMAIN/" "Sponsor Partner Program"
-
-home="$(curl -L -sS --max-time 20 "$DOMAIN/")"
-grep -q 'sponsors\.mirroriedled\.com' <<<"$home" || fail "Sponsor portal link missing from public storefront"
+check_url "$DOMAIN/" "Infinity Mirrors"
+check_url "$DOMAIN/" "Address signs"
 
 echo "Checking storefront files and product images..."
 for asset in index.html styles.css app.js repair.js infinity-mirror.webp stadium-model.webp led-display.webp address-sign.webp; do
@@ -43,11 +40,6 @@ for asset in index.html styles.css app.js repair.js infinity-mirror.webp stadium
   echo "OK ${DOMAIN%/}/$asset"
 done
 
-echo "Checking sponsor portal boundary..."
-code="$(curl -L -sS -o /tmp/mirroriedled-sponsor.html -w '%{http_code}' --max-time 20 "$SPONSOR_URL" || true)"
-case "$code" in
-  200|301|302|303|307|308) echo "OK $SPONSOR_URL HTTP $code" ;;
-  *) fail "Sponsor portal is not reachable: HTTP $code" ;;
-esac
-
 echo "PUBLIC STOREFRONT VERIFICATION SUCCESS"
+
+echo "This legacy check verifies storefront assets only; use verify-website.py for the complete customer ordering release."

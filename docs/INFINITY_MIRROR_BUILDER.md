@@ -2,6 +2,8 @@
 
 `Choose a build → Build Infinity Mirror → /infinity-builder/`
 
+The public ordering handoff now uses `/shop/`. See [the phased opening](PHASED_PRODUCT_OPENING.md) for final quote review and physical-product payment.
+
 The builder has six linked steps: supported mirror size / frame finish, WS2812B rim
 rows and counts, customer-approved artwork, rear lighting / panel layout,
 compatible controllers, and the remaining hardware. A live SVG preview shows
@@ -63,35 +65,59 @@ deployed catalog and validated physical layout; customer-submitted totals and
 markup are discarded. These estimates never set `quoteCents`, accept a payment
 or replace the final staff quote.
 
-`catalog.json.pricing` is a dated supplier snapshot, not a live supplier API.
-Check and update it before accepting quotes. Keep integer USD cents, a source
-URL, exact variant, package quantity and minimum order. Null means **quote
+`catalog.json.pricing` combines approximate owner component costs with dated
+supplier references. It is not a live supplier API. Check and update it before
+accepting quotes. Keep integer USD cents, the source basis, a supplier URL when
+known, exact variant, package quantity and minimum order. Null means **quote
 needed**, not zero. A range is an unconfirmed variant budget. The grand total
 remains pending while any selected item is unpriced or ranged. Fabrication,
 depth extensions, power supply, wiring, audio input, mounts, remote, labor,
 shipping / duties and tax are explicit rows; do not silently omit these costs.
 
-The owner's **20% markup applies only to the supplier frame cost**. Allocate a
+The owner's **20% markup applies only to the frame cost**. Allocate a
 pack's cost per frame, round the unit cost to a cent, then round 20% of that unit
 cost to a cent. Compare retail and bulk on that same basis. This unit allocation
 does not mean an individual customer purchases the full studio inventory pack.
-The October 4, 2026 reference snapshot is:
+The active owner estimates recorded October 4, 2026 (Pacific time) are:
 
-| Part / offer | Supplier basis | Builder treatment |
+| Part | Approximate owner cost | Builder treatment |
 | --- | --- | --- |
-| 12 × 12 black / white Fundamentals frame | Michaels online 2-pack: $11.99; regular $29.99 | $6.00 allocated unit + $1.20 markup = $7.20 frame estimate |
-| 12 × 12 black / white bulk frames | Michaels: $121.41 for 18 frames (9 × 2-packs) | $6.75 allocated unit + $1.35 = $8.10; retail sale currently wins |
-| Digi-Uno, onboard Wi-Fi antenna | Dr. Zzs: $35 preassembled including ESP32 | $35 estimate; other antenna / Ethernet variants need a separate quote |
-| Digi-Quad, onboard Wi-Fi antenna | Dr. Zzs: $44 preassembled including ESP32 | $44 estimate |
-| MatrixPortal S3, quantity 1 | Adafruit product 5778: $19.95, supplier out of stock | Price estimate; confirm studio stock and lead time |
-| 5V WS2812B rim strips | Alibaba Gensheng listing: $1.99–$2.30 / meter, 60 LEDs / meter | $9.95–$11.50 budget per 5 m / 300-LED roll; round required rolls up; confirm exact IP20 variant, density and delivered quote |
-| P3 64 × 32 HUB75, 192 × 96 mm | Alibaba listing 1600188215401: $11 each at 1–499 pieces | Reference estimate only; seller chip / scan verification pending |
-| Flexible panels, P3.19 / P5, remaining hardware | Exact size / variant or landed price not verified | Quote needed; no mixed-variant or ineligible bulk floor prices |
+| 12-inch Michaels frame | $17 each | $17 + $3.40 frame markup = $20.40; exact model, finish and fit need review |
+| 12 × 12 mirror piece | $6 each | Owner specifies one mirror for the 12-inch build = $6, with no frame markup; exact material/coating needs review |
+| Digi-Uno | $35 each | $35 component estimate; confirm controller variant and inventory |
+| Digi-Quad | $50 each | $50 component estimate |
+| MatrixPortal S3 | $20 each | $20 component estimate; prior supplier out-of-stock observation is not cleared by a new cost |
+| Adafruit controller, model unspecified | $23 each | Separate reference cost only; do not map to MatrixPortal S3 or add an unidentified board to the controller menu |
+| 64 × 32 HUB75 panel | $14 each | Multiply by actual planned panel quantity; verify pitch, chip, scan mode and board dimensions |
+| 64 × 64 HUB75 panel | $14 each | Same quantity treatment; exact P3.19 variant and compatibility need confirmation |
+| Flexible 8 × 8 panel | $4 each | Multiply by actual planned panel quantity |
+| Flexible 8 × 32 panel | $16 each | Also covers the catalog's rotated 32 × 8 orientation |
+| Flexible 16 × 16 panel | $16–$18 each | Multiply both range endpoints by panel quantity; final total stays pending |
+| LED allowance for recommended 12 × 12 build | $5–$30 per build | Provisional whole-build range up to 300 LEDs; exact type/quantity/supplier still need a quote. Higher counts and other sizes remain unpriced |
+| Amazon WS2811 beads, 300 LEDs | About $28 per pack | Owner reference only; no silent substitution for WS2812B strips. Exact listing/voltage/spacing need confirmation |
+| Other mirror sizes and remaining hardware | Not provided | Quote needed; no inheritance of the 12-inch glass or frame costs |
 | The Beast | Fabrication and inventory release pending | Coming Soon; disabled |
 
-An earlier cached Michaels result showed $10.49 / 2-pack; the latest retrieved
-listing showed $11.99. Recheck the sale rather than treating either price as
-permanent. Supplier stock is separate from studio inventory and is not reserved.
+These are component estimates rather than finished-product retail prices. No
+automatic 20% markup is added to mirrors, panels, controllers or other parts.
+The 12-inch build uses one mirror, as specified by the owner; no second mirror
+is added to its estimate. `rules.mirrorPiecesBySize` preserves that quantity in
+both the hardware plan and pricing. `pricing.mirrorPieces` is keyed by exact
+nominal size and priced per piece;
+`pricing.components.mirror` is the unpriced per-piece fallback for other sizes.
+
+Superseded October 4 web prices remain in
+`pricing.historicalSupplierSnapshot` for reference and are excluded from active
+frame comparison and strip pricing. The $17 owner frame estimate therefore
+cannot be undercut by the old $11.99 two-pack sale. Supplier references and studio
+inventory are distinct; costs do not reserve stock. Amazon rush panel/strip
+prices still need their own quotes and do not inherit standard procurement costs.
+The 300-LED limit on the provisional build allowance is a conservative catalog
+guard based on the stated pack reference, not a confirmed supplier price or a
+physical maximum. LED counts still follow the design; greater counts keep the
+price pending. This allowance is never multiplied by planned rolls, and does not
+include the separately priced rear panel or controller. Controller and layout
+changes recompute those rows and the physical LED count.
 
 Matching nominal Michaels candidates are recorded for 20 × 20, 24 × 24,
 26 × 26, 30 × 30, 36 × 36, 25 × 30 and 25 × 36 black frames, plus a 20 × 20
@@ -103,11 +129,16 @@ when a candidate's verified supplier cost is added to the catalog.
 
 Standard addressable strips / flexible panels use Alibaba or AliExpress. A
 **rush request** switches only those parts to Amazon. No readable current Amazon
-USD price was available for the recorded strip candidate, so the rush line
+USD price was available for the recorded strip candidate, so its exact offer
 requires a quote and delivery confirmation; it cannot inherit the standard
 Alibaba price. HUB75 remains with Alibaba / AliExpress. Digi controllers stay
 with Dr. Zzs and MatrixPortal with Adafruit. Shipping, import costs and rush
 delivery are reviewed separately.
+
+See [LED and power-supply pricing](LED_AND_POWER_SUPPLY_PRICING.md) for the
+owner's bead reference, supplier checks and capacity examples for a 12-inch
+build. Procurement reference prices are excluded from the active power row
+until an appropriate exact part and landed quote are confirmed.
 
 HUB75 pricing does not certify WLED-MM compatibility. Confirm exact pixel count,
 PCB dimensions, shift-register driver, scan mode and controller firmware with
@@ -172,7 +203,7 @@ Official implementation references:
 
 Use the **Deploy Complete Website to Hostinger** workflow and the expanded
 `package-customer-portal.py` / `website-release.py` public allowlists. This release
-contains 29 public files; private configuration and customer data are excluded.
+contains 36 public files; private configuration and customer data are excluded.
 The older eight-file storefront-only staging/manual helpers do not include this
 builder or the Customer Portal and must not be used to publish this release.
 The complete website installer backs up the entire site, protects `builder.php`
