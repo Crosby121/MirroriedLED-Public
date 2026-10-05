@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-05T06:43:17Z",
+  "updated_at": "2026-10-05T07:56:59Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -24,9 +24,9 @@
     {
       "id": "WF-002",
       "title": "Resolve the main website deployment settings blocker",
-      "status": "blocked",
+      "status": "in_progress",
       "priority": 2,
-      "owner_session_id": null,
+      "owner_session_id": "20261005t075408z-ssh-key-activation",
       "last_session_id": null,
       "depends_on": [],
       "acceptance": [
@@ -34,7 +34,7 @@
         "Pass the existing settings and host preflight for mirroriedled.com.",
         "Use the user's authorized release workflow; record a live commit only after exact-source HTTP verification."
       ],
-      "next_action": "Compare the Hostinger website account authorized key fingerprint with the verified GitHub deployment-key fingerprint in the diagnostic report; correct the public-key authorization or account SSH access, then rerun read-only authentication. Keep the sponsor VPS connection separate.",
+      "next_action": "Identify the failed authenticated hosting preflight requirement using named read-only checks; retain the verified SSH key and separate sponsor VPS access.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537748608",
         "deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md",

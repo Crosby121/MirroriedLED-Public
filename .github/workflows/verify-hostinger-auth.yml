@@ -72,12 +72,32 @@ jobs:
             -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML'" <<'REMOTE'
           set -euo pipefail
           echo 'MLED_SSH_AUTHENTICATED'
-          test -d "$1"
-          test -f "$1/index.html"
-          command -v python3 >/dev/null
-          command -v php >/dev/null
-          python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
-          php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("pdo_sqlite") && extension_loaded("fileinfo") && extension_loaded("dom") ? 0 : 1);'
+          failed=0
+          check() {
+            label="$1"; shift
+            if "$@"; then
+              printf 'PASS: %s\n' "$label"
+            else
+              printf 'FAIL: %s\n' "$label" >&2
+              failed=1
+            fi
+          }
+          check 'Website directory exists' test -d "$1"
+          check 'Existing index.html is present' test -f "$1/index.html"
+          check 'Python executable is available' command -v python3
+          if command -v python3 >/dev/null; then
+            python3 --version
+            check 'Python is at least 3.8' python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
+          fi
+          check 'PHP executable is available' command -v php
+          if command -v php >/dev/null; then
+            php -r 'echo "PHP_VERSION=" . PHP_VERSION . PHP_EOL;'
+            check 'PHP is at least 8.2' php -r 'exit(PHP_VERSION_ID >= 80200 ? 0 : 1);'
+            for extension in pdo_sqlite fileinfo dom; do
+              check "PHP extension $extension is enabled" php -r 'exit(extension_loaded($argv[1]) ? 0 : 1);' "$extension"
+            done
+          fi
+          if [ "$failed" -ne 0 ]; then exit 1; fi
           echo 'MLED_READ_ONLY_HOST_PREFLIGHT_PASSED'
           REMOTE
       - name: Remove temporary runner credentials

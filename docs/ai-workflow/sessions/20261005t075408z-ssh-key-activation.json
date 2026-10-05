@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "id": "20261005t075408z-ssh-key-activation",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-05T07:54:08Z",
+  "ended_at": null,
+  "status": "active",
+  "task_ids": [
+    "WF-002"
+  ],
+  "branch": "docs/deployment-readiness-20261005",
+  "base_commit": "d875ff20488dd9e351d768b3b5382e7afb62d539",
+  "summary": "SSH key authenticated; diagnosing remote runtime preflight.",
+  "next_action": "Run named read-only remote checks.",
+  "changed_files": [
+    ".github/workflows/verify-hostinger-auth.yml"
+  ],
+  "checks": [
+    {
+      "name": "Replacement key SSH authentication",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111666770098"
+    },
+    {
+      "name": "Original hosting runtime preflight",
+      "result": "failed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111666770098"
+    }
+  ],
+  "findings": []
+}

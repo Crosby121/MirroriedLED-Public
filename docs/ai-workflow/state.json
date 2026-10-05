@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-05T06:43:17Z",
+  "observed_at": "2026-10-05T07:56:59Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -35,7 +35,7 @@
       "run_attempt": 2,
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432",
       "failed_step": "Check website host and PHP before any upload",
-      "finding": "The latest deployment retry passed settings but failed SSH authentication before upload. A fresh read-only authentication run at 2026-10-05T06:42:59Z reproduced Permission denied (publickey,password). No upload or installation occurred.",
+      "finding": "Historical deployment attempt failed before upload. Current read-only verification authenticates with the replacement key, but a later hosting preflight requirement fails and is under diagnosis. No deployment or remote writes performed.",
       "upload_performed": false
     }
   },
@@ -139,16 +139,16 @@
     }
   ],
   "ssh_verification": {
-    "checked_at": "2026-10-05T06:43:17Z",
+    "checked_at": "2026-10-05T07:54:23Z",
     "commit": "749a3dac3a1d9698dda940cdc87d753e0e6281c2",
     "run_id": 37273814509,
-    "result": "authentication_rejected",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111646329411",
-    "public_key_fingerprint": "SHA256:9abf5Se5+p8Em9rCEhsN2KXStEJ4DVagcUpCK9EB8X0",
+    "result": "authenticated_preflight_failed",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37273814509/job/111666770098",
+    "public_key_fingerprint": "SHA256:lUQfuZRVSm+Odyk+i4LmKt9TfcRXAKZ5WaWvFCShTEo",
     "key_type": "ED25519",
     "key_format_valid": true,
     "remote_preflight_passed": false,
     "remote_writes_performed": false,
-    "finding": "Fresh public-key-only SSH check is rejected by the main-site account. The runner parses the configured key and reaches SSH, but host authorization is not established. Authorized key mismatch versus disabled SSH/account access remains undetermined."
+    "finding": "The newly generated ED25519 deployment key authenticated successfully after user-reported Hostinger authorization and GitHub secret update. The later remote preflight exits 1; the original check does not identify which requirement failed. Read-only diagnostics are being expanded. No upload or remote writes performed."
   }
 }
