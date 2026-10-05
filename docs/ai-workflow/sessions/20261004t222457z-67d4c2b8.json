@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "id": "20261004t222457z-67d4c2b8",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-04T22:24:57Z",
+  "ended_at": "2026-10-04T22:56:15Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-003",
+    "WF-006"
+  ],
+  "branch": "feat/shared-ai-connector-20261004",
+  "base_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
+  "summary": "Implemented the GitHub-backed authenticated MCP connector, concurrent task reservations and idempotent handoffs; private transcript queues, supported local hooks, Chrome visible-chat checkpoints and Windows background retries; connector-only Hostinger installer with backups/rollback and manual deployment. Added app setup and upload receipt guides. Code passed 41 Python tests, 5 browser queue tests, PHP syntax and actionlint. Activation remains blocked by unavailable credentials, private archive creation, actual PC setup and app connection verification.",
+  "next_action": "Provision the scoped tokens and main-site SSH settings privately; complete CONNECTOR_SETUP.md and AUTO_CAPTURE.md, verify each app read/write and private upload receipts, then update dated status. Do not report full chat synchronization or live installation before those tests.",
+  "changed_files": [
+    ".codex/hooks.json",
+    ".github/copilot-instructions.md",
+    ".github/hooks/ai-capture.json",
+    ".github/workflows/ai-workflow-check.yml",
+    ".github/workflows/deploy-ai-workflow-connector.yml",
+    ".vscode/mcp.json",
+    "AGENTS.md",
+    "ai-workflow/.htaccess",
+    "ai-workflow/mcp.php",
+    "deploy/hostinger/ai-workflow-release.py",
+    "docs/ai-workflow/AUTO_CAPTURE.md",
+    "docs/ai-workflow/CONNECTOR_SETUP.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/README.md",
+    "docs/ai-workflow/connections/codex.config.toml",
+    "docs/ai-workflow/sessions/20261004t222457z-67d4c2b8.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "services/ai-workflow/server.php",
+    "tests/browser-ai-capture.test.cjs",
+    "tests/fixtures/ai-workflow-router.php",
+    "tests/test_ai_capture.py",
+    "tests/test_ai_workflow_mcp.py",
+    "tests/test_ai_workflow_release.py",
+    "tools/ai_capture.py",
+    "tools/ai_workflow.py",
+    "tools/browser-ai-capture/background.js",
+    "tools/browser-ai-capture/content.js",
+    "tools/browser-ai-capture/manifest.json",
+    "tools/browser-ai-capture/popup.html",
+    "tools/browser-ai-capture/popup.js",
+    "tools/check_ai_workflow_connection.py",
+    "tools/configure_ai_workflow.py",
+    "tools/setup_ai_capture.py"
+  ],
+  "checks": [
+    {
+      "name": "env PHP_BIN=/workspace/scratch/60db67fe587a/php-runtime/bin/php python3 -m unittest discover -s tests -p 'test_ai*.py' -v",
+      "command": "env PHP_BIN=/workspace/scratch/60db67fe587a/php-runtime/bin/php python3 -m unittest discover -s tests -p 'test_ai*.py' -v",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "node --test tests/browser-ai-capture.test.cjs",
+      "command": "node --test tests/browser-ai-capture.test.cjs",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "/workspace/scratch/2835bdd501dc/check-tools/actionlint",
+      "command": "/workspace/scratch/2835bdd501dc/check-tools/actionlint",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "/workspace/scratch/60db67fe587a/php-runtime/bin/php -l services/ai-workflow/server.php",
+      "command": "/workspace/scratch/60db67fe587a/php-runtime/bin/php -l services/ai-workflow/server.php",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "/workspace/scratch/60db67fe587a/php-runtime/bin/php -l ai-workflow/mcp.php",
+      "command": "/workspace/scratch/60db67fe587a/php-runtime/bin/php -l ai-workflow/mcp.php",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "git diff --check",
+      "command": "git diff --check",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Initial MCP fixture validation",
+      "result": "failed",
+      "command": "python3 -m unittest discover -s tests -p test_ai_workflow_mcp.py -v",
+      "basis": "agent_report",
+      "finding": "Readback fixture omitted the required AGENTS and Copilot instruction files. Corrected the fixture; subsequent full suites passed."
+    },
+    {
+      "name": "Shared-listener concurrent test repeat",
+      "result": "failed",
+      "command": "python3 -m unittest discover -s tests -p test_ai*.py -v",
+      "basis": "agent_report",
+      "finding": "A shared PHP CLI listener intermittently serialized barrier requests. Separate real HTTP listeners now exercise concurrent clients; targeted and full suites passed."
+    },
+    {
+      "name": "Actual Hostinger and individual app connections",
+      "result": "not_run",
+      "basis": "agent_report",
+      "finding": "Required private service/SSH credentials and app UI installation are not available in this workspace."
+    },
+    {
+      "name": "Actual PC close and private archive upload",
+      "result": "not_run",
+      "basis": "agent_report",
+      "finding": "No user-PC installation or private-history token is available. Local tests verify recovery logic, not an actual archive upload."
+    }
+  ],
+  "findings": [
+    {
+      "source": "User request during this session",
+      "basis": "direct_instruction",
+      "finding": "Added task-completion logging and available chat capture with browser/editor-close recovery to the existing shared-workflow objective."
+    },
+    {
+      "source": "tests/test_ai_workflow_mcp.py",
+      "basis": "local_integration_tests",
+      "finding": "Authenticated HTTP tools publish consistent records and preserve concurrent/unrelated work against a GitHub double; no live app endpoint connection was established."
+    },
+    {
+      "source": "tests/test_ai_capture.py and tests/browser-ai-capture.test.cjs",
+      "basis": "local_tests",
+      "finding": "Offline/unconfirmed uploads remain queued, public destinations are refused, native final-file writes are followed and browser retries require a PC acknowledgment."
+    },
+    {
+      "source": "docs/ai-workflow/AUTO_CAPTURE.md",
+      "basis": "implementation_limits",
+      "finding": "Browser coverage is visible rendered text only. Supported native transcript availability depends on the app/version. Hidden content, attachments, crashes and unavailable histories are not guaranteed."
+    },
+    {
+      "source": "Changed-file comparison against .github/workflows/deploy-hostinger-website.yml",
+      "basis": "local_check",
+      "finding": "No changed path matches the automatic full-website deployment allowlist. The new connector deployment is manual only."
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/13",
+      "basis": "publication_evidence",
+      "finding": "Code and redacted handoff are published together through this PR; the containing Git history identifies their source commit. No full current hosted-chat transcript was uploaded."
+    }
+  ]
+}

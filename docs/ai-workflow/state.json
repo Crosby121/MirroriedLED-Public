@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-04T22:57:33Z",
+  "observed_at": "2026-10-05T01:53:22Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,35 +8,23 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
-    "summary": "Main remains at the merged shared workflow foundation. The two-product landing page, builders, quote/delivery terms and Stripe checkout implementation are in draft PR #14; merchant acceptance and main-site deployment are blocked.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/620d57c6c182c19ada124a40722ef52e7474502d",
+    "observed_commit": "3b1e04aae7277239e14a216bbfe4557e80e5da29",
+    "summary": "Main includes the shared workflow connector and private capture implementation. The phased two-product storefront and checkout remain in draft PR #14. This session updates owner-estimated component costs; no live Hostinger release or actual merchant payment is verified.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/3b1e04aae7277239e14a216bbfe4557e80e5da29",
     "checks": [
       {
-        "name": "Historical release: Full public release validation",
+        "name": "Main shared workflow validation",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537693924",
-        "basis": "prior_release_actions_evidence; not a check of the unmerged checkout branch"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703708",
+        "basis": "historical_checks_of_620d57c; not checks of the refreshed main or pricing branch"
       },
       {
-        "name": "Historical release: Storefront CI for supplier pricing",
+        "name": "Main website packaging",
         "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236842366",
-        "basis": "prior_release_actions_evidence; not a check of the unmerged checkout branch"
-      },
-      {
-        "name": "Historical release: Website packaging",
-        "result": "passed",
-        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890597",
-        "basis": "prior_release_actions_evidence; not a check of the unmerged checkout branch"
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703753",
+        "basis": "historical_checks_of_620d57c; not checks of the refreshed main or pricing branch"
       }
-    ],
-    "latest_check_query": {
-      "observed_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
-      "combined_statuses_returned": 0,
-      "pull_request_workflow_runs_returned": 0,
-      "basis": "GitHub connector queries; an empty result does not establish check success"
-    }
+    ]
   },
   "deployment": {
     "live_commit": null,
@@ -57,29 +45,35 @@
       "application": "ChatGPT Work / Codex",
       "github_access": "Authenticated GitHub reads, branch publication and PR creation verified for Crosby121.",
       "session_logging": "Explicit local helper or JSON record",
-      "shared_remote_connector": "not_installed"
+      "shared_remote_connector": "configuration_prepared_not_activated",
+      "automatic_capture": "local_helpers_prepared_not_installed_or_verified"
     },
     {
       "application": "GitHub Copilot",
       "github_access": "GitHub Copilot code review observed on PR #12; local IDE access and session logging are not tested.",
       "session_logging": "Repository instructions plus explicit helper or JSON record",
-      "shared_remote_connector": "not_installed",
-      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/12#pullrequestreview-5408473625"
+      "shared_remote_connector": "configuration_prepared_not_activated",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/12#pullrequestreview-5408473625",
+      "automatic_capture": "local_helpers_prepared_not_installed_or_verified"
     },
     {
       "application": "Hostinger Agent",
       "github_access": "Not connected to this shared workflow by this session.",
       "session_logging": "Requires authorized GitHub/MCP tools or a curated export",
-      "shared_remote_connector": "not_installed"
+      "shared_remote_connector": "configuration_prepared_not_activated",
+      "automatic_capture": "local_helpers_prepared_not_installed_or_verified"
     }
   ],
   "next_task_id": "WF-002",
   "limitations": [
-    "These are dated observations, not a live monitor. Refresh actual GitHub state at each session.",
-    "The starting foundation does not install automatic cross-app chat import or access capture.",
-    "Application identity is declared independently from the authenticated GitHub account.",
-    "Task claims in independent checkouts need coordination until a centralized connector is installed.",
-    "Source checks and GitHub Pages success do not establish a verified Hostinger live commit."
+    "Dated observations require an actual GitHub refresh at each session.",
+    "The MCP endpoint and app connections are implemented but not installed or verified on Hostinger.",
+    "Private transcript archives and the PC capture helper require one-time setup; no actual archive upload is verified.",
+    "Browser capture covers visible rendered messages only; hidden/unloaded content, attachments, unsupported apps and final crash/shutdown content cannot be guaranteed.",
+    "Application names are declared separately from the authenticated GitHub account or configured capture source.",
+    "Local fallback task claims remain advisory across separate checkouts until the central connector is activated.",
+    "Chat capture does not commit unsaved source files; each app must publish code and verify its commit/PR before a completed handoff.",
+    "Source checks and packaging success do not establish a verified Hostinger live commit."
   ],
   "product_observations": [
     {
@@ -97,5 +91,31 @@
       "basis": "local_implementation_and_acceptance_tests",
       "evidence": "https://github.com/Crosby121/MirroriedLED-Public/pull/14"
     }
-  ]
+  ],
+  "connector": {
+    "status": "implemented_activation_pending",
+    "summary": "Shared MCP connector and private capture tools implemented and locally tested; endpoint, PC installation and individual app connections are not activated.",
+    "planned_endpoint": "https://mirroriedled.com/ai-workflow/mcp.php",
+    "setup": "docs/ai-workflow/CONNECTOR_SETUP.md",
+    "live_verified_at": null,
+    "evidence": [
+      "services/ai-workflow/server.php",
+      "tests/test_ai_workflow_mcp.py",
+      "https://github.com/Crosby121/MirroriedLED-Public/pull/13"
+    ]
+  },
+  "capture": {
+    "status": "implemented_activation_pending",
+    "planned_private_repository": "Crosby121/MirroriedLED-AI-History",
+    "private_repository_verified": false,
+    "pc_installation_verified": false,
+    "github_archive_upload_verified": false,
+    "setup": "docs/ai-workflow/AUTO_CAPTURE.md",
+    "coverage": [
+      "Available supported native hook payloads and authorized transcript files",
+      "Visible rendered messages in explicitly tracked ChatGPT and Hostinger Agent Chrome tabs"
+    ],
+    "recovery": "Persistent local queues and a PC retry worker; browser final shutdown events are best effort",
+    "current_hosted_chat_archived": false
+  }
 }

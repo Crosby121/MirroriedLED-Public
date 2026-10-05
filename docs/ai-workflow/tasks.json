@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-04T22:57:59Z",
+  "updated_at": "2026-10-05T01:53:22Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -43,10 +43,10 @@
     {
       "id": "WF-003",
       "title": "Connect AI apps to a shared remote workflow service",
-      "status": "ready",
+      "status": "blocked",
       "priority": 3,
       "owner_session_id": null,
-      "last_session_id": null,
+      "last_session_id": "20261004t222457z-67d4c2b8",
       "depends_on": [
         "WF-001"
       ],
@@ -56,16 +56,20 @@
         "Make reservation conflicts explicit across concurrent clients.",
         "Test an authorized connection from ChatGPT/Codex, Copilot and Hostinger Agent; mark unavailable clients accurately."
       ],
-      "next_action": "Implement the shared MCP tools and configure each app's authorized connection; use explicit tool responses for Hostinger Agent.",
+      "next_action": "Complete CONNECTOR_SETUP.md: provision scoped service credentials, resolve main-site SSH settings, run the manual connector install and verify each app read/write receipt.",
       "evidence": [
-        "docs/ai-workflow/README.md"
+        "docs/ai-workflow/README.md",
+        "services/ai-workflow/server.php",
+        "tests/test_ai_workflow_mcp.py",
+        "docs/ai-workflow/CONNECTOR_SETUP.md",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/13"
       ]
     },
     {
       "id": "WF-004",
       "title": "Curate accessible prior AI work into the shared history",
       "status": "ready",
-      "priority": 4,
+      "priority": 5,
       "owner_session_id": null,
       "last_session_id": null,
       "depends_on": [
@@ -95,28 +99,74 @@
         "Detect fine-grained GitHub tokens before recording a handoff and during shared-record validation.",
         "Cover the token format in regression tests and pass the updated GitHub checks."
       ],
-      "next_action": "Complete the updated PR checks and merge the foundation; WF-003 is the next independent app-connection task.",
+      "next_action": "Foundation fix merged in PR #12; continue with shared connection and private capture activation.",
       "evidence": [
-        "https://github.com/Crosby121/MirroriedLED-Public/pull/12#discussion_r4179537729"
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/12#discussion_r4179537729",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/12"
       ]
     },
     {
       "id": "WF-006",
-      "title": "Open Infinity Mirror and address-sign ordering with a limited-access landing page",
+      "title": "Activate automatic private AI chat capture and close recovery",
+      "status": "blocked",
+      "priority": 4,
+      "owner_session_id": null,
+      "last_session_id": "20261004t225858z-4f6e2af3",
+      "depends_on": [
+        "WF-001"
+      ],
+      "acceptance": [
+        "Verify a dedicated private GitHub archive and actual upload receipts without placing raw chat in the public repository.",
+        "Install and verify supported local hooks and the PC retry worker; checkpoint available transcript final writes after UI closure.",
+        "Verify tracked Chrome chat checkpoints, tab-close events and offline restart recovery on the actual PC.",
+        "Record coverage and unavailable app/attachment/history limitations honestly; verify task handoff publication before reporting completion."
+      ],
+      "next_action": "Complete AUTO_CAPTURE.md on the persistent PC and verify the private repository, trusted hooks, Chrome/native connection, background worker and actual GitHub receipts. Complete CONNECTOR_SETUP.md for task handoffs; do not claim live capture before verification.",
+      "evidence": [
+        "tools/ai_capture.py",
+        "tools/setup_ai_capture.py",
+        "tools/browser-ai-capture",
+        "tests/test_ai_capture.py",
+        "tests/browser-ai-capture.test.cjs",
+        "docs/ai-workflow/AUTO_CAPTURE.md"
+      ]
+    },
+    {
+      "id": "WF-008",
+      "title": "Open phased Infinity Mirror and address-sign ordering (PR #14)",
       "status": "blocked",
       "priority": 1,
       "owner_session_id": null,
       "last_session_id": "20261004t223413z-233a5f91",
       "depends_on": [],
       "acceptance": [
-        "Homepage explains phased opening and offers only Infinity Mirrors and address signs.",
-        "Both products save complete customer configurations and expose approved pricing and fulfillment estimates.",
-        "Hosted checkout uses server prices and verified provider confirmation; payment and deployment readiness are reported accurately."
+        "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
+        "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
+        "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
       ],
-      "next_action": "Activate and verify the actual merchant sandbox checkout and signed webhook, confirm live tax/product/shipping/production terms, resolve HOSTINGER_SSH_PRIVATE_KEY and HOSTINGER_SSH_KNOWN_HOSTS, then run the full release and verify the exact live commit. Complete the pricing catalog if instant quotes are required. Review draft PR #14.",
+      "next_action": "Review draft PR #14. Reconcile its original WF-006 product task/session references to shared WF-008 while preserving main capture WF-006 and connection records. Complete documented merchant and launch prerequisites before release.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
-        "docs/PHASED_PRODUCT_OPENING.md"
+        "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"
+      ]
+    },
+    {
+      "id": "WF-010",
+      "title": "Update owner-estimated Infinity Mirror component costs",
+      "status": "in_progress",
+      "priority": 1,
+      "owner_session_id": "20261005t015322z-2a5fd60a",
+      "last_session_id": null,
+      "depends_on": [],
+      "acceptance": [
+        "Record approximate owner costs with the 20 percent frame-only markup.",
+        "Price 12 by 12 mirror pieces by quantity without applying their cost to other sizes.",
+        "Retain flexible-panel ranges, deferred strip pricing and final quote/payment guards; verify JavaScript and PHP parity."
+      ],
+      "next_action": "Update the builder catalog and quantity-aware pricing; test and publish on draft PR #14.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+        "docs/INFINITY_MIRROR_BUILDER.md"
       ]
     }
   ]

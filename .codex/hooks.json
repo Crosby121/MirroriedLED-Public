@@ -1,0 +1,10 @@
+{
+  "description": "Save available Mirroried LED local Codex chat/tool checkpoints to a private retry queue.",
+  "hooks": {
+    "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python tools/ai_capture.py hook --source codex --event UserPromptSubmit", "timeout": 10}]}],
+    "PostToolUse": [{"hooks": [{"type": "command", "command": "python tools/ai_capture.py hook --source codex --event PostToolUse", "timeout": 10}]}],
+    "Stop": [{"hooks": [{"type": "command", "command": "python tools/ai_capture.py hook --source codex --event Stop", "timeout": 10}]}],
+    "SessionEnd": [{"hooks": [{"type": "command", "command": "python tools/ai_capture.py hook --source codex --event SessionEnd", "timeout": 3}]}],
+    "Interrupt": [{"hooks": [{"type": "command", "command": "python tools/ai_capture.py hook --source codex --event Interrupt", "timeout": 3}]}]
+  }
+}

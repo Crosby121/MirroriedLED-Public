@@ -1,0 +1,19 @@
+{
+  "servers": {
+    "mirroriedLedWorkflow": {
+      "type": "http",
+      "url": "https://mirroriedled.com/ai-workflow/mcp.php",
+      "headers": {
+        "Authorization": "Bearer ${input:mirroriedWorkflowToken}"
+      }
+    }
+  },
+  "inputs": [
+    {
+      "id": "mirroriedWorkflowToken",
+      "type": "promptString",
+      "description": "Mirroried LED workflow credential for GitHub Copilot",
+      "password": true
+    }
+  ]
+}

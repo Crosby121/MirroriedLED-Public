@@ -1,31 +1,32 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-04T22:57:33Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-05T01:53:22Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [620d57c](https://github.com/Crosby121/MirroriedLED-Public/commit/620d57c6c182c19ada124a40722ef52e7474502d) · Main remains at the merged shared workflow foundation. The two-product landing page, builders, quote/delivery terms and Stripe checkout implementation are in draft PR #14; merchant acceptance and main-site deployment are blocked. |
+| Observed website source | [3b1e04a](https://github.com/Crosby121/MirroriedLED-Public/commit/3b1e04aae7277239e14a216bbfe4557e80e5da29) · Main includes the shared workflow connector and private capture implementation. The phased two-product storefront and checkout remain in draft PR #14. This session updates owner-estimated component costs; no live Hostinger release or actual merchant payment is verified. |
 | Verified live Hostinger commit | Unknown — no verified live commit recorded |
 | Last Hostinger attempt | [failed_before_upload](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537748608) · Verify main website hosting settings |
 | Deployment blocker | The job reported missing HOSTINGER_SSH_PRIVATE_KEY and HOSTINGER_SSH_KNOWN_HOSTS settings. Upload, installation and live verification were skipped. |
-| Shared app connections | Instructions and local logger available; common remote connector is queued |
+| Shared app connections | Shared MCP connector and private capture tools implemented and locally tested; endpoint, PC installation and individual app connections are not activated. |
 
 ## Source checks
 
-- [Historical release: Full public release validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111537693924): **passed**.
-- [Historical release: Storefront CI for supplier pricing](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236842366): **passed**.
-- [Historical release: Website packaging](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890597): **passed**.
+- [Main shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703708): **passed**.
+- [Main website packaging](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37239703753): **passed**.
 
 ## Task queue
 
 | Task | Status | Owner session | Next action |
 | --- | --- | --- | --- |
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
-| WF-005 — Address the credential-filter review finding | done | Unclaimed | Complete the updated PR checks and merge the foundation; WF-003 is the next independent app-connection task. |
-| WF-006 — Open Infinity Mirror and address-sign ordering with a limited-access landing page | blocked | Unclaimed | Activate and verify the actual merchant sandbox checkout and signed webhook, confirm live tax/product/shipping/production terms, resolve HOSTINGER_SSH_PRIVATE_KEY and HOSTINGER_SSH_KNOWN_HOSTS, then run the full release and verify the exact live commit. Complete the pricing catalog if instant quotes are required. Review draft PR #14. |
+| WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
+| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Review draft PR #14. Reconcile its original WF-006 product task/session references to shared WF-008 while preserving main capture WF-006 and connection records. Complete documented merchant and launch prerequisites before release. |
+| WF-010 — Update owner-estimated Infinity Mirror component costs | in_progress | 20261005t015322z-2a5fd60a | Update the builder catalog and quantity-aware pricing; test and publish on draft PR #14. |
 | WF-002 — Resolve the main website deployment settings blocker | blocked | Unclaimed | Inspect the failed job and resolve the two reported main-site secret settings; preserve the separate sponsor VPS connection. |
-| WF-003 — Connect AI apps to a shared remote workflow service | ready | Unclaimed | Implement the shared MCP tools and configure each app's authorized connection; use explicit tool responses for Hostinger Agent. |
+| WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Complete CONNECTOR_SETUP.md: provision scoped service credentials, resolve main-site SSH settings, run the manual connector install and verify each app read/write receipt. |
+| WF-006 — Activate automatic private AI chat capture and close recovery | blocked | Unclaimed | Complete AUTO_CAPTURE.md on the persistent PC and verify the private repository, trusted hooks, Chrome/native connection, background worker and actual GitHub receipts. Complete CONNECTOR_SETUP.md for task handoffs; do not claim live capture before verification. |
 | WF-004 — Curate accessible prior AI work into the shared history | ready | Unclaimed | Use available ChatGPT, Copilot and Hostinger exports or logs to add sourced summaries; the initial GitHub-only baseline is already recorded. |
 
 ## Continue

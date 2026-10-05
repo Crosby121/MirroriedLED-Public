@@ -8,7 +8,7 @@
   "ended_at": "2026-10-04T22:57:59Z",
   "status": "blocked",
   "task_ids": [
-    "WF-006"
+    "WF-008"
   ],
   "branch": "codex/limited-storefront-checkout",
   "base_commit": "620d57c6c182c19ada124a40722ef52e7474502d",
@@ -124,6 +124,15 @@
       "finding": "The published work remains draft PR #14. No live website upload, real charge or production release was performed.",
       "basis": "session_actions",
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/14"
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json",
+      "basis": "explicit_task_id_reconciliation",
+      "finding": "This sourced PR #14 branch record originally used WF-006 for phased product opening. Main uses WF-006 for private AI capture. The shared copy uses WF-008 and preserves original_task_ids and its source URL. PR #14 must reconcile its own queue/session references before merge."
     }
-  ]
+  ],
+  "original_task_ids": [
+    "WF-006"
+  ],
+  "imported_from_record_url": "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"
 }
