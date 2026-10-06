@@ -29,6 +29,10 @@ Main website: https://mirroriedled.com. The sponsor VPS is a separate destinatio
    Local file claims are advisory across separate checkouts. Resolve duplicate
    claims with the other session. The MCP connector makes reservations centrally
    on main using non-forced GitHub writes; it must be deployed and tested first.
+   New task IDs must be checked against main and open work PRs. If an older
+   branch uses the same ID for different work, preserve both records, assign a
+   distinct shared ID and reconcile its own session references before merge.
+   Never overwrite another task merely because its number matches.
 
 ## Leave a usable handoff
 

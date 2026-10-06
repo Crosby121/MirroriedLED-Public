@@ -334,6 +334,20 @@ class WorkflowMCPTests(unittest.TestCase):
             self.assertEqual(result["structuredContent"]["error"]["code"], "session_owner")
         self.assertEqual(self.github.head, initial)
 
+    def test_tokenized_evidence_is_rejected_and_standard_github_comments_are_allowed(self):
+        session = self.start()["structuredContent"]["session"]["id"]
+        initial = self.github.head
+        for url in ['https://example.test/proof?token=opaque-credential', 'https://example.test/proof#opaque-credential',
+                    'https://github.com/Crosby121/MirroriedLED-Public/pull/13?signature=opaque']:
+            handoff = self.handoff(session)
+            handoff['evidence_urls'] = [url]
+            self.assertTrue(self.call('finish_session', handoff)['isError'])
+            self.assertEqual(self.github.head, initial)
+        handoff = self.handoff(session)
+        handoff['evidence_urls'] = ['https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712048']
+        self.assertFalse(self.call('finish_session', handoff)['isError'])
+        self.assert_valid_published_records()
+
     def test_blocked_handoff_releases_all_tasks_for_a_new_app(self):
         session = self.start()["structuredContent"]["session"]["id"]
         self.assertFalse(self.call("claim_task", {"session_id": session, "task_id": "WF-004"})["isError"])
