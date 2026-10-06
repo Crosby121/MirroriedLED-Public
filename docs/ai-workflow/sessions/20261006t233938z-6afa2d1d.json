@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "20261006t233938z-6afa2d1d",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-06T23:39:38Z",
+  "ended_at": null,
+  "status": "active",
+  "task_ids": [
+    "WF-016"
+  ],
+  "branch": "fix/ai-capture-streamed-redaction-20261006",
+  "base_commit": "5d5c893bf4dfe368f8a6935ede670dba83111784",
+  "summary": "",
+  "next_action": "",
+  "changed_files": [],
+  "checks": [],
+  "findings": []
+}

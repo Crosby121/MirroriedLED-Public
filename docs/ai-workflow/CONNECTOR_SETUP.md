@@ -106,7 +106,10 @@ credentials. Installer tests verify backup/rollback and website preservation.
 They do not prove live Hostinger installation or authenticate real apps.
 
 Public records must be redacted. The credential guard is best effort. The
-connector does not expose private transcripts; authorized apps can use their
+service rejects all evidence URL queries and accepts only standard GitHub comment
+fragments, preventing opaque signed/tokenized links from being published.
+Use the permanent public path or comment URL as evidence. The connector does not
+expose private transcripts; authorized apps can use their
 own private GitHub connection for those archives.
 
 Official references:

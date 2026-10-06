@@ -76,6 +76,13 @@ owner_session_id, last_session_id, depends_on, acceptance, next_action, evidence
 An in-progress task must reference an active owning session. A task claim is
 shared only after publication; do not treat a private draft as a global lock.
 
+Task numbers in old branches can collide. Main's WF-006 is private AI capture;
+the sourced phased-opening work from draft PR #14 is preserved as WF-008, with
+original_task_ids and its source URL in the imported record. Before merging that
+branch, reconcile its own WF-006 task/session references to WF-008 and preserve
+main's connection/capture records. A matching number never authorizes overwriting
+a different task. Check main and open work PRs before allocating new numbers.
+
 ## Refresh status with evidence
 
 Read the actual default-branch SHA, current PRs, relevant Actions runs and their

@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "20261004t233340z-652dc899",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-04T23:33:40Z",
+  "ended_at": "2026-10-04T23:38:24Z",
+  "status": "completed",
+  "task_ids": [
+    "WF-009"
+  ],
+  "branch": "fix/ai-capture-review-20261004",
+  "base_commit": "3b1e04aae7277239e14a216bbfe4557e80e5da29",
+  "summary": "Browser credential masks now preserve UTF-16 length so later chat edit/append deltas reconstruct correctly without storing the credential. Snapshot identifiers are random instead of hashing unredacted messages. Extended common prefixed secret-key filtering; a new opaque Stripe-key regression failed before its alias was added and now passes. All 47 Python tests and 9 browser tests pass. No actual endpoint/PC/private-archive activation is claimed.",
+  "next_action": "Merge PR #15 after current GitHub checks. Then complete WF-003/WF-006 setup and verify real task and private upload receipts; reconcile the separate PR #14 task references before merging its product changes.",
+  "changed_files": [
+    "docs/ai-workflow/AUTO_CAPTURE.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261004t233340z-652dc899.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_ai_capture.py",
+    "tools/ai_capture.py",
+    "tools/browser-ai-capture/content.js"
+  ],
+  "checks": [
+    {
+      "name": "env PHP_BIN=/workspace/scratch/60db67fe587a/php-runtime/bin/php python3 -m unittest discover -s tests -p 'test_ai*.py' -v",
+      "command": "env PHP_BIN=/workspace/scratch/60db67fe587a/php-runtime/bin/php python3 -m unittest discover -s tests -p 'test_ai*.py' -v",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "node --test tests/browser-ai-capture.test.cjs",
+      "command": "node --test tests/browser-ai-capture.test.cjs",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "git diff --check",
+      "command": "git diff --check",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Expanded opaque secret-key regression before alias fix",
+      "result": "failed",
+      "command": "python3 -m unittest discover -s tests -p test_ai*.py -v",
+      "basis": "agent_report",
+      "finding": "STRIPE_SECRET_KEY was not matched by the initial prefixed key list. Added secret_key recognition; the full 47-test suite passes."
+    }
+  ],
+  "findings": [
+    {
+      "source": "tests/test_ai_capture.py",
+      "basis": "regression",
+      "finding": "Editing text after a masked credential reconstructs correctly at UTF-16 offsets, with neither the credential nor the old tail retained."
+    },
+    {
+      "source": "tools/browser-ai-capture/content.js",
+      "basis": "implementation_review",
+      "finding": "Random snapshot IDs avoid exposing a digest of raw credential-bearing text; local archive record/object integrity still uses hashes of filtered data."
+    },
+    {
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/15",
+      "basis": "publication_evidence",
+      "finding": "This final correction and completion record are published with the review fixes. Live automatic capture remains pending setup and verification."
+    }
+  ]
+}

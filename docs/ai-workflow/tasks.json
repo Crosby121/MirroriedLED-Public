@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-06T23:18:06Z",
+  "updated_at": "2026-10-06T23:39:38Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -218,6 +218,87 @@
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/554c118724eaa02cc9bc410cb8597293cff45dd5/tests/test_commerce_backend.py"
+      ]
+    },
+    {
+      "id": "WF-016",
+      "title": "Repair the pending AI capture privacy update",
+      "status": "in_progress",
+      "priority": 1,
+      "owner_session_id": "20261006t233938z-6afa2d1d",
+      "last_session_id": null,
+      "depends_on": [],
+      "acceptance": [
+        "Reproduce and repair both PR 15 redaction defects with artificial regression inputs.",
+        "Preserve full-message UTF-16 offsets while redacting before browser deltas and durable storage.",
+        "Keep current website images and all payment activation unchanged; publish the verified work handoff."
+      ],
+      "next_action": "Repair and verify PR 15 capture/privacy changes on current main; automatic capture activation remains separate.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/15",
+        "docs/DEPLOYMENT_READINESS_20261005.md"
+      ]
+    },
+    {
+      "id": "WF-007",
+      "title": "Address workflow capture privacy and streaming review findings",
+      "status": "done",
+      "priority": 1,
+      "owner_session_id": null,
+      "last_session_id": "20261004t231109z-bacf3dd7",
+      "depends_on": [
+        "WF-001"
+      ],
+      "acceptance": [
+        "Reject tokenized evidence URLs before public publication.",
+        "Align structured and transcript credential-key redaction, including opaque values.",
+        "Save browser streaming changes efficiently with recoverable snapshots and preserve deferred uploads under API limits.",
+        "Pass regression tests and GitHub checks; keep live activation status accurate."
+      ],
+      "next_action": "Merge the verified review fixes. Complete WF-003 and WF-006 activation guides on Hostinger and the persistent PC, then verify actual GitHub receipts. Before merging draft PR #14, reconcile its product task/session references to shared WF-008 while preserving capture WF-006 and current connection records.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712048",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712063",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/13#discussion_r4179712075"
+      ]
+    },
+    {
+      "id": "WF-008",
+      "title": "Open phased Infinity Mirror and address-sign ordering (PR #14)",
+      "status": "blocked",
+      "priority": 1,
+      "owner_session_id": null,
+      "last_session_id": "20261004t223413z-233a5f91",
+      "depends_on": [],
+      "acceptance": [
+        "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
+        "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
+        "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
+      ],
+      "next_action": "Review draft PR #14. Reconcile its original WF-006 product task/session references to shared WF-008 while preserving main capture WF-006 and connection records. Complete documented merchant and launch prerequisites before release.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+        "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"
+      ]
+    },
+    {
+      "id": "WF-009",
+      "title": "Preserve browser delta offsets when credentials are masked",
+      "status": "done",
+      "priority": 1,
+      "owner_session_id": null,
+      "last_session_id": "20261004t233340z-652dc899",
+      "depends_on": [
+        "WF-007"
+      ],
+      "acceptance": [
+        "Redacted browser text retains its UTF-16 lengths so later edit/append deltas reconstruct correctly.",
+        "Snapshot IDs do not expose a digest of unredacted credential-bearing content.",
+        "Regression verifies editing text after a masked credential without retaining the credential."
+      ],
+      "next_action": "Merge PR #15 after current GitHub checks. Then complete WF-003/WF-006 setup and verify real task and private upload receipts; reconcile the separate PR #14 task references before merging its product changes.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/15"
       ]
     }
   ]
