@@ -53,7 +53,7 @@ different host even when a similarly named directory exists.
 
 ## Installation and verification
 
-Only the 121 files in the packager's public allowlist are installed, including
+Only the 125 files in the packager's public allowlist are installed, including
 the product and stadium pages, curated image previews, Infinity Mirror builder
 and its private artwork service. Release
 archives, receipts and full-site backups remain outside `public_html` with

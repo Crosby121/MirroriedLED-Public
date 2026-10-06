@@ -72,6 +72,11 @@ window.MLED_STADIUMS = {
       "venue": "Fenway Park",
       "images": [
         {
+          "src": "/stadiums/assets/baseball/boston-red-sox/stadium-only.webp",
+          "thumb": "/stadiums/assets/baseball/boston-red-sox/stadium-only-thumb.webp",
+          "caption": "Fenway Park stadium-only model concept"
+        },
+        {
           "src": "/stadiums/assets/baseball/boston-red-sox/showcase.webp",
           "thumb": "/stadiums/assets/baseball/boston-red-sox/showcase-thumb.webp",
           "caption": "Fenway Park model concept and layer overview"
@@ -226,6 +231,11 @@ window.MLED_STADIUMS = {
       "team": "Los Angeles Dodgers",
       "venue": "Dodger Stadium",
       "images": [
+        {
+          "src": "/stadiums/assets/baseball/los-angeles-dodgers/stadium-only.webp",
+          "thumb": "/stadiums/assets/baseball/los-angeles-dodgers/stadium-only-thumb.webp",
+          "caption": "Dodger Stadium stadium-only model concept"
+        },
         {
           "src": "/stadiums/assets/baseball/los-angeles-dodgers/showcase.webp",
           "thumb": "/stadiums/assets/baseball/los-angeles-dodgers/showcase-thumb.webp",
