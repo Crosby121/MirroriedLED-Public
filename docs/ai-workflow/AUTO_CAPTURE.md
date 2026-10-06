@@ -100,7 +100,8 @@ Complete visible messages are masked before deltas are computed or split, so
 streamed/edited sensitive values cannot lose their field-name context in the
 browser queue. The native helper filters again before persistence. Plaintext
 transcripts keep whole-text multiline key filtering; decoded JSONL records are
-filtered independently so neighboring records remain available.
+filtered independently so neighboring completed records remain available even
+while the final record is still being written.
 
 The PC worker caps new archive files at 30 per minute and 360 per hour and honors
 GitHub's retry/reset time with increasing backoff. Deferred records stay queued

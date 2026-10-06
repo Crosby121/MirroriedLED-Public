@@ -159,6 +159,27 @@ class CaptureTests(unittest.TestCase):
         self.assertEqual(records[1]['token'], '[REDACTED]')
         self.assertNotIn('synthetic-jsonl-key-body', cleaned)
 
+    def test_growing_jsonl_redacts_complete_records_before_partial_final_line(self):
+        first = json.dumps({'password': 73190428,
+                            'text': '-----BEGIN PRIVATE KEY-----\nsynthetic-jsonl-key-body'})
+        second = json.dumps({'text': 'Safe adjacent JSONL record', 'token': 'synthetic-adjacent-token'})
+        self.transcript.write_text(first + '\n' + second + '\n' + '{"text":"streaming final')
+        capture.capture(self.config, self.event(), 'codex')
+        local = b'\n'.join(path.read_bytes() for path in
+                          (Path(self.config['spool']) / 'objects').glob('*.txt')).decode()
+        self.assertNotIn('73190428', local)
+        self.assertNotIn('synthetic-jsonl-key-body', local)
+        self.assertNotIn('synthetic-adjacent-token', local)
+        self.assertIn('Safe adjacent JSONL record', local)
+        self.assertIn('streaming final', local)
+        self.assertEqual(json.loads(local.splitlines()[0])['password'], '[REDACTED]')
+        archive = ArchiveDouble()
+        capture.flush(self.config, archive)
+        uploaded = b'\n'.join(archive.files.values()).decode()
+        for value in ['73190428', 'synthetic-jsonl-key-body', 'synthetic-adjacent-token']:
+            self.assertNotIn(value, uploaded)
+        self.assertIn('Safe adjacent JSONL record', uploaded)
+
     def test_local_upload_budget_defers_without_losing_the_queued_record(self):
         capture.capture(self.config, self.event(), "codex")
         archive = capture.GitHubArchive(self.config)

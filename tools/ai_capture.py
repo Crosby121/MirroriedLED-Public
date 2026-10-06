@@ -28,6 +28,7 @@ SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?(?:-----END [A-Z ]*PR
 SENSITIVE_NAMES = r"[A-Za-z0-9_.-]*?(?:password|passwd|token|bearer|api[_-]?key|secret[_-]?key|access[_-]?token|refresh[_-]?token|authorization|cookie|private[_-]?key|secret|client[_-]?secret|github[_-]?token|workflow[_-]?token)"
 SENSITIVE_KEY = re.compile(r"^" + SENSITIVE_NAMES + r"$", re.I)
 INLINE_SECRET = re.compile(r'("' + SENSITIVE_NAMES + r'"\s*:\s*)"(?:\\.|[^"\\])*(?:"|\\?\Z)', re.I)
+PRIVATE_KEY_BOUNDARY = re.compile(r"-----(BEGIN|END) [A-Z ]*PRIVATE KEY-----")
 
 
 def require(condition, message):
@@ -92,16 +93,29 @@ def redact_transcript(text, known_secrets):
     try:
         json.loads(text)
     except ValueError:
-        # Decode JSONL records separately so an unfinished key in one decoded
-        # string cannot consume its neighbors. Plaintext needs whole-text
-        # context before line filtering to cover every line of a PEM block.
-        try:
-            for line in text.splitlines():
-                if line.strip():
+        # A growing JSONL transcript can have an incomplete trailing record.
+        # Decode each complete record independently, buffering plaintext so
+        # multiline PEM bodies (even JSON-looking numeric lines) stay together.
+        parts, plaintext = [], []
+        in_private_key = False
+        for line in text.splitlines(keepends=True):
+            if not in_private_key:
+                try:
                     json.loads(line)
-        except ValueError:
-            text = redact(text, known_secrets)
-        return "".join(filtered(line) for line in text.splitlines(keepends=True))
+                except ValueError:
+                    pass
+                else:
+                    if plaintext:
+                        parts.append(redact("".join(plaintext), known_secrets))
+                        plaintext.clear()
+                    parts.append(filtered(line))
+                    continue
+            plaintext.append(line)
+            for marker in PRIVATE_KEY_BOUNDARY.finditer(line):
+                in_private_key = marker.group(1) == "BEGIN"
+        if plaintext:
+            parts.append(redact("".join(plaintext), known_secrets))
+        return "".join(parts)
     return filtered(text)
 
 
