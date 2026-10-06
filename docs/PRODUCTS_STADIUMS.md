@@ -15,6 +15,15 @@ exist for 31 entries; remaining teams explicitly need artwork. Images are labele
 as model concepts or stylized layouts, rather than finished inventory. Venue names
 are saved catalog labels and are confirmed with the customer's production proof.
 
+Dodgers and Fenway lead with stadium-only views edited from their saved
+collages, following the simple Yankees and Rams product presentation. These
+are new sibling assets. The original showcase/build sheets, layout sheets and
+comparison images remain in their original team folders and image galleries,
+with their previous relative order preserved after the new lead image. No
+layout sheet or original collage is replaced or removed. The image edit brief
+was to retain the model details and remove only surrounding collage panels,
+captions and promotional copy; the built-in image editor produced the views.
+
 Customers can filter by sport and team, cycle through a team's saved images and
 select Mini, Medium or Collector. The sample prices are $99.99, $199.99 and $299.99.
 The sample selection uses a separate local storage key and does not place an order.
@@ -41,7 +50,7 @@ curated thumbnail previews are used for Dodgers bats and skyline, the Yankees
 cardboard concept and the Yankees layout preview. These are preview assets;
 production source files remain in the private archive.
 
-Both complete-website release allowlists include all 121 public files. The
+Both complete-website release allowlists include all 125 public files. The
 installer's rollback directory validation includes every parent of those exact
 paths so nested image folders can be safely restored or removed. Full-site
 backups, unrelated files and private customer records retain their existing rules.
