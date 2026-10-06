@@ -150,6 +150,12 @@
     ['frame','rim','art','rear','controller','hardware'].forEach((k,i)=>{const tick=$('tick-'+k);tick.textContent=done[i]?'✓':'○';tick.classList.toggle('pending',!done[i]);});
     [...$('progressList').children].forEach((node,i)=>node.classList.toggle('done',done[i]));
     $('addBuild').disabled=!result.ready || (state.rim.enabled && !$('ledCount').validity.valid);
+    $('emailQuote').hidden=$('addBuild').disabled;
+    $('emailQuote').removeAttribute('href');
+    if(!$('emailQuote').hidden){
+      const body=['Hello Mirroried LED,','','Please quote this custom infinity mirror:','Size: '+state.size.join(' × ')+' inches','Frame: '+state.finish+' · '+state.depthIn+' inches deep','Artwork: '+state.artwork.name,'Rim: '+(state.rim.enabled?state.rim.rows+' rows · '+result.rimPixels+' LEDs':'Off'),'Rear lighting: '+state.rear+' · '+(result.layout?result.layout.name+' × '+result.layout.count:'Rim only'),'Controller: '+result.controller.name,'Audio reactive: '+(state.audioReactive?'Yes':'No'),'Order speed: '+state.fulfillment,'','Final pricing and design proof required. I will attach my artwork and downloaded build configuration.','','Name:','Phone:','Best contact time:'].join('\n');
+      $('emailQuote').href='mailto:quotes@mirroriedled.com?subject='+encodeURIComponent('Mirroried LED infinity mirror quote')+'&body='+encodeURIComponent(body);
+    }
     if(!result.ready)message('buildMessage',!state.artwork?.approved?'Choose and approve artwork to complete your build.':!state.rim.enabled&&state.rear==='none'?'Include rim strips or rear panels to light your mirror.':'Adjust the artwork size or frame until a complete panel layout fits.',true);else message('buildMessage','Your design is ready for a quote review.');
     renderPricing();drawPreview(); clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveLocal(false),600);
   }
@@ -238,7 +244,7 @@
       $('frameFinish').addEventListener('change',event=>{state.finish=event.target.value;render();});
       $('rimEnabled').addEventListener('change',event=>{state.rim.enabled=event.target.checked;render();});
       $('rowOptions').addEventListener('change',event=>{state.rim.rows=Number(event.target.value);render();});
-      $('ledCount').addEventListener('input',event=>{const n=Number(event.target.value);if(!Number.isInteger(n)||n<24||n>2000){event.target.setCustomValidity('Choose a whole number from 24 to 2000.');$('addBuild').disabled=true;message('buildMessage','Set a valid LEDs-per-row count.',true);return;}event.target.setCustomValidity('');state.rim.countPerRow=n;render();});
+      $('ledCount').addEventListener('input',event=>{const n=Number(event.target.value);if(!Number.isInteger(n)||n<24||n>2000){event.target.setCustomValidity('Choose a whole number from 24 to 2000.');$('addBuild').disabled=true;$('emailQuote').hidden=true;$('emailQuote').removeAttribute('href');message('buildMessage','Set a valid LEDs-per-row count.',true);return;}event.target.setCustomValidity('');state.rim.countPerRow=n;render();});
       $('ledColor').addEventListener('input',event=>{state.rim.color=event.target.value;render();});
       $('audioReactive').addEventListener('change',event=>{state.audioReactive=event.target.checked;render();});
       $('addressableEffects').addEventListener('change',event=>{state.rim.addressable=event.target.checked;render();});
