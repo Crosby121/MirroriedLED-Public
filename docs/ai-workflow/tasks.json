@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-06T23:18:06Z",
+  "updated_at": "2026-10-06T23:39:38Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -218,6 +218,25 @@
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/554c118724eaa02cc9bc410cb8597293cff45dd5/tests/test_commerce_backend.py"
+      ]
+    },
+    {
+      "id": "WF-016",
+      "title": "Repair the pending AI capture privacy update",
+      "status": "in_progress",
+      "priority": 1,
+      "owner_session_id": "20261006t233938z-6afa2d1d",
+      "last_session_id": null,
+      "depends_on": [],
+      "acceptance": [
+        "Reproduce and repair both PR 15 redaction defects with artificial regression inputs.",
+        "Preserve full-message UTF-16 offsets while redacting before browser deltas and durable storage.",
+        "Keep current website images and all payment activation unchanged; publish the verified work handoff."
+      ],
+      "next_action": "Repair and verify PR 15 capture/privacy changes on current main; automatic capture activation remains separate.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/15",
+        "docs/DEPLOYMENT_READINESS_20261005.md"
       ]
     }
   ]
