@@ -5,16 +5,97 @@
   "application_identity": "declared",
   "github_account": "Crosby121",
   "started_at": "2026-10-06T23:39:38Z",
-  "ended_at": null,
-  "status": "active",
+  "ended_at": "2026-10-06T23:51:52Z",
+  "status": "completed",
   "task_ids": [
     "WF-016"
   ],
   "branch": "fix/ai-capture-streamed-redaction-20261006",
   "base_commit": "5d5c893bf4dfe368f8a6935ede670dba83111784",
-  "summary": "",
-  "next_action": "",
-  "changed_files": [],
-  "checks": [],
-  "findings": []
+  "summary": "Repaired and merged the pending PR 15 capture update as PR 22 on current main. Reproduced and fixed multiline plaintext key persistence and streamed-message context loss, then fixed the independent review partial-JSONL structured credential/record-loss finding with observed RED-to-GREEN persistence coverage. Exact-source native PHP workflow and storefront CI passed; historical records and current product images were preserved. PR 15 is closed as superseded. Automatic capture installation remains pending and payment setup is deferred.",
+  "next_action": "Proceed with WF-017: refresh and repair the pending PR 16 AI knowledge database privacy, permissions and import/replay review defects. Keep existing images and deferred payment setup; automatic PC capture and shared connector activation remain separately scoped setup.",
+  "changed_files": [
+    "AGENTS.md",
+    "docs/DEPLOYMENT_READINESS_20261005.md",
+    "docs/ai-workflow/AUTO_CAPTURE.md",
+    "docs/ai-workflow/CONNECTOR_SETUP.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/README.md",
+    "docs/ai-workflow/sessions/20261004t223413z-233a5f91.json",
+    "docs/ai-workflow/sessions/20261004t231109z-bacf3dd7.json",
+    "docs/ai-workflow/sessions/20261004t233340z-652dc899.json",
+    "docs/ai-workflow/sessions/20261006t233938z-6afa2d1d.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "docs/superpowers/plans/2026-10-06-ai-capture-privacy.md",
+    "services/ai-workflow/server.php",
+    "tests/browser-ai-capture.test.cjs",
+    "tests/test_ai_capture.py",
+    "tests/test_ai_workflow_mcp.py",
+    "tools/ai_capture.py",
+    "tools/browser-ai-capture/background.js",
+    "tools/browser-ai-capture/content.js"
+  ],
+  "checks": [
+    {
+      "name": "Full local Python regression suite",
+      "command": "python3 -m unittest discover -s tests -p 'test_*.py' -v",
+      "result": "passed",
+      "basis": "local_execution",
+      "finding": "125 cases: 75 passed, 50 skipped because the local PHP runtime is unavailable; no failures."
+    },
+    {
+      "name": "All local Node behavior tests",
+      "command": "node --test tests/*.test.cjs",
+      "result": "passed",
+      "basis": "local_execution",
+      "finding": "34 passed, including 13 browser capture cases."
+    },
+    {
+      "name": "Exact-source native PHP and capture acceptance",
+      "result": "passed",
+      "basis": "GitHub_job_logs_and_source",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37548522891",
+      "finding": "51 Python workflow/capture/integration tests passed with no skips; 13 browser tests passed; PHP syntax/runtime validation passed. Exact source 49ec78f2a5a167bee8d687ae93677d3dc7aed418."
+    },
+    {
+      "name": "Exact-source Storefront CI",
+      "result": "passed",
+      "basis": "GitHub_Actions",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37548522872"
+    },
+    {
+      "name": "Merged source workflow validation and package checks",
+      "result": "passed",
+      "basis": "GitHub_Actions",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37548694839",
+      "finding": "Merged tree exactly matches validated source tree 3b64c8c9728044ff84a24b188f9401a3b49d79ca; merged packaging run 37548694762 also passed."
+    },
+    {
+      "name": "Final shared record validator and lifecycle tests",
+      "command": "python3 tools/ai_workflow.py validate; python3 -m unittest discover -s tests -p 'test_ai_workflow.py' -v",
+      "result": "passed",
+      "basis": "local_execution",
+      "finding": "Final record validation and all 13 lifecycle cases are run before handoff publication."
+    }
+  ],
+  "findings": [
+    {
+      "finding": "Published claim 88b92a0061561b2924168befbb318310dbec28c3 and shared PR 22 before source edits; final source 49ec78f2a5a167bee8d687ae93677d3dc7aed418 was published and verified before the completed handoff.",
+      "basis": "verified_GitHub_receipts",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/22"
+    },
+    {
+      "finding": "Independent read-only review found one Important partial-JSONL issue. The new persistence test failed on the exposed synthetic numeric credential before per-record/buffered-plaintext repair; full suites passed after the fix. No Critical or Minor findings, declined inputs or deferred rulings remain.",
+      "basis": "independent_review_and_executed_regression_checks"
+    },
+    {
+      "finding": "Historical PR 15 tasks WF-007/WF-008/WF-009 and three sessions were retained; current main tasks/deployment observations were preserved. PR 15 was closed only after verified PR 22 merge.",
+      "basis": "verified_source_and_PR_state"
+    },
+    {
+      "finding": "No OneDrive cleanup, public product/image change, live deployment, automatic capture installation, customer record change or payment activation occurred. User deferred creating the payment account.",
+      "basis": "session_actions_and_user_instruction"
+    }
+  ]
 }

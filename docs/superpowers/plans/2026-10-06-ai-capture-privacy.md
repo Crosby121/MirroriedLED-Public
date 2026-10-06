@@ -32,12 +32,12 @@
 
 **Interfaces:** `redact_transcript(text: str, known_secrets) -> str`; `capture(config, event, source)` persists only redacted transcript objects.
 
-- [ ] Import the existing PR 15 source/tests after the published claim; retain current workflow records.
-- [ ] Add `test_plaintext_private_keys_are_redacted_before_archive_persistence`: capture a synthetic multiline PEM plus surrounding safe text; assert the key body is absent from local objects and an archive double, and safe text remains.
-- [ ] Run `python3 -m unittest discover -s tests -p 'test_ai_capture.py' -v`; observe the new case fail on the key body.
-- [ ] Apply whole-text plaintext filtering while decoding JSON/JSONL records independently; keep incomplete PEM blocks masked to end of text.
-- [ ] Run the capture tests and existing workflow tests; require all runnable cases to pass.
-- [ ] Commit the independently verified transcript repair.
+- [x] Import the existing PR 15 source/tests after the published claim; retain current workflow records.
+- [x] Add `test_plaintext_private_keys_are_redacted_before_archive_persistence`: capture a synthetic multiline PEM plus surrounding safe text; assert the key body is absent from local objects and an archive double, and safe text remains.
+- [x] Run `python3 -m unittest discover -s tests -p 'test_ai_capture.py' -v`; observe the new case fail on the key body.
+- [x] Apply whole-text plaintext filtering while decoding JSON/JSONL records independently; keep incomplete PEM blocks masked to end of text.
+- [x] Run the capture tests and existing workflow tests; require all runnable cases to pass.
+- [x] Commit the independently verified transcript repair.
 
 ### Task 2: Browser checkpoint privacy
 
@@ -45,9 +45,13 @@
 
 **Interfaces:** `checkpoint(force = false)` queues full/delta messages using length-preserving redacted text; the background queue receives no raw sensitive value from those fragments.
 
-- [ ] Add regressions for a token streamed from an empty field, appending/editing its value, an incomplete value, a long split credential, a PEM block and later visible suffix edits.
-- [ ] Run `node --test tests/browser-ai-capture.test.cjs`; observe raw credentials in checkpoint fragments before the fix.
-- [ ] Redact complete message text before comparing or slicing it, replacing sensitive spans with one block character per UTF-16 code unit.
-- [ ] Verify reconstructed text retains visible content and original offsets while all queued parts exclude synthetic credentials.
-- [ ] Run JavaScript syntax checks and browser capture tests, plus the repository's relevant Python workflow suite and CI.
-- [ ] Commit, obtain an independent whole-branch review, publish and verify checks, integrate within existing publication authorization, and finish the task record with actual evidence and activation limits.
+- [x] Add regressions for a token streamed from an empty field, appending/editing its value, an incomplete value, a long split credential, a PEM block and later visible suffix edits.
+- [x] Run `node --test tests/browser-ai-capture.test.cjs`; observe raw credentials in checkpoint fragments before the fix.
+- [x] Redact complete message text before comparing or slicing it, replacing sensitive spans with one block character per UTF-16 code unit.
+- [x] Verify reconstructed text retains visible content and original offsets while all queued parts exclude synthetic credentials.
+- [x] Run JavaScript syntax checks and browser capture tests, plus the repository's relevant Python workflow suite and CI.
+- [x] Commit, obtain an independent whole-branch review, publish and verify checks, integrate within existing publication authorization, and finish the task record with actual evidence and activation limits.
+
+## Completion evidence
+
+Merged PR 22 at `77efff4c74523e8a671826a8ff45576ee49b3660`. Both original regressions were observed failing then passing. Independent review found a partial JSONL append could expose a structured numeric credential and discard safe records; a persistence regression also failed before the per-record/buffered-plaintext fix. No findings remain deferred. Capture tests: 18 passed; browser tests: 13 passed. Full local Python: 75 passed, 50 PHP-dependent skips; all 34 Node cases passed. Native PHP workflow CI and Storefront CI passed on exact source `49ec78f2a5a167bee8d687ae93677d3dc7aed418`; merged workflow and packaging checks also passed. Automatic capture installation and payment account creation remain pending/deferred.

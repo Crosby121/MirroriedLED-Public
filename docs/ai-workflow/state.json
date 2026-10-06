@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-06T23:39:38Z",
+  "observed_at": "2026-10-06T23:51:52Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,9 +8,9 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "5d5c893bf4dfe368f8a6935ede670dba83111784",
-    "summary": "Main contains the verified cart and dummy payment handoffs. The user deferred creating the payment account. Live public source remains 8690ab93f30ffd6913407b1ca5374e808bd6ad93. PR 15 capture repair is the next independent task; automatic capture is not activated.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/5d5c893bf4dfe368f8a6935ede670dba83111784",
+    "observed_commit": "77efff4c74523e8a671826a8ff45576ee49b3660",
+    "summary": "PR 22 capture/privacy repair is merged and verified, superseding closed PR 15. Source and native PHP CI pass. Current public storefront source remains 8690ab93f30ffd6913407b1ca5374e808bd6ad93; no live website deployment or capture installation occurred. The user deferred payment account creation. PR 16 database review repairs are the next independent task.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/77efff4c74523e8a671826a8ff45576ee49b3660",
     "checks": [
       {
         "name": "125-file website release validation and exact-source deployment",
@@ -41,6 +41,26 @@
         "name": "Published product handoff shared workflow validation",
         "result": "passed",
         "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37539052776"
+      },
+      {
+        "name": "Exact PR 22 capture and native PHP workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37548522891"
+      },
+      {
+        "name": "Exact PR 22 storefront validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37548522872"
+      },
+      {
+        "name": "Merged capture update workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37548694839"
+      },
+      {
+        "name": "Merged capture update website packaging",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37548694762"
       }
     ]
   },
@@ -87,7 +107,7 @@
       "automatic_capture": "local_helpers_prepared_not_installed_or_verified"
     }
   ],
-  "next_task_id": "WF-003",
+  "next_task_id": "WF-017",
   "limitations": [
     "Dated observations require an actual GitHub refresh at each session.",
     "The MCP endpoint and app connections are implemented but not installed or verified on Hostinger.",
@@ -130,6 +150,12 @@
       "basis": "observed_GitHub_job_logs_and_test_source",
       "evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37254755130",
       "observed_at": "2026-10-06T23:18:06Z"
+    },
+    {
+      "finding": "AI capture now masks complete browser messages before streaming deltas and preserves whole plaintext PEM spans plus completed JSONL records during partial writes. The original two defects and the independent review finding have regression coverage. No storefront asset, customer record, payment setting or installed PC capture was changed.",
+      "basis": "source_changes_and_verified_GitHub_tests",
+      "evidence": "https://github.com/Crosby121/MirroriedLED-Public/pull/22",
+      "observed_at": "2026-10-06T23:51:52Z"
     }
   ],
   "connector": {
@@ -165,7 +191,7 @@
       "state": "draft",
       "ci": "passed",
       "readiness": "blocked",
-      "finding": "Checkout launch requires merchant sandbox/webhook acceptance, private live activation, confirmed fulfillment and SSH authentication.",
+      "finding": "Checkout launch requires merchant sandbox/webhook acceptance, private live activation and confirmed fulfillment. Main website SSH is already verified. Payment account creation is deferred by the user.",
       "simulated_payment_acceptance": {
         "observed_at": "2026-10-06T23:18:06Z",
         "source_commit": "554c118724eaa02cc9bc410cb8597293cff45dd5",
@@ -179,10 +205,16 @@
     {
       "pr": 15,
       "commit": "8e59fa929bb400665bdfa26cc7275cf515eb2602",
-      "state": "open",
+      "state": "closed",
       "ci": "passed",
-      "readiness": "blocked",
-      "finding": "Two unresolved privacy defects reproduced from exact source: plaintext multiline key bodies survive redaction, and streamed sensitive values lose redaction context."
+      "readiness": "superseded_by_merged_repair",
+      "finding": "PR 22 retains this capture update and its distinct historical records, repairing multiline PEM, streamed/edited values and partial JSONL persistence. Native PHP validation and capture/browser tests passed; PC capture and remote connector activation remain pending.",
+      "superseded_by": {
+        "pr": 22,
+        "source_commit": "49ec78f2a5a167bee8d687ae93677d3dc7aed418",
+        "merged_commit": "77efff4c74523e8a671826a8ff45576ee49b3660",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/22"
+      }
     },
     {
       "pr": 16,
@@ -208,5 +240,11 @@
     "python_executable": "/opt/alt/python311/bin/python3",
     "python_version": "3.11.16",
     "php_version": "8.3.33"
+  },
+  "payment_setup": {
+    "status": "deferred_by_user",
+    "observed_at": "2026-10-06T23:51:52Z",
+    "basis": "user_instruction",
+    "live_checkout_activated_by_this_session": false
   }
 }
