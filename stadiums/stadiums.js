@@ -28,6 +28,9 @@
   function price(){
     const s=core.selection(catalog,active.id,$('buildSize').value);
     $('buildPrice').textContent=money(s.testUnitPrice);
+    const item=core.quoteItem(catalog,active.id,$('buildSize').value);
+    const body=['Hello Mirroried LED,','','Please quote this stadium build:','Team / venue: '+item.artwork,'Size: '+item.size,'',item.notes,'','Name:','Phone:','Best contact time:'].join('\n');
+    $('emailQuote').href='mailto:quotes@mirroriedled.com?subject='+encodeURIComponent('Mirroried LED stadium build quote')+'&body='+encodeURIComponent(body);
   }
   function open(id){
     active=catalog.products.find(p=>p.id===id);if(!active)return;

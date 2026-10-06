@@ -28,6 +28,9 @@ const serverCode='import http.server,json\ns=http.server.ThreadingHTTPServer(("1
     const first=await page.locator('#detailImage img').getAttribute('src');await page.locator('#nextImage').click();
     assert.notEqual(await page.locator('#detailImage img').getAttribute('src'),first);
     await page.locator('#buildSize').selectOption('collector');assert.equal(await page.locator('#buildPrice').textContent(),'$299.99');
+    assert.equal(await page.locator('#emailQuote').count(),1,'Stadium customers need an email quote option');
+    const stadiumMail=decodeURIComponent(await page.locator('#emailQuote').getAttribute('href'));
+    assert.match(stadiumMail,/^mailto:quotes@mirroriedled\.com\?/);assert.match(stadiumMail,/Los Angeles Dodgers/);assert.match(stadiumMail,/Collector/);assert.doesNotMatch(stadiumMail,/299\.99/);
     await page.locator('#addTest').click();assert.equal(await page.evaluate(k=>localStorage.getItem(k),cartKey),null);
     await page.locator('#closeDetail').click();assert.equal(await page.locator('#testTotal').textContent(),'$299.99');
     await page.reload();assert.equal(await page.locator('#testTotal').textContent(),'$299.99');
@@ -58,6 +61,12 @@ const serverCode='import http.server,json\ns=http.server.ThreadingHTTPServer(("1
     assert.equal(await page.locator('input[name=size]').count(),8);
     await page.getByRole('button',{name:'Review Dodgers bats and skyline',exact:true}).click();await page.locator('#approveArt').click();
     assert.match(await page.locator('#approvedArtName').textContent(),/Dodgers bats and skyline/);
+    assert.equal(await page.locator('#emailQuote').count(),1,'Mirror customers need an email quote option');
+    assert.equal(await page.locator('#emailQuote').isVisible(),true);
+    const mirrorMail=decodeURIComponent(await page.locator('#emailQuote').getAttribute('href'));
+    assert.match(mirrorMail,/^mailto:quotes@mirroriedled\.com\?/);assert.match(mirrorMail,/Dodgers bats and skyline/);assert.match(mirrorMail,/12 × 12/);
+    await page.locator('#ledCount').fill('1');assert.equal(await page.locator('#emailQuote').isVisible(),false);
+    await page.locator('#ledCount').fill('72');assert.equal(await page.locator('#emailQuote').isVisible(),true);
     assert.ok((await page.locator('[data-price-item=frame]').textContent()).includes('$7.20'));
     assert.ok((await page.locator('[data-price-item=frame]').textContent()).includes('20%'));
     await page.locator('#changeArt').click();await page.getByRole('tab',{name:'Upload image',exact:true}).click();
