@@ -11,6 +11,8 @@ on:
       - '*.webp'
       - customer-portal/**
       - infinity-builder/**
+      - products/**
+      - stadiums/**
       - deploy/hostinger/website-release.py
       - deploy/hostinger/verify-website.py
       - deploy/hostinger/package-customer-portal.py
@@ -45,6 +47,10 @@ jobs:
           node --check infinity-builder/engine.js
           node --check infinity-builder/draft-store.js
           node --test tests/infinity-builder.test.cjs
+          node --check stadiums/core.js
+          node --check stadiums/data.js
+          node --check stadiums/stadiums.js
+          node --test tests/stadiums.test.cjs
           for source in customer-portal/backend/*.php; do php -l "$source"; done
           php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("pdo_sqlite") && extension_loaded("fileinfo") && extension_loaded("dom") ? 0 : 1);'
           python3 -m unittest discover -s tests -p 'test_*.py' -v

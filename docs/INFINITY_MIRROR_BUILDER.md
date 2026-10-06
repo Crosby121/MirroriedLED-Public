@@ -172,7 +172,7 @@ Official implementation references:
 
 Use the **Deploy Complete Website to Hostinger** workflow and the expanded
 `package-customer-portal.py` / `website-release.py` public allowlists. This release
-contains 29 public files; private configuration and customer data are excluded.
+contains 121 public files; private configuration and customer data are excluded.
 The older eight-file storefront-only staging/manual helpers do not include this
 builder or the Customer Portal and must not be used to publish this release.
 The complete website installer backs up the entire site, protects `builder.php`

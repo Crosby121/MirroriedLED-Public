@@ -166,6 +166,41 @@
       "category": "Music",
       "url": "artwork/wave.svg",
       "source": "Original studio starter · final proof required"
+    },
+    {
+      "id": "dodgers-bats",
+      "name": "Dodgers bats and skyline",
+      "category": "Sports",
+      "url": "artwork/generated/dodgers-bats.webp",
+      "source": "Saved ChatGPT concept · final proof required"
+    },
+    {
+      "id": "dodgers-engraved",
+      "name": "Dodgers engraved mirror",
+      "category": "Sports",
+      "url": "artwork/generated/dodgers-engraved.webp",
+      "source": "Saved ChatGPT concept · final proof required"
+    },
+    {
+      "id": "dodgers-la",
+      "name": "Dodgers LA emblem",
+      "category": "Sports",
+      "url": "artwork/generated/dodgers-la.webp",
+      "source": "Saved ChatGPT concept · final proof required"
+    },
+    {
+      "id": "dodgers-skyline",
+      "name": "Dodgers skyline",
+      "category": "Sports",
+      "url": "artwork/generated/dodgers-skyline.webp",
+      "source": "Saved ChatGPT concept · final proof required"
+    },
+    {
+      "id": "sports-emblems",
+      "name": "Sports emblems",
+      "category": "Sports",
+      "url": "artwork/generated/sports-emblems.webp",
+      "source": "Saved ChatGPT concept · final proof required"
     }
   ],
   "pricing": {

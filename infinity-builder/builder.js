@@ -226,7 +226,7 @@
     try {
       const response=await fetch('catalog.json',{cache:'no-cache'});if(!response.ok)throw new Error('Builder catalog could not be loaded.');catalog=await response.json();state=E.initial(catalog);
       $('sizeOptions').innerHTML=catalog.sizes.map(s=>`<label><input type="radio" name="size" value="${s.join('x')}"><span>${s.join(' × ')}</span></label>`).join('');
-      $('artGallery').innerHTML=catalog.gallery.map(g=>`<button type="button" class="gallery-item" data-gallery="${g.id}" aria-label="Review ${esc(g.name)}"><img src="${esc(g.url)}" alt="${esc(g.name)} engraving design"><span>${esc(g.name)}</span></button>`).join('');
+      $('artGallery').innerHTML=catalog.gallery.map(g=>`<button type="button" class="gallery-item" data-gallery="${g.id}" aria-label="Review ${esc(g.name)}"><img src="${esc(g.url)}" alt="${esc(g.name)} engraving design" loading="lazy"><span>${esc(g.name)}<small>${esc(g.source)}</small></span></button>`).join('');
       try {const saved=await MirrorDraftStore.get('active');if(saved?.catalogVersion===catalog.version&&validSaved(saved.state)){
         state=saved.state;state.fulfillment=state.fulfillment==='rush'?'rush':'standard';originalBlob=saved.originalBlob;
         if(saved.maskBlob){const url=URL.createObjectURL(saved.maskBlob);try{approvedMask=await maskImage(url,'light');}finally{URL.revokeObjectURL(url);}}else state.artwork=null;
