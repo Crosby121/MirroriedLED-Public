@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-06T23:03:25Z",
+  "observed_at": "2026-10-06T23:18:06Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,9 +8,9 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "8831c03bfdbc6d23e637d470558aa5145dd554ff",
-    "summary": "Main includes the verified product publication handoff; public website source 8690ab93f30ffd6913407b1ca5374e808bd6ad93 remains deployed. Live cart checks passed for build/quote selection and draft transfer. Private account setup and paid checkout remain pending; earlier review findings remain dated observations.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/8831c03bfdbc6d23e637d470558aa5145dd554ff",
+    "observed_commit": "49f0a42d90b70c8895d22b852d3c1b0761da42c8",
+    "summary": "Main includes the verified shopping-cart handoff. Live public source remains 8690ab93f30ffd6913407b1ca5374e808bd6ad93. PR 14 dummy commerce acceptance passed nine tests in its separate draft branch; no merchant integration, paid checkout or website activation is established. Earlier unrelated readiness findings remain dated observations.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/49f0a42d90b70c8895d22b852d3c1b0761da42c8",
     "checks": [
       {
         "name": "125-file website release validation and exact-source deployment",
@@ -124,6 +124,12 @@
       "basis": "observed_live_browser_UI",
       "evidence": "https://mirroriedled.com/customer-portal/#builds",
       "observed_at": "2026-10-06T23:03:25Z"
+    },
+    {
+      "finding": "Existing draft payment simulation passed all nine commerce tests with artificial credentials and an injected provider response. No wallet, real card, real merchant charge or production release occurred. Live account/payment setup remains pending.",
+      "basis": "observed_GitHub_job_logs_and_test_source",
+      "evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37254755130",
+      "observed_at": "2026-10-06T23:18:06Z"
     }
   ],
   "connector": {
@@ -159,7 +165,16 @@
       "state": "draft",
       "ci": "passed",
       "readiness": "blocked",
-      "finding": "Checkout launch requires merchant sandbox/webhook acceptance, private live activation, confirmed fulfillment and SSH authentication."
+      "finding": "Checkout launch requires merchant sandbox/webhook acceptance, private live activation, confirmed fulfillment and SSH authentication.",
+      "simulated_payment_acceptance": {
+        "observed_at": "2026-10-06T23:18:06Z",
+        "source_commit": "554c118724eaa02cc9bc410cb8597293cff45dd5",
+        "run_id": 37254755130,
+        "run_attempt": 2,
+        "tests_passed": 9,
+        "real_merchant_connection_verified": false,
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37254755130"
+      }
     },
     {
       "pr": 15,

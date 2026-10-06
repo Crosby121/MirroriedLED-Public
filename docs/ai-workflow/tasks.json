@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-06T23:03:25Z",
+  "updated_at": "2026-10-06T23:18:06Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -199,6 +199,25 @@
       "evidence": [
         "https://mirroriedled.com/",
         "https://mirroriedled.com/stadiums/"
+      ]
+    },
+    {
+      "id": "WF-015",
+      "title": "Run the existing dummy payment acceptance test",
+      "status": "done",
+      "priority": 1,
+      "owner_session_id": null,
+      "last_session_id": "20261006t231541z-0008cc58",
+      "depends_on": [],
+      "acceptance": [
+        "Inspect the existing draft checkout fixture and confirm it uses artificial credentials and an injected provider response.",
+        "Run the existing isolated checkout acceptance test without a real payment, account activation or website deployment.",
+        "Publish the verified result and distinguish simulated checkout from a live merchant integration."
+      ],
+      "next_action": "Keep live payments off. Configure private accounts and the merchant test-mode integration before testing actual hosted sandbox checkout and signed merchant webhooks. This provider simulation does not establish live payment readiness.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+        "https://github.com/Crosby121/MirroriedLED-Public/blob/554c118724eaa02cc9bc410cb8597293cff45dd5/tests/test_commerce_backend.py"
       ]
     }
   ]

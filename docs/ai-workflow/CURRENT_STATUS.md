@@ -1,11 +1,11 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-06T23:03:25Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-06T23:18:06Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [8831c03](https://github.com/Crosby121/MirroriedLED-Public/commit/8831c03bfdbc6d23e637d470558aa5145dd554ff) · Main includes the verified product publication handoff; public website source 8690ab93f30ffd6913407b1ca5374e808bd6ad93 remains deployed. Live cart checks passed for build/quote selection and draft transfer. Private account setup and paid checkout remain pending; earlier review findings remain dated observations. |
+| Observed website source | [49f0a42](https://github.com/Crosby121/MirroriedLED-Public/commit/49f0a42d90b70c8895d22b852d3c1b0761da42c8) · Main includes the verified shopping-cart handoff. Live public source remains 8690ab93f30ffd6913407b1ca5374e808bd6ad93. PR 14 dummy commerce acceptance passed nine tests in its separate draft branch; no merchant integration, paid checkout or website activation is established. Earlier unrelated readiness findings remain dated observations. |
 | Verified live Hostinger commit | 8690ab93f30ffd6913407b1ca5374e808bd6ad93 |
 | Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696) · No failed step |
 | Deployment blocker | Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation. |
@@ -28,6 +28,7 @@ Evidence snapshot: 2026-10-06T23:03:25Z (UTC). Refresh GitHub at the start of ea
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
 | WF-013 — Publish mirror artwork and stadium product browsing | done | Unclaimed | Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused. |
 | WF-014 — Verify the live shopping cart and checkout path | done | Unclaimed | Configure the existing private Customer Portal accounts and quote backend, then verify a saved private request. Paid checkout requires its separately scoped payment setup and acceptance. Keep current images and placeholder stadium prices for now. |
+| WF-015 — Run the existing dummy payment acceptance test | done | Unclaimed | Keep live payments off. Configure private accounts and the merchant test-mode integration before testing actual hosted sandbox checkout and signed merchant webhooks. This provider simulation does not establish live payment readiness. |
 | WF-002 — Resolve the main website deployment settings blocker | done | Unclaimed | Continue WF-003 connector activation after provisioning its scoped private service credentials; then verify individual app read/write receipts. Paid subscriptions and live hardware playback require their separate acceptance steps. |
 | WF-012 — Check current builds for deployment readiness | done | Unclaimed | Main website deployed and verified. Repair and verify the reproduced PR 15/16 review defects before merging those builds; retain checkout PR 14 as draft until launch acceptance. |
 | WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Main website SSH and runtime are verified. Complete CONNECTOR_SETUP.md: provision scoped private service credentials, run the manual connector install, and verify each app read/write receipt. |
