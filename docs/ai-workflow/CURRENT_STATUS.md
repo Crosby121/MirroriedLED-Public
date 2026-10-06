@@ -1,21 +1,22 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-05T08:09:13Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-06T22:11:14Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [6c390ec](https://github.com/Crosby121/MirroriedLED-Public/commit/6c390ecea7d238cd6cb0b686272ebf45d819332a) · PR #17 SSH verification and remote Python selection fix merged. Exact-source website release installed and verified on Hostinger. Earlier checkout/capture/AI database review findings remain dated observations. |
-| Verified live Hostinger commit | 6c390ecea7d238cd6cb0b686272ebf45d819332a |
-| Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167/job/111670834522) · No failed step |
-| Deployment blocker | SSH/settings/Python/PHP preflight passed, the public release was uploaded, backed up and installed, and exact-source HTTPS verification passed for storefront, customer portal, team page, assets and PHP access rules. No rollback was needed. Separate billing, connector credentials and hardware activation are not established by this release. |
+| Observed website source | [8690ab9](https://github.com/Crosby121/MirroriedLED-Public/commit/8690ab93f30ffd6913407b1ca5374e808bd6ad93) · Published products, saved mirror artwork, stadium browsing and email quote links. Added stadium-only Dodgers and Fenway lead previews while retaining original team layout sheets, files and gallery order. Content-hash URLs refresh cached product assets. The 125-file Hostinger release 8690ab93f30ffd6913407b1ca5374e808bd6ad93 was installed and verified. Earlier checkout, capture and AI database review findings remain dated observations. |
+| Verified live Hostinger commit | 8690ab93f30ffd6913407b1ca5374e808bd6ad93 |
+| Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696) · No failed step |
+| Deployment blocker | Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation. |
 | Shared app connections | Shared MCP connector and private capture tools implemented and locally tested; endpoint, PC installation and individual app connections are not activated. |
 
 ## Source checks
 
-- [Complete website release validation and verified deployment](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167): **passed**.
-- [Merged main website packaging](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592151): **passed**.
-- [Merged main shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592312): **passed**.
+- [125-file website release validation and exact-source deployment](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814): **passed**.
+- [Merged main website packaging](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235823): **passed**.
+- [Exact PR 21 storefront validation at 69206cbb33b23702d5c7a5ebd6d941bb83da7f71](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538113974): **passed**.
+- [Exact PR 21 shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538113966): **passed**.
 
 ## Task queue
 
@@ -23,7 +24,7 @@ Evidence snapshot: 2026-10-05T08:09:13Z (UTC). Refresh GitHub at the start of ea
 | --- | --- | --- | --- |
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
-| WF-013 — Publish mirror artwork and stadium product browsing | in_progress | 20261006t191821z-9a9f9736 | Integrate the approved additions into the actual live repository, then validate and publish. |
+| WF-013 — Publish mirror artwork and stadium product browsing | done | Unclaimed | Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused. |
 | WF-002 — Resolve the main website deployment settings blocker | done | Unclaimed | Continue WF-003 connector activation after provisioning its scoped private service credentials; then verify individual app read/write receipts. Paid subscriptions and live hardware playback require their separate acceptance steps. |
 | WF-012 — Check current builds for deployment readiness | done | Unclaimed | Main website deployed and verified. Repair and verify the reproduced PR 15/16 review defects before merging those builds; retain checkout PR 14 as draft until launch acceptance. |
 | WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Main website SSH and runtime are verified. Complete CONNECTOR_SETUP.md: provision scoped private service credentials, run the manual connector install, and verify each app read/write receipt. |

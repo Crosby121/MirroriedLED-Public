@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-06T19:18:21Z",
+  "updated_at": "2026-10-06T22:11:14Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -158,21 +158,28 @@
     {
       "id": "WF-013",
       "title": "Publish mirror artwork and stadium product browsing",
-      "status": "in_progress",
+      "status": "done",
       "priority": 1,
-      "owner_session_id": "20261006t191821z-9a9f9736",
-      "last_session_id": null,
+      "owner_session_id": null,
+      "last_session_id": "20261006t191821z-9a9f9736",
       "depends_on": [],
       "acceptance": [
         "Publish the saved generated mirror artwork in the existing size/upload/quote builder.",
         "Provide a simple stadium catalog filtered by sport and team, with concept previews and clearly labeled placeholder prices.",
         "Preserve the current supplier pricing, private records and Customer Portal quote flow.",
-        "Pass checks and verify the exact website release using the existing Hostinger SSH deployment."
+        "Pass checks and verify the exact website release using the existing Hostinger SSH deployment.",
+        "Restore original stadium layout sheets to their team galleries and paths, preserving their source bytes and original entry order.",
+        "Make customer-operated email quotes visible after valid build selection; refresh cached product assets using content-hash URLs."
       ],
-      "next_action": "Integrate the approved additions into the actual live repository, then validate and publish.",
+      "next_action": "Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167",
-        "docs/INFINITY_MIRROR_BUILDER.md"
+        "docs/INFINITY_MIRROR_BUILDER.md",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/18",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/19",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/20",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/21",
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696"
       ]
     }
   ]
