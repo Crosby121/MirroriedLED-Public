@@ -31,6 +31,11 @@ artwork and downloaded build file themselves. This keeps quote requests usable
 while the private Customer Portal configuration and payment activation remain
 pending; it does not claim email delivery or online payment processing.
 
+Product, mirror and stadium HTML use content hashes in stylesheet and script
+URLs, matching the homepage convention. Hostinger caches these assets for a
+week; refresh each URL's `v` value to the first 12 characters of the asset's
+SHA-256 after editing it so returning visitors receive the current release.
+
 Three full-size image entries in the source archive were empty. Their intact
 curated thumbnail previews are used for Dodgers bats and skyline, the Yankees
 cardboard concept and the Yankees layout preview. These are preview assets;
