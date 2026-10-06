@@ -11,7 +11,7 @@
   <a class="skip-link" href="#build-controls">Skip to build options</a>
   <header class="site-header"><div class="shell header-inner">
     <a class="brand" href="../"><span class="brand-mark">M</span><span><strong>MIRRORIED LED</strong><small>CUSTOM LED ART • FABRICATION • EXPERIENCES</small></span></a>
-    <nav class="builder-nav" aria-label="Builder navigation"><a href="../#products">← Choose a build</a><a href="../customer-portal/">Customer Portal</a></nav>
+    <nav class="builder-nav" aria-label="Builder navigation"><a href="../products/">← Choose a build</a><a href="../customer-portal/">Customer Portal</a></nav>
   </div></header>
   <main class="builder-shell" id="main">
     <div class="builder-heading"><div><p class="eyebrow">YOUR IDEA. YOUR INFINITY.</p><h1>Build your<br><span>Infinity Mirror.</span></h1><p>Choose a detail. See your design take shape.</p></div><div class="saved-label" id="draftStatus" role="status">Your design stays on this device until you request a quote.</div></div>
@@ -51,10 +51,10 @@
         </section>
         <section class="build-section" aria-labelledby="artHeading"><div class="step-heading"><span>03</span><div><h2 id="artHeading">Make the engraving yours</h2><p>Choose, review and approve your artwork.</p></div><span class="step-tick pending" id="tick-art">○</span></div>
           <div class="art-tabs" role="tablist" aria-label="Artwork source"><button role="tab" id="tab-gallery" aria-selected="true" aria-controls="panel-gallery" data-art-tab="gallery">Our library</button><button role="tab" id="tab-upload" aria-selected="false" tabindex="-1" aria-controls="panel-upload" data-art-tab="upload">Upload image</button><button role="tab" id="tab-ai" aria-selected="false" tabindex="-1" aria-controls="panel-ai" data-art-tab="ai">Create with AI</button></div>
-          <div role="tabpanel" id="panel-gallery" aria-labelledby="tab-gallery"><div class="gallery-grid" id="artGallery"></div><p class="field-note">Original studio starters. Your selected artwork is reviewed for a frosted engraving proof.</p></div>
+          <div role="tabpanel" id="panel-gallery" aria-labelledby="tab-gallery"><div class="gallery-grid" id="artGallery"></div><p class="field-note">Saved ChatGPT concepts and original studio starters. Review and approve your selection; the studio confirms a final frosted engraving proof.</p></div>
           <div role="tabpanel" id="panel-upload" aria-labelledby="tab-upload" hidden><label class="upload-zone">Choose your artwork<input type="file" id="artUpload" accept="image/png,image/jpeg,image/webp"><span>PNG, JPEG or WebP · up to 10 MB</span></label><label>Engraved parts<select id="uploadPolarity"><option value="dark">Dark artwork on a light background</option><option value="light">Light artwork on a dark background</option></select></label><p class="field-note">The preview turns your image into a frosted light mask. The original is kept for the team’s proof. PDF/SVG source files can be attached in the Customer Portal.</p></div>
           <div role="tabpanel" id="panel-ai" aria-labelledby="tab-ai" hidden>
-            <p class="ai-availability" id="aiAvailability" role="status">Checking artwork studio availability…</p>
+            <p class="ai-availability" id="aiAvailability" role="status">Checking artwork studio availability…</p><p class="field-note">Want the studio to create your image? <a href="../#contact">Request a custom artwork design</a>.</p>
             <form id="aiForm"><label>What would you like engraved?<textarea id="aiSubject" rows="2" maxlength="1200" placeholder="A trumpet surrounded by flowing music, with my name underneath…" required></textarea></label>
               <label>Type of image<select id="aiType"><option value="music">Music / instrument</option><option value="nature">Nature / animal</option><option value="portrait">Portrait / memorial</option><option value="logo">Logo / lettering</option><option value="sports">Sports / stadium</option><option value="geometric">Geometric / abstract</option><option value="other">Something else</option></select></label>
               <button class="button secondary" type="button" id="askAI">Guide my design</button><div class="ai-questions" id="aiQuestions"></div>
@@ -83,7 +83,7 @@
           <ul id="hardwareList" class="hardware-list"></ul><div class="power-note" id="powerNote"></div>
           <details><summary>Production review notes</summary><ul id="reviewNotes"></ul><p>Hardware quantities and power ratings are confirmed before the quote and production proof. Artwork approval here does not start fabrication.</p></details>
         </section>
-        <section class="build-section quote-section"><p class="eyebrow">YOUR CUSTOM BUILD</p><h2>Ready to make it real?</h2><p>Save this design to your build list, then review it in the Customer Portal for a quote.</p><p class="build-message" id="buildMessage" role="status"></p><button type="button" class="button primary" id="addBuild" disabled>Add design to build list</button><a class="button text-button" href="../#products">Back to storefront</a><p class="field-note">No payment or fabrication starts from this page.</p></section>
+        <section class="build-section quote-section"><p class="eyebrow">YOUR CUSTOM BUILD</p><h2>Ready to make it real?</h2><p>Save this design to your build list, then review it in the Customer Portal for a quote.</p><p class="build-message" id="buildMessage" role="status"></p><button type="button" class="button primary" id="addBuild" disabled>Add design to build list</button><a class="button text-button" href="../products/">Back to products</a><p class="field-note">No payment or fabrication starts from this page.</p></section>
       </div>
     </div>
   </main><footer class="builder-footer">MIRRORIED LED · Frosted light. Infinite possibilities.</footer>

@@ -70,6 +70,8 @@ class WebsiteReleaseTests(unittest.TestCase):
         release.restore(self.public, backup)
         self.assertEqual(self.snapshot(), self.before)
         self.assertFalse((self.public / "customer-portal").exists())
+        self.assertFalse((self.public / "stadiums").exists())
+        self.assertFalse((self.public / "products").exists())
 
     def test_bad_checksum_changes_no_live_files(self):
         self.package(corrupt="customer-portal/backend/business.php")

@@ -23,6 +23,7 @@ Evidence snapshot: 2026-10-05T08:09:13Z (UTC). Refresh GitHub at the start of ea
 | --- | --- | --- | --- |
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
+| WF-013 — Publish mirror artwork and stadium product browsing | in_progress | 20261006t191821z-9a9f9736 | Integrate the approved additions into the actual live repository, then validate and publish. |
 | WF-002 — Resolve the main website deployment settings blocker | done | Unclaimed | Continue WF-003 connector activation after provisioning its scoped private service credentials; then verify individual app read/write receipts. Paid subscriptions and live hardware playback require their separate acceptance steps. |
 | WF-012 — Check current builds for deployment readiness | done | Unclaimed | Main website deployed and verified. Repair and verify the reproduced PR 15/16 review defects before merging those builds; retain checkout PR 14 as draft until launch acceptance. |
 | WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Main website SSH and runtime are verified. Complete CONNECTOR_SETUP.md: provision scoped private service credentials, run the manual connector install, and verify each app read/write receipt. |

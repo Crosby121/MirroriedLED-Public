@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-05T08:09:13Z",
+  "updated_at": "2026-10-06T19:18:21Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -153,6 +153,26 @@
       "evidence": [
         "docs/DEPLOYMENT_READINESS_20261005.md",
         "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37236890583/job/111546207432"
+      ]
+    },
+    {
+      "id": "WF-013",
+      "title": "Publish mirror artwork and stadium product browsing",
+      "status": "in_progress",
+      "priority": 1,
+      "owner_session_id": "20261006t191821z-9a9f9736",
+      "last_session_id": null,
+      "depends_on": [],
+      "acceptance": [
+        "Publish the saved generated mirror artwork in the existing size/upload/quote builder.",
+        "Provide a simple stadium catalog filtered by sport and team, with concept previews and clearly labeled placeholder prices.",
+        "Preserve the current supplier pricing, private records and Customer Portal quote flow.",
+        "Pass checks and verify the exact website release using the existing Hostinger SSH deployment."
+      ],
+      "next_action": "Integrate the approved additions into the actual live repository, then validate and publish.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37281592167",
+        "docs/INFINITY_MIRROR_BUILDER.md"
       ]
     }
   ]

@@ -51,6 +51,10 @@ jobs:
           node --check infinity-builder/engine.js
           node --check infinity-builder/draft-store.js
           node --test tests/infinity-builder.test.cjs
+          node --check stadiums/core.js
+          node --check stadiums/data.js
+          node --check stadiums/stadiums.js
+          node --test tests/stadiums.test.cjs
 
       - name: Validate customer portal PHP
         run: |

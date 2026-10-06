@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "20261006t191821z-9a9f9736",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-06T19:18:21Z",
+  "ended_at": null,
+  "status": "active",
+  "task_ids": [
+    "WF-013"
+  ],
+  "branch": "codex/publish-products-20261006",
+  "base_commit": "49ab5664661ada64fc55e76ed7d1cc0885ae57a5",
+  "summary": "",
+  "next_action": "",
+  "changed_files": [],
+  "checks": [],
+  "findings": []
+}

@@ -34,6 +34,10 @@ jobs:
           php -l customer-portal/backend/builder.php
           node --check infinity-builder/builder.js
           node --test tests/infinity-builder.test.cjs
+          node --check stadiums/core.js
+          node --check stadiums/data.js
+          node --check stadiums/stadiums.js
+          node --test tests/stadiums.test.cjs
 
       - name: Verify deployment tools
         run: |
