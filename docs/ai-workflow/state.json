@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-06T22:11:14Z",
+  "observed_at": "2026-10-06T23:03:25Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,9 +8,9 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "8690ab93f30ffd6913407b1ca5374e808bd6ad93",
-    "summary": "Published products, saved mirror artwork, stadium browsing and email quote links. Added stadium-only Dodgers and Fenway lead previews while retaining original team layout sheets, files and gallery order. Content-hash URLs refresh cached product assets. The 125-file Hostinger release 8690ab93f30ffd6913407b1ca5374e808bd6ad93 was installed and verified. Earlier checkout, capture and AI database review findings remain dated observations.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/8690ab93f30ffd6913407b1ca5374e808bd6ad93",
+    "observed_commit": "8831c03bfdbc6d23e637d470558aa5145dd554ff",
+    "summary": "Main includes the verified product publication handoff; public website source 8690ab93f30ffd6913407b1ca5374e808bd6ad93 remains deployed. Live cart checks passed for build/quote selection and draft transfer. Private account setup and paid checkout remain pending; earlier review findings remain dated observations.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/8831c03bfdbc6d23e637d470558aa5145dd554ff",
     "checks": [
       {
         "name": "125-file website release validation and exact-source deployment",
@@ -31,6 +31,16 @@
         "name": "Exact PR 21 shared workflow validation",
         "result": "passed",
         "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538113966"
+      },
+      {
+        "name": "Published product handoff packaging at 8831c03",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37539052721"
+      },
+      {
+        "name": "Published product handoff shared workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37539052776"
       }
     ]
   },
@@ -108,6 +118,12 @@
       "finding": "Stadium browsing has 92 teams, sport/team filters, optional image cycling and clearly labeled placeholder prices. Dodgers and Fenway have separate stadium-only lead images; all pre-existing source image bytes, team folders and relative gallery entry order were preserved.",
       "basis": "observed_exact_source_comparison_and_live_browser",
       "evidence": "https://github.com/Crosby121/MirroriedLED-Public/pull/21"
+    },
+    {
+      "finding": "Live cart supports adding and removing builds, reload persistence and Customer Portal import of selected mirror/stadium details. Stadium sample prices total correctly: 99.99 + 199.99 = 299.98; removing Mini leaves 199.99. Private quote saving is disabled with server setup required, and billing is off. Temporary test selections and imported drafts were cleared; no product code or images changed.",
+      "basis": "observed_live_browser_UI",
+      "evidence": "https://mirroriedled.com/customer-portal/#builds",
+      "observed_at": "2026-10-06T23:03:25Z"
     }
   ],
   "connector": {

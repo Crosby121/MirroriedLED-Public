@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-06T22:11:14Z",
+  "updated_at": "2026-10-06T23:03:25Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -180,6 +180,25 @@
         "https://github.com/Crosby121/MirroriedLED-Public/pull/20",
         "https://github.com/Crosby121/MirroriedLED-Public/pull/21",
         "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696"
+      ]
+    },
+    {
+      "id": "WF-014",
+      "title": "Verify the live shopping cart and checkout path",
+      "status": "done",
+      "priority": 1,
+      "owner_session_id": null,
+      "last_session_id": "20261006t221757z-b4ef10bb",
+      "depends_on": [],
+      "acceptance": [
+        "Verify adding and removing temporary builds, persistence after reload, and preservation of product details.",
+        "Verify mirror builder and stadium selections, including sample placeholder totals and the Customer Portal handoff.",
+        "Identify live account/payment blockers without placing a paid order; preserve all current product images and restore test selections."
+      ],
+      "next_action": "Configure the existing private Customer Portal accounts and quote backend, then verify a saved private request. Paid checkout requires its separately scoped payment setup and acceptance. Keep current images and placeholder stadium prices for now.",
+      "evidence": [
+        "https://mirroriedled.com/",
+        "https://mirroriedled.com/stadiums/"
       ]
     }
   ]
