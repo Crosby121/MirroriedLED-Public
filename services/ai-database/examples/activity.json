@@ -1,0 +1,10 @@
+{
+  "request_id": "example-request-replace-with-unique-id",
+  "application": "ChatGPT Work / Codex",
+  "action": "handoff",
+  "summary": "Example only: replace with the change, actual checks and next action.",
+  "task_id": "WF-011",
+  "source_id": "example-source",
+  "occurred_at": null,
+  "details": {"outcome": "example", "next_action": "Replace this example before importing"}
+}

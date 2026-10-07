@@ -34,12 +34,12 @@
 
 **Interfaces:** `safe_payload(value)`, `Database.put(value, expected_version=None)`, `Database.bundle(value)`.
 
-- [ ] Port the pending PR 16 source after the published claim; retain main workflow state and import distinct WF-011 history.
-- [ ] Add failing regressions for Bearer tab/newline values in record bodies/nested metadata and signed/user-info URLs with uppercase/mixed-case schemes. Assert rejected writes leave records/export free of artificial credentials; retain a safe mixed-case URL positive case.
-- [ ] Add a failing bundle replay case changing nested `cost_usd: 1` to `true`, plus nested numeric/boolean metadata. Assert conflict, unchanged stored record and one revision.
-- [ ] Run `python3 -m unittest discover -s tests -p 'test_ai_database.py' -v`; observe the intended failures.
-- [ ] Match secrets against each original string and URL schemes case-insensitively; compare normalized replay content using canonical `dumps()`.
-- [ ] Run the database suite; require the new cases and existing behavior to pass. Commit.
+- [x] Port the pending PR 16 source after the published claim; retain main workflow state and import distinct WF-011 history.
+- [x] Add failing regressions for Bearer tab/newline values in record bodies/nested metadata and signed/user-info URLs with uppercase/mixed-case schemes. Assert rejected writes leave records/export free of artificial credentials; retain a safe mixed-case URL positive case.
+- [x] Add a failing bundle replay case changing nested `cost_usd: 1` to `true`, plus nested numeric/boolean metadata. Assert conflict, unchanged stored record and one revision.
+- [x] Run `python3 -m unittest discover -s tests -p 'test_ai_database.py' -v`; observe the intended failures.
+- [x] Match secrets against each original string and URL schemes case-insensitively; compare normalized replay content using canonical `dumps()`.
+- [x] Run the database suite; require the new cases and existing behavior to pass. Commit.
 
 ### Task 2: SQLite private file permissions
 
@@ -47,10 +47,10 @@
 
 **Interfaces:** `Database(path, create=False)`, `private_file(path)`; recognized database ownership/schema checks precede permission changes to existing unrelated files.
 
-- [ ] Add a POSIX regression reopening a recognized 0644 database and existing WAL/SHM files, then performing a write. Assert all existing/new sidecars and the database are 0600 before WAL/application writes. Retain unrelated database bytes/permissions and symlink refusal cases.
-- [ ] Run the test; observe permissive sidecars on the pending source.
-- [ ] Tighten recognized main/existing sidecar permissions before enabling WAL or writing schema/data; ensure newly created sidecars inherit private main permissions.
-- [ ] Run database concurrency, WAL backup/recovery and permissions tests; require all to pass. Commit.
+- [x] Add a POSIX regression reopening a recognized 0644 database and existing WAL/SHM files, then performing a write. Assert all existing/new sidecars and the database are 0600 before WAL/application writes. Retain unrelated database bytes/permissions and symlink refusal cases.
+- [x] Run the test; observe permissive sidecars on the pending source.
+- [x] Tighten recognized main/existing sidecar permissions before enabling WAL or writing schema/data; ensure newly created sidecars inherit private main permissions.
+- [x] Run database concurrency, WAL backup/recovery and permissions tests; require all to pass. Commit.
 
 ### Task 3: History chronology and provenance
 
@@ -58,9 +58,9 @@
 
 **Interfaces:** `Database.import_history(root, locator)`, `Database.event(value)`. A private `_event(value)` may provide event validation/insertion inside a caller-owned transaction.
 
-- [ ] Add failing forward half-second and reversed half-second session tests, with no imports for invalid chronology.
-- [ ] Add a failing overlapping history replay from the CLI locator to the packaged-launcher locator; assert old event/source locator retained and only new content added.
-- [ ] Cover concurrent same-content imports and conflicting pre-existing request IDs; require one event/source, atomic per-session writes and explicit conflicts.
-- [ ] Run the database suite and observe the fractional/replay failures.
-- [ ] Compare validated parsed UTC datetimes; transact replay detection, optional source creation and event insertion together, preserving event checksum conflict checks.
+- [x] Add failing forward half-second and reversed half-second session tests, with no imports for invalid chronology.
+- [x] Add a failing overlapping history replay from the CLI locator to the packaged-launcher locator; assert old event/source locator retained and only new content added.
+- [x] Cover concurrent same-content imports and conflicting pre-existing request IDs; require one event/source, atomic per-session writes and explicit conflicts.
+- [x] Run the database suite and observe the fractional/replay failures.
+- [x] Compare validated parsed UTC datetimes; transact replay detection, optional source creation and event insertion together, preserving event checksum conflict checks.
 - [ ] Run the complete database and repository suites, checking all failures/skips. Obtain one independent whole-branch review, fix any important finding with RED-to-GREEN coverage, verify native GitHub checks, integrate under existing publication authorization, and publish the completed handoff.
