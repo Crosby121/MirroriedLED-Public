@@ -1,0 +1,10 @@
+{
+  "id": "example-build-rule",
+  "kind": "knowledge",
+  "title": "Example build rule — replace before use",
+  "body": "A curated rule with its source and confidence.",
+  "metadata": {},
+  "source_id": "example-source",
+  "confidence": "needs_verification",
+  "status": "draft"
+}

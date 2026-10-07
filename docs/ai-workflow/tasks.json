@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-06T23:51:52Z",
+  "updated_at": "2026-10-07T00:08:30Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -306,9 +306,9 @@
     {
       "id": "WF-017",
       "title": "Repair the pending AI knowledge database review defects",
-      "status": "ready",
+      "status": "in_progress",
       "priority": 1,
-      "owner_session_id": null,
+      "owner_session_id": "20261007t000830z-9b8b70be",
       "last_session_id": null,
       "depends_on": [
         "WF-016"
@@ -322,6 +322,29 @@
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/16",
         "docs/DEPLOYMENT_READINESS_20261005.md"
+      ]
+    },
+    {
+      "id": "WF-011",
+      "title": "Build the Mirroried LED AI knowledge database",
+      "status": "done",
+      "priority": 6,
+      "owner_session_id": null,
+      "last_session_id": "20261005t044009z-ai-database",
+      "depends_on": [
+        "WF-001"
+      ],
+      "acceptance": [
+        "Provide a working, searchable local database for sourced knowledge, products, tasks and declared AI activity.",
+        "Import dated workflow snapshots without replacing shared task reservations or the customer database.",
+        "Test backups, record history, privacy boundaries and idempotent imports; publish code and a reusable download."
+      ],
+      "next_action": "Review PR #16 and use the local download. Activate authorized AI app/website adapters in a separate integration task; refresh the live shared workflow before claiming work.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/15",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/16",
+        "https://github.com/Crosby121/MirroriedLED-Public/commit/1dc31f029c180df1e03fa006d30b05f81fab27ec"
       ]
     }
   ]

@@ -14,6 +14,8 @@ on:
       - tests/test_ai_workflow.py
       - ai-workflow/**
       - services/ai-workflow/**
+      - services/ai-database/**
+      - docs/AI_DATABASE.md
       - tools/ai_capture.py
       - tools/configure_ai_workflow.py
       - tools/setup_ai_capture.py

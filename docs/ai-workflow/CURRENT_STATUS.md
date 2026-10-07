@@ -1,11 +1,11 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-06T23:51:52Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-07T00:08:30Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [77efff4](https://github.com/Crosby121/MirroriedLED-Public/commit/77efff4c74523e8a671826a8ff45576ee49b3660) · PR 22 capture/privacy repair is merged and verified, superseding closed PR 15. Source and native PHP CI pass. Current public storefront source remains 8690ab93f30ffd6913407b1ca5374e808bd6ad93; no live website deployment or capture installation occurred. The user deferred payment account creation. PR 16 database review repairs are the next independent task. |
+| Observed website source | [88f6760](https://github.com/Crosby121/MirroriedLED-Public/commit/88f676008ecc1a7b4359ffbb8f7ac4bd596fed98) · Main contains the completed capture privacy repair and verified handoff. Current PR 16 source remains caf12c902c2e98fa31e370e34915fc33f8333bce with six review defects; WF-017 repairs are starting independently of deferred payments and installed website/capture setup. |
 | Verified live Hostinger commit | 8690ab93f30ffd6913407b1ca5374e808bd6ad93 |
 | Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696) · No failed step |
 | Deployment blocker | Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation. |
@@ -37,12 +37,13 @@ Evidence snapshot: 2026-10-06T23:51:52Z (UTC). Refresh GitHub at the start of ea
 | WF-014 — Verify the live shopping cart and checkout path | done | Unclaimed | Configure the existing private Customer Portal accounts and quote backend, then verify a saved private request. Paid checkout requires its separately scoped payment setup and acceptance. Keep current images and placeholder stadium prices for now. |
 | WF-015 — Run the existing dummy payment acceptance test | done | Unclaimed | Payment account creation is deferred by the user. Keep live payments off; actual merchant sandbox checkout and signed webhooks remain separate from the passed provider simulation. |
 | WF-016 — Repair the pending AI capture privacy update | done | Unclaimed | Proceed with WF-017: refresh and repair the pending PR 16 AI knowledge database privacy, permissions and import/replay review defects. Keep existing images and deferred payment setup; automatic PC capture and shared connector activation remain separately scoped setup. |
-| WF-017 — Repair the pending AI knowledge database review defects | ready | Unclaimed | Inspect current PR 16 source/review threads; repair and verify its privacy, permissions and import/replay defects before merging or installing the AI knowledge database. |
+| WF-017 — Repair the pending AI knowledge database review defects | in_progress | 20261007t000830z-9b8b70be | Inspect current PR 16 source/review threads; repair and verify its privacy, permissions and import/replay defects before merging or installing the AI knowledge database. |
 | WF-002 — Resolve the main website deployment settings blocker | done | Unclaimed | Continue WF-003 connector activation after provisioning its scoped private service credentials; then verify individual app read/write receipts. Paid subscriptions and live hardware playback require their separate acceptance steps. |
 | WF-012 — Check current builds for deployment readiness | done | Unclaimed | Main website deployed and verified. Repair and verify the reproduced PR 15/16 review defects before merging those builds; retain checkout PR 14 as draft until launch acceptance. |
 | WF-003 — Connect AI apps to a shared remote workflow service | blocked | Unclaimed | Main website SSH and runtime are verified. Complete CONNECTOR_SETUP.md: provision scoped private service credentials, run the manual connector install, and verify each app read/write receipt. |
 | WF-006 — Activate automatic private AI chat capture and close recovery | blocked | Unclaimed | Complete AUTO_CAPTURE.md on the persistent PC and verify the private repository, trusted hooks, Chrome/native connection, background worker and actual GitHub receipts. Complete CONNECTOR_SETUP.md for task handoffs; do not claim live capture before verification. |
 | WF-004 — Curate accessible prior AI work into the shared history | ready | Unclaimed | Use available ChatGPT, Copilot and Hostinger exports or logs to add sourced summaries; the initial GitHub-only baseline is already recorded. |
+| WF-011 — Build the Mirroried LED AI knowledge database | done | Unclaimed | Review PR #16 and use the local download. Activate authorized AI app/website adapters in a separate integration task; refresh the live shared workflow before claiming work. |
 
 ## Continue
 

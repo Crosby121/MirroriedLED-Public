@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-06T23:51:52Z",
+  "observed_at": "2026-10-07T00:08:30Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,9 +8,9 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "77efff4c74523e8a671826a8ff45576ee49b3660",
-    "summary": "PR 22 capture/privacy repair is merged and verified, superseding closed PR 15. Source and native PHP CI pass. Current public storefront source remains 8690ab93f30ffd6913407b1ca5374e808bd6ad93; no live website deployment or capture installation occurred. The user deferred payment account creation. PR 16 database review repairs are the next independent task.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/77efff4c74523e8a671826a8ff45576ee49b3660",
+    "observed_commit": "88f676008ecc1a7b4359ffbb8f7ac4bd596fed98",
+    "summary": "Main contains the completed capture privacy repair and verified handoff. Current PR 16 source remains caf12c902c2e98fa31e370e34915fc33f8333bce with six review defects; WF-017 repairs are starting independently of deferred payments and installed website/capture setup.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/88f676008ecc1a7b4359ffbb8f7ac4bd596fed98",
     "checks": [
       {
         "name": "125-file website release validation and exact-source deployment",
