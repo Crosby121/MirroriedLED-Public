@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-06T23:51:52Z",
+  "updated_at": "2026-10-07T00:08:30Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -306,9 +306,9 @@
     {
       "id": "WF-017",
       "title": "Repair the pending AI knowledge database review defects",
-      "status": "ready",
+      "status": "in_progress",
       "priority": 1,
-      "owner_session_id": null,
+      "owner_session_id": "20261007t000830z-9b8b70be",
       "last_session_id": null,
       "depends_on": [
         "WF-016"
