@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-07T00:08:30Z",
+  "observed_at": "2026-10-07T01:16:09Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,9 +8,9 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "88f676008ecc1a7b4359ffbb8f7ac4bd596fed98",
-    "summary": "Main contains the completed capture privacy repair and verified handoff. Current PR 16 source remains caf12c902c2e98fa31e370e34915fc33f8333bce with six review defects; WF-017 repairs are starting independently of deferred payments and installed website/capture setup.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/88f676008ecc1a7b4359ffbb8f7ac4bd596fed98",
+    "observed_commit": "9627edbb37be6b852c746810e45e44b6d82bbb10",
+    "summary": "Main contains the merged PR 23 owner-local AI database and review repairs, including non-mutating journal/WAL recognition, credential guards, typed replay and atomic UTC history imports. Native PHP/workflow and storefront checks passed; PC installation and external adapters remain unverified. Payment setup is deferred; current product images and verified website deployment are preserved.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/9627edbb37be6b852c746810e45e44b6d82bbb10",
     "checks": [
       {
         "name": "125-file website release validation and exact-source deployment",
@@ -61,6 +61,26 @@
         "name": "Merged capture update website packaging",
         "result": "passed",
         "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37548694762"
+      },
+      {
+        "name": "Exact PR 23 native PHP and AI database acceptance",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37555953233"
+      },
+      {
+        "name": "Exact PR 23 Storefront CI",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37555953229"
+      },
+      {
+        "name": "Merged AI database workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37556079531"
+      },
+      {
+        "name": "Merged AI database website packaging",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37556079594"
       }
     ]
   },
@@ -107,7 +127,7 @@
       "automatic_capture": "local_helpers_prepared_not_installed_or_verified"
     }
   ],
-  "next_task_id": "WF-017",
+  "next_task_id": "WF-004",
   "limitations": [
     "Dated observations require an actual GitHub refresh at each session.",
     "The MCP endpoint and app connections are implemented but not installed or verified on Hostinger.",
@@ -219,10 +239,16 @@
     {
       "pr": 16,
       "commit": "caf12c902c2e98fa31e370e34915fc33f8333bce",
-      "state": "open",
+      "state": "closed",
       "ci": "passed",
-      "readiness": "blocked",
-      "finding": "Six unresolved review threads. Reproduced credential guard bypasses and fractional timestamp comparison; other findings concern SQLite sidecar permissions, import replay provenance and JSON-type replay equality."
+      "readiness": "superseded_by_merged_repair",
+      "finding": "PR 23 retains the owner-local database and distinct WF-011 history, repairing six review defects plus interrupted-write recognition. All 38 database tests and exact-source native PHP/workflow checks passed. PC installation and external adapters remain pending.",
+      "superseded_by": {
+        "pr": 23,
+        "source_commit": "d0ddb222b2a4da1658401f24cd11373fad9725fc",
+        "merged_commit": "9627edbb37be6b852c746810e45e44b6d82bbb10",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/23"
+      }
     }
   ],
   "ssh_verification": {
@@ -246,5 +272,14 @@
     "observed_at": "2026-10-06T23:51:52Z",
     "basis": "user_instruction",
     "live_checkout_activated_by_this_session": false
+  },
+  "ai_database": {
+    "status": "source_merged_installation_pending",
+    "source_commit": "d0ddb222b2a4da1658401f24cd11373fad9725fc",
+    "merged_commit": "9627edbb37be6b852c746810e45e44b6d82bbb10",
+    "pc_installation_verified": false,
+    "external_adapters_verified": false,
+    "documentation": "docs/AI_DATABASE.md",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/23"
   }
 }

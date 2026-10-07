@@ -63,4 +63,12 @@
 - [x] Cover concurrent same-content imports and conflicting pre-existing request IDs; require one event/source, atomic per-session writes and explicit conflicts.
 - [x] Run the database suite and observe the fractional/replay failures.
 - [x] Compare validated parsed UTC datetimes; transact replay detection, optional source creation and event insertion together, preserving event checksum conflict checks.
-- [ ] Run the complete database and repository suites, checking all failures/skips. Obtain one independent whole-branch review, fix any important finding with RED-to-GREEN coverage, verify native GitHub checks, integrate under existing publication authorization, and publish the completed handoff.
+- [x] Run the complete database and repository suites, checking all failures/skips. Obtain one independent whole-branch review, fix any important finding with RED-to-GREEN coverage, verify native GitHub checks, integrate under existing publication authorization, and publish the completed handoff.
+
+## Verified implementation
+
+- Repaired source: `d0ddb222b2a4da1658401f24cd11373fad9725fc`; merged main: `9627edbb37be6b852c746810e45e44b6d82bbb10`; tree: `37f55e7d91837896038dafc86e7c35ce73cf54c3`.
+- All 38 database cases passed after observed RED-to-GREEN repairs. Full local Python: 163 cases, 113 passed and 50 missing-PHP skips; Node: 34 passed.
+- Independent review found one Important pre-recognition recovery issue. Private snapshot recognition now preserves rejected unrelated hot journals and protects recognized originals before writable access. Both regressions passed; active-WAL recognition remained covered. No deferred findings or rulings.
+- Exact-source native PHP/workflow validation: [89 Python and 13 browser checks](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37555953233), no skips. [Storefront CI](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37555953229) passed. Merged [workflow](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37556079531) and [packaging](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37556079594) passed.
+- [PR 23](https://github.com/Crosby121/MirroriedLED-Public/pull/23) supersedes closed PR 16; its original head and distinct history remain retained. Installation and adapters remain pending; payment setup remains deferred.

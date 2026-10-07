@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-07T00:08:30Z",
+  "updated_at": "2026-10-07T01:16:42Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -306,10 +306,10 @@
     {
       "id": "WF-017",
       "title": "Repair the pending AI knowledge database review defects",
-      "status": "in_progress",
+      "status": "done",
       "priority": 1,
-      "owner_session_id": "20261007t000830z-9b8b70be",
-      "last_session_id": null,
+      "owner_session_id": null,
+      "last_session_id": "20261007t000830z-9b8b70be",
       "depends_on": [
         "WF-016"
       ],
@@ -318,10 +318,12 @@
         "Reproduce and repair credential guarding, timestamp comparison, database permissions and replay/import correctness with relevant tests.",
         "Preserve current website images, workflow history and deferred payment setup; verify GitHub checks and publish a completed handoff."
       ],
-      "next_action": "Inspect current PR 16 source/review threads; repair and verify its privacy, permissions and import/replay defects before merging or installing the AI knowledge database.",
+      "next_action": "Proceed with WF-004: curate accessible, relevant prior AI work into sourced redacted summaries while retaining unknown application/access times. Keep raw private transcripts outside the public repository. Owner-local database installation, private capture and scoped connector setup remain separate pending work; payments stay deferred.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/16",
-        "docs/DEPLOYMENT_READINESS_20261005.md"
+        "docs/DEPLOYMENT_READINESS_20261005.md",
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/23",
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37555953233"
       ]
     },
     {
