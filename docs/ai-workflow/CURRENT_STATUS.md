@@ -1,11 +1,11 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-19T02:21:55Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-19T02:36:16Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · Current main galleries and public files are preserved. PR 26 integrates the phased ordering draft and retains launch gates. Missing live private account config/storage have now been created through verified SSH; HTTPS reports configured/signup/business true and payments false. No staff identity, merchant acceptance or new storefront deployment is claimed. |
+| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · Current website galleries are preserved and private customer accounts are configured. PR 26 remains draft. Stripe sandbox OAuth is now verified, with one USD 1.00 hosted connection test awaiting payment. Server merchant credentials, deployed draft checkout, signed webhook acceptance and final fulfillment terms still gate paid ordering. |
 | Verified live Hostinger commit | 8690ab93f30ffd6913407b1ca5374e808bd6ad93 |
 | Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696) · No failed step |
 | Deployment blocker | Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation. |
@@ -38,7 +38,7 @@ Evidence snapshot: 2026-10-19T02:21:55Z (UTC). Refresh GitHub at the start of ea
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
 | WF-007 — Address workflow capture privacy and streaming review findings | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
-| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Keep draft storefront release gated. Connect Stripe for actual sandbox checkout and signed-webhook acceptance; verify owner account before numeric staff assignment; confirm final product, shipping, tax and production terms. Deploy draft shop/commerce only through an approved exact-source release after acceptance. |
+| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Customer completes the clearly labeled sandbox checkout with Stripe test payment details. Retrieve the latest session matching purpose=sandbox_connection_smoke_test and source_pr=26 to verify its canonical payment status. Then configure isolated server test credentials/webhook and run the actual quoted-order acceptance; preserve live payments off until final product/shipping/tax/production terms are confirmed. |
 | WF-009 — Preserve browser delta offsets when credentials are masked | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
 | WF-010 — Update owner component costs and 12-inch LED/power-supply research | done | Unclaimed | Continue WF-008: confirm exact LED/glass/power/fabrication/shipping/tax costs and production capacity, verify actual merchant sandbox checkout and signed webhook, configure live merchant settings and resolve main-site SSH deployment settings before an exact live release. |
 | WF-013 — Publish mirror artwork and stadium product browsing | done | Unclaimed | Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused. |
