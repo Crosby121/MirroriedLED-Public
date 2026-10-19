@@ -1,11 +1,11 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-07T01:16:09Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-19T02:10:00Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [9627edb](https://github.com/Crosby121/MirroriedLED-Public/commit/9627edbb37be6b852c746810e45e44b6d82bbb10) · Main contains the merged PR 23 owner-local AI database and review repairs, including non-mutating journal/WAL recognition, credential guards, typed replay and atomic UTC history imports. Native PHP/workflow and storefront checks passed; PC installation and external adapters remain unverified. Payment setup is deferred; current product images and verified website deployment are preserved. |
+| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · Refreshed current main and both open work PRs. Draft PR 14 has eight conflicting paths; integration continues in PR 26 with current gallery files, main deployment runtime and payment gates retained. Prior live release evidence is historical; current live version has not been reverified. |
 | Verified live Hostinger commit | 8690ab93f30ffd6913407b1ca5374e808bd6ad93 |
 | Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696) · No failed step |
 | Deployment blocker | Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation. |
@@ -37,6 +37,7 @@ Evidence snapshot: 2026-10-07T01:16:09Z (UTC). Refresh GitHub at the start of ea
 | WF-007 — Address workflow capture privacy and streaming review findings | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
 | WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | in_progress | 20261019t020502z-3961126a | Payment account creation is deferred by the user. Keep PR 14 draft; retain its task-ID reconciliation and merchant/private-account launch requirements before any merge or checkout activation. |
 | WF-009 — Preserve browser delta offsets when credentials are masked | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
+| WF-010 — Update owner component costs and 12-inch LED/power-supply research | done | Unclaimed | Continue WF-008: confirm exact LED/glass/power/fabrication/shipping/tax costs and production capacity, verify actual merchant sandbox checkout and signed webhook, configure live merchant settings and resolve main-site SSH deployment settings before an exact live release. |
 | WF-013 — Publish mirror artwork and stadium product browsing | done | Unclaimed | Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused. |
 | WF-014 — Verify the live shopping cart and checkout path | done | Unclaimed | Configure the existing private Customer Portal accounts and quote backend, then verify a saved private request. Paid checkout requires its separately scoped payment setup and acceptance. Keep current images and placeholder stadium prices for now. |
 | WF-015 — Run the existing dummy payment acceptance test | done | Unclaimed | Payment account creation is deferred by the user. Keep live payments off; actual merchant sandbox checkout and signed webhooks remain separate from the passed provider simulation. |

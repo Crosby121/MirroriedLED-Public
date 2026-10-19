@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "20261005t021532z-1f6eeadc",
+  "application": "Codex in ChatGPT Work",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-05T02:15:32Z",
+  "ended_at": "2026-10-19T02:06:51Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "codex/limited-storefront-checkout",
+  "base_commit": "7f70882af3479d3c9ab7901c60a7d6e310f4b259",
+  "summary": "Recovered unfinished branch-local claim during PR #26 integration; no completed work was recorded by this older session.",
+  "next_action": "WF-008 integration continues in session 20261019t020502z-3961126a; merchant acceptance and live activation remain pending.",
+  "changed_files": [],
+  "checks": [],
+  "findings": [
+    {
+      "finding": "Original record was active with no checks or changed files. End time records reconciliation of the abandoned claim, not its original application shutdown.",
+      "basis": "observed_imported_record"
+    }
+  ]
+}

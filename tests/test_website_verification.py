@@ -20,6 +20,8 @@ class WebsiteVerificationTests(unittest.TestCase):
             return 200, (SOURCE / "index.html").read_bytes()
         if path == "customer-portal/backend/api.php?action=session":
             return 200, json.dumps({"ok": True, "configured": False}).encode()
+        if path == "customer-portal/backend/api.php?action=commerce-status":
+            return 200, json.dumps({"ok": True, "paymentsAvailable": False, "paymentMode": None}).encode()
         return 403, b""
 
     def test_unconfigured_portal_is_reported_without_claiming_activation(self):
@@ -54,6 +56,10 @@ class WebsiteVerificationTests(unittest.TestCase):
     def test_sponsor_vps_cannot_be_the_verification_url(self):
         with self.assertRaisesRegex(ValueError, "main Mirroried"):
             verification.verify(SOURCE, "https://sponsors.mirroriedled.com", "abc123")
+
+    def test_two_product_launch_cannot_pass_without_live_accounts_and_payments(self):
+        with patch.object(verification, "fetch", side_effect=self.response), self.assertRaisesRegex(ValueError, "live merchant"):
+            verification.verify(SOURCE, "https://mirroriedled.com", "abc123", require_commerce=True)
 
 
 if __name__ == "__main__":

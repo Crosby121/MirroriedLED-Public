@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-07T01:16:09Z",
+  "observed_at": "2026-10-19T02:10:00Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,9 +8,9 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "9627edbb37be6b852c746810e45e44b6d82bbb10",
-    "summary": "Main contains the merged PR 23 owner-local AI database and review repairs, including non-mutating journal/WAL recognition, credential guards, typed replay and atomic UTC history imports. Native PHP/workflow and storefront checks passed; PC installation and external adapters remain unverified. Payment setup is deferred; current product images and verified website deployment are preserved.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/9627edbb37be6b852c746810e45e44b6d82bbb10",
+    "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
+    "summary": "Refreshed current main and both open work PRs. Draft PR 14 has eight conflicting paths; integration continues in PR 26 with current gallery files, main deployment runtime and payment gates retained. Prior live release evidence is historical; current live version has not been reverified.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
         "name": "125-file website release validation and exact-source deployment",

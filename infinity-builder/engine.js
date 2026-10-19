@@ -2,6 +2,7 @@
   'use strict';
   const mm = inch => inch * 25.4;
   const round = n => Math.round(n * 100) / 100;
+  const mirrorQuantity = (state, catalog) => catalog.rules.mirrorPiecesBySize?.[state.size.join('x')] || 2;
   function interior(state, catalog) {
     const rim = catalog.rules.frameLipIn + (state.rim.enabled ? state.rim.rows * catalog.rules.rowGapIn : 0);
     return { x: rim, y: rim, width: state.size[0] - rim * 2, height: state.size[1] - rim * 2 };
@@ -54,7 +55,7 @@
     if (state.audioReactive) warnings.push('Audio response needs a compatible microphone or network audio source and validated firmware.');
     if (!state.rim.enabled && state.rear === 'none') warnings.push('Include rim strips or rear panels to light this mirror.');
     const hardware = [
-      { id: 'mirror', label: 'Two-way front mirror + rear mirror', quantity: 1, required: true },
+      { id: 'mirror', label: mirrorQuantity(state, catalog) === 1 ? 'Mirror piece' : 'Two-way front mirror + rear mirror', quantity: mirrorQuantity(state, catalog), required: true },
       { id: 'frame', label: `${state.size[0]} × ${state.size[1]} in frame · ${state.depthIn} in depth · ${state.finish}`, quantity: 1, required: true },
       { id: 'diffuser', label: 'Frosted backside engraving + diffuser / spacer', quantity: 1, required: true },
       { id: 'backplate', label: 'Serviceable backplate + cable channels', quantity: 1, required: true },
@@ -76,7 +77,7 @@
       addressableEstimateAmps: round(addressablePixels * 0.06), hub75PowerPending: state.rear === 'hub75',
       ready: !!state.artwork?.approved && (state.rear === 'none' || !!layout) && (state.rim.enabled || state.rear !== 'none') && !!controller };
   }
-  // Public supplier snapshots are estimates, not accepted quotes. Unknown prices remain
+  // Owner costs and supplier snapshots are estimates, not accepted quotes. Unknown prices remain
   // null. Work in integer cents and include minimum packs, never a mixed-variant floor.
   function pricing(state, catalog, build = plan(state, catalog)) {
     const p = catalog.pricing, rush = state.fulfillment === 'rush', lines = [];
@@ -103,13 +104,19 @@
     add('frame', `${state.size.join(' × ')} in frame · ${state.finish}`, 1, frame || {supplier:'Michaels',url:p.customFrameUrl,note:'Exact size and finish require a supplier quote.'},
       frame?.priceCents != null ? `One frame allocated from a ${frame.packQuantity || 1}-frame pack. Supplier unit cost + ${p.frameMarkupPercent}% frame markup.` : `Supplier frame cost + ${p.frameMarkupPercent}% once quoted.`);
     add('frame-depth', `${state.depthIn} in frame depth / extension`, 1, p.components['frame-depth']);
-    add('mirror', 'Two-way front mirror + rear mirror', 1, p.components.mirror);
+    const mirror = p.mirrorPieces?.[state.size.join('x')] || p.components.mirror;
+    const mirrorCount = mirrorQuantity(state, catalog);
+    add('mirror', mirrorCount === 1 ? 'Mirror · 1 piece' : 'Two-way front mirror + rear mirror · 2 pieces', mirrorCount, mirror);
     add('engraving', 'Engraving, diffusion + production artwork proof', 1, p.components.engraving);
     add('backplate', 'Serviceable backplate + cable channels', 1, p.components.backplate);
     if (build.rimPixels) {
       const rolls = Math.ceil(build.rimPixels / p.rimLedsPerRoll);
-      add('rim', `Rim LEDs · ${state.rim.rows} row${state.rim.rows > 1 ? 's' : ''} · ${build.rimPixels} LEDs`, rolls, rush ? p.rushRim : p.standardRim,
-        `${rolls} × ${p.rimLedsPerRoll}-LED / 5 m rolls budgeted; unused strip is included. LED density and frame fit need confirmation.`);
+      const source = rush ? p.rushRim : p.standardRim;
+      const budget = p.rimBudgetsBySize?.[state.size.join('x')];
+      const useBudget = budget && build.rimPixels <= budget.maximumLeds && source.priceCents == null && source.rangeCents == null;
+      add('rim', `Rim LEDs · ${state.rim.rows} row${state.rim.rows > 1 ? 's' : ''} · ${build.rimPixels} LEDs`, useBudget ? 1 : rolls,
+        useBudget ? {...budget, supplier:source.supplier} : source,
+        `${rolls} × ${p.rimLedsPerRoll}-LED / 5 m rolls planned. LED type, density and frame fit need confirmation.`);
     }
     if (state.rear !== 'none') {
       const panel = build.layout && p.panels[build.layout.panelId];

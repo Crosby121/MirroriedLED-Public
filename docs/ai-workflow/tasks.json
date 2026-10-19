@@ -348,6 +348,26 @@
         "https://github.com/Crosby121/MirroriedLED-Public/pull/16",
         "https://github.com/Crosby121/MirroriedLED-Public/commit/1dc31f029c180df1e03fa006d30b05f81fab27ec"
       ]
+    },
+    {
+      "id": "WF-010",
+      "title": "Update owner component costs and 12-inch LED/power-supply research",
+      "status": "done",
+      "priority": 1,
+      "owner_session_id": null,
+      "last_session_id": "20261005t015322z-2a5fd60a",
+      "depends_on": [],
+      "acceptance": [
+        "Record approximate owner costs with the 20 percent frame-only markup.",
+        "Price 12 by 12 mirror pieces by quantity without applying their cost to other sizes.",
+        "Retain flexible-panel ranges, deferred strip pricing and final quote/payment guards; verify JavaScript and PHP parity.",
+        "Preserve sourced procurement comparisons, appropriate voltage/load recommendations and unverified supplier prices accurately."
+      ],
+      "next_action": "Continue WF-008: confirm exact LED/glass/power/fabrication/shipping/tax costs and production capacity, verify actual merchant sandbox checkout and signed webhook, configure live merchant settings and resolve main-site SSH deployment settings before an exact live release.",
+      "evidence": [
+        "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
+        "docs/INFINITY_MIRROR_BUILDER.md"
+      ]
     }
   ]
 }

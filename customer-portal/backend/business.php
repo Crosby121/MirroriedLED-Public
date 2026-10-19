@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-/** Website records only. This module never starts machines, charges cards or sends messages. */
+/** Production records and proof review. Verified payments are provided by commerce.php. */
 final class BusinessPortal
 {
     public const READS = ['business-orders', 'business-tickets', 'business-updates', 'business-file', 'business-dashboard', 'business-manifest'];
@@ -258,6 +258,9 @@ final class BusinessPortal
             if (!is_array($item) || !in_array($item['product'] ?? null, $catalog, true)) {
                 throw new PortalError('Choose a product from the website catalog.', 422);
             }
+            if (!in_array($item['product'],CommercePortal::PRODUCTS,true) && !$this->isStaff()) {
+                throw new PortalError('This section is being completed. Choose an Infinity Mirror or address sign.',403);
+            }
             $source = $item['artworkSource'] ?? 'team-design';
             if (!in_array($source, ['team-design', 'upload'], true)) {
                 throw new PortalError('Choose uploaded artwork or a Mirroried LED team design.', 422);
@@ -275,6 +278,12 @@ final class BusinessPortal
                 $builder = InfinityBuilder::validateConfiguration($item['builder'], $this->db, (int)$this->user['id']);
                 if ($size !== implode('×', $builder['state']['size'])) { throw new PortalError('The mirror size does not match the builder configuration.', 422); }
                 $clean[array_key_last($clean)]['builder'] = $builder;
+            }
+            if (isset($item['addressBuilder'])) {
+                if ($item['product']!=='Address Sign or Mailbox') throw new PortalError('Address-sign options require an address sign.',422);
+                $addressBuild=CommercePortal::validateAddressBuild($item['addressBuilder']);
+                if ($size!==$addressBuild['size']) throw new PortalError('The sign size does not match its configuration.',422);
+                $clean[array_key_last($clean)]['addressBuilder']=$addressBuild;
             }
         }
         $id = 'MLED-' . bin2hex(random_bytes(10));
@@ -297,7 +306,7 @@ final class BusinessPortal
             'currency' => 'USD', 'approvedProofId' => $order['approved_proof_id'], 'scheduledAt' => $order['scheduled_at'],
             'carrier' => $order['carrier'], 'tracking' => $order['tracking'], 'createdAt' => (int)$order['created_at'], 'updatedAt' => (int)$order['updated_at'],
             'files' => array_map($this->publicFile(...), $this->rows('SELECT * FROM business_files WHERE order_id=? AND purpose<>? ORDER BY created_at', [$order['id'], $internal ? '' : 'production'])),
-            'proof' => null,
+            'proof' => null, 'commerce' => CommercePortal::publicTerms($this->db,$order['id']),
             'timeline' => $this->rows('SELECT kind,customer_message,created_at FROM business_events WHERE order_id=? AND customer_message IS NOT NULL ORDER BY id', [$order['id']])];
         if ($order['proof_id'] !== null) {
             $proof = $this->rows('SELECT id,version,summary,file_id,quote_cents,created_at FROM business_proofs WHERE id=?', [$order['proof_id']]);
@@ -401,6 +410,7 @@ final class BusinessPortal
     private function proof(array $data): array
     {
         $this->staff('sales'); $order = $this->order($data['orderId'] ?? null);
+        if (CommercePortal::locked($this->db,$order['id'])) throw new PortalError('This quote is locked by a checkout or payment. Resolve payment before revising the proof.',409);
         $this->revision($order,$data,['REQUESTED','QUOTED','APPROVED']);
         $fileId = $this->text($data['fileId'] ?? null, 32);
         if (!$this->rows("SELECT id FROM business_files WHERE id=? AND order_id=? AND purpose='proof'", [$fileId,$order['id']])) { throw new PortalError('Attach a private proof file for this build first.', 422); }
@@ -410,6 +420,7 @@ final class BusinessPortal
         $id = bin2hex(random_bytes(16));
         $this->exec('INSERT INTO business_proofs(id,order_id,version,summary,file_id,quote_cents,creator_id,created_at) VALUES(?,?,?,?,?,?,?,?)',[$id,$order['id'],$version,$summary,$fileId,$amount,$this->user['id'],time()]);
         $this->update($order,['status'=>'QUOTED','quote_cents'=>$amount,'proof_id'=>$id,'approved_proof_id'=>null]);
+        $this->exec('DELETE FROM commerce_offers WHERE order_id=?',[$order['id']]);
         $this->closeTask($order['id'],'QUOTE_REVIEW');
         $this->event($order['id'],'QUOTED',['proofId'=>$id,'version'=>$version,'quoteCents'=>$amount],'A quote and artwork proof are ready for your review.');
         return ['order'=>$this->publicOrder($this->order($order['id']))];
@@ -473,6 +484,12 @@ final class BusinessPortal
     private function release(array $data): array
     {
         $this->staff('production');$order=$this->order($data['orderId']??null);$this->revision($order,$data,['APPROVED']);
+        if (CommercePortal::publicTerms($this->db,$order['id'])['offer']!==null) {
+            $payment=$this->rows("SELECT snapshot FROM commerce_checkouts WHERE order_id=? AND state='paid'",[$order['id']])[0]??null;
+            if (!$payment||json_decode($payment['snapshot'],true,32,JSON_THROW_ON_ERROR)['mode']!=='live') {
+                throw new PortalError('Verified live payment is required before releasing this checkout order to production.',409);
+            }
+        }
         if($order['approved_proof_id']===null||$order['approved_proof_id']!==$order['proof_id']||($data['materialsComplete']??false)!==true||($data['assetReviewed']??false)!==true){throw new PortalError('Current proof approval, complete materials and a reviewed production file are required.',409);}
         $fileId=$this->text($data['fileId']??null,32);
         if(!$this->rows("SELECT id FROM business_files WHERE id=? AND order_id=? AND purpose='production'",[$fileId,$order['id']])){throw new PortalError('Choose the reviewed production file for this build.',422);}
@@ -530,6 +547,7 @@ final class BusinessPortal
     private function cancel(array $data): array
     {
         $this->staff('sales','production');$order=$this->order($data['orderId']??null);$this->revision($order,$data,['REQUESTED','QUOTED','APPROVED','READY']);
+        if (CommercePortal::locked($this->db,$order['id'])) throw new PortalError('Resolve the active checkout or paid order with the payment provider before cancellation.',409);
         $note=$this->text($data['note']??null,2000);$this->exec('DELETE FROM business_reservations WHERE order_id=?',[$order['id']]);$this->update($order,['status'=>'CANCELLED']);
         $this->exec("UPDATE business_tasks SET state='DONE',updated_at=? WHERE reference=?",[time(),$order['id']]);$this->lowStock();
         $this->event($order['id'],'CANCELLED',['note'=>$note],'The team cancelled this request. Contact support for its recorded resolution.');
@@ -581,7 +599,7 @@ final class BusinessPortal
             'tasks'=>$this->rows('SELECT * FROM business_tasks ORDER BY state,created_at LIMIT 500'),
             'audit'=>$this->rows('SELECT * FROM business_events ORDER BY id DESC LIMIT 100'),
             'summary'=>$this->rows('SELECT status,COUNT(*) AS count FROM business_orders GROUP BY status'),
-            'integrations'=>['payments'=>'Not connected','emailSms'=>'Not connected; portal updates only','shipping'=>'Team recorded references','laser'=>'Local operator handoff only','wled'=>'Local Chataigne / WLED-MM setup required']];
+            'integrations'=>['payments'=>CommercePortal::available($this->config) ? 'Stripe checkout configured; verify live acceptance separately' : 'Not connected','emailSms'=>'Not connected; portal updates only','shipping'=>'Team recorded references','laser'=>'Local operator handoff only','wled'=>'Local Chataigne / WLED-MM setup required']];
     }
 
     private function manifest(): array

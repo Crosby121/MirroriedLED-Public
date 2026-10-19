@@ -286,14 +286,20 @@ final class InfinityBuilder
         $add('frame',implode(' × ',$s['size']).' in frame · '.$s['finish'],1,$frame ?? ['supplier'=>'Michaels','url'=>$p['customFrameUrl'],'note'=>'Exact size and finish require a supplier quote.'],
             isset($frame['priceCents'])?'One frame allocated from a '.($frame['packQuantity'] ?? 1).'-frame pack. Supplier unit cost + '.$p['frameMarkupPercent'].'% frame markup.':'Supplier frame cost + '.$p['frameMarkupPercent'].'% once quoted.');
         $add('frame-depth',$s['depthIn'].' in frame depth / extension',1,$p['components']['frame-depth']);
-        $add('mirror','Two-way front mirror + rear mirror',1,$p['components']['mirror']);
+        $mirror=$p['mirrorPieces'][implode('x',$s['size'])] ?? $p['components']['mirror'];
+        $mirrorCount=$catalog['rules']['mirrorPiecesBySize'][implode('x',$s['size'])] ?? 2;
+        $add('mirror',$mirrorCount===1?'Mirror · 1 piece':'Two-way front mirror + rear mirror · 2 pieces',$mirrorCount,$mirror);
         $add('engraving','Engraving, diffusion + production artwork proof',1,$p['components']['engraving']);
         $add('backplate','Serviceable backplate + cable channels',1,$p['components']['backplate']);
         $rimPixels=$s['rim']['enabled']?$s['rim']['rows']*$s['rim']['countPerRow']:0;
         if ($rimPixels) {
             $rolls=(int)ceil($rimPixels/$p['rimLedsPerRoll']);
-            $add('rim','Rim LEDs · '.$s['rim']['rows'].' row'.($s['rim']['rows']>1?'s':'').' · '.$rimPixels.' LEDs',$rolls,$rush?$p['rushRim']:$p['standardRim'],
-                $rolls.' × '.$p['rimLedsPerRoll'].'-LED / 5 m rolls budgeted; unused strip is included. LED density and frame fit need confirmation.');
+            $source=$rush?$p['rushRim']:$p['standardRim'];
+            $budget=$p['rimBudgetsBySize'][implode('x',$s['size'])] ?? null;
+            $useBudget=$budget!==null&&$rimPixels<=$budget['maximumLeds']&&!isset($source['priceCents'])&&!isset($source['rangeCents']);
+            $add('rim','Rim LEDs · '.$s['rim']['rows'].' row'.($s['rim']['rows']>1?'s':'').' · '.$rimPixels.' LEDs',$useBudget?1:$rolls,
+                $useBudget?array_merge($budget,['supplier'=>$source['supplier']]):$source,
+                $rolls.' × '.$p['rimLedsPerRoll'].'-LED / 5 m rolls planned. LED type, density and frame fit need confirmation.');
         }
         if ($s['rear']!=='none') {
             $panel=$layout?($p['panels'][$layout['panelId']] ?? null):null;
