@@ -72,6 +72,20 @@ The public availability notice reflects account and payment configuration. It
 labels unavailable or test-mode ordering accurately. Configuration readiness is
 not proof that a live merchant charge has passed acceptance.
 
+### Private sandbox credential preflight
+
+Save the website's restricted sandbox key as the GitHub Actions repository secret
+`MLED_STRIPE_SANDBOX_KEY`. The `Verify Stripe Sandbox Key` workflow reads only
+one sandbox Checkout Session and emits booleans, never the key or provider record.
+It refuses unrestricted, publishable and live keys and refuses HTTP redirects.
+Its success verifies only key presence and Checkout read access. It does not
+install hosting credentials, prove write permissions, configure a webhook or
+activate website payments. Start with Checkout Sessions Write and Customers Write;
+add a specific dependency only when an actual sandbox API error requires it.
+The existing website also creates inline prices/shipping and enables invoice
+creation and automatic tax; exercise those paths during isolated app acceptance.
+Do not claim tax readiness from this credential preflight.
+
 ## Sales operation
 
 Sign in at `/shop/` using an owner-assigned numeric staff account. Open Team.
