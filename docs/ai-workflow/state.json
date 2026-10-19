@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T03:45:38Z",
+  "observed_at": "2026-10-19T03:49:37Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,7 +9,7 @@
   },
   "source": {
     "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
-    "summary": "PR 26 remains draft. Isolated checkout sandbox source f1e869cd00bef0934090a61713982c6eaee504a1 is installed at /MLED_checkout_TEST with separate private config/database, browser storage and the verified restricted test key. Exact generated public-file HTTPS checks, protected PHP, session cookie scope and unchanged production homepage passed in run 39195896598; browser showed the sandbox notice and enabled account forms. All 201 local tests passed. Checkout remains disabled. Automatic approval review rejected active webhook creation before signing-secret setup; no endpoint was created. Production website source/payments remain unchanged.",
+    "summary": "PR 26 remains draft. Isolated checkout sandbox source f1e869cd00bef0934090a61713982c6eaee504a1 is installed and verified with separate private storage and the restricted test key. After explicit owner approval, the sandbox webhook was created and immediately disabled; a canonical read confirmed disabled status and livemode:false. Its signing secret is not installed. Checkout remains disabled, actual website Checkout writes and signed delivery are unverified. Production website source/payments remain unchanged.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
@@ -251,6 +251,11 @@
       "finding": "Automatic approval review rejected the attempted sandbox webhook registration because Stripe creation would initially make the endpoint active before a separate disable operation and before the signing secret is installed. No endpoint was created; subsequent sandbox endpoint read still returned zero. Do not retry or use another execution route without resolving this approval boundary.",
       "basis": "explicit_automatic_approval_rejection_and_authenticated_read",
       "observed_at": "2026-10-19T03:45:38Z"
+    },
+    {
+      "finding": "After explicit owner approval of initial active creation followed by immediate pause, created the isolated website webhook in Mirroried Led sandbox and immediately disabled it. A subsequent canonical endpoint list confirmed exactly one matching URL, status disabled and livemode false. Three events are registered: checkout.session.completed, checkout.session.async_payment_succeeded and checkout.session.expired. The signing secret was returned privately and was not logged or committed; private installation is pending. Website checkout stays disabled and signed delivery remains unverified. No live account configuration changed.",
+      "basis": "explicit_owner_approval_authenticated_Stripe_create_disable_and_canonical_read",
+      "observed_at": "2026-10-19T03:49:37Z"
     }
   ],
   "connector": {
@@ -343,8 +348,8 @@
     "php_version": "8.3.33"
   },
   "payment_setup": {
-    "status": "isolated_sandbox_installed_webhook_approval_pending",
-    "observed_at": "2026-10-19T03:45:38Z",
+    "status": "isolated_sandbox_webhook_paused_signer_pending",
+    "observed_at": "2026-10-19T03:49:37Z",
     "basis": "observed_GitHub_Actions_preflight_attempt_3",
     "sandbox_connection_smoke_payment_verified": true,
     "website_restricted_sandbox_key_verified": true,
@@ -358,9 +363,12 @@
     "sandbox_url": "https://mirroriedled.com/MLED_checkout_TEST/shop/",
     "sandbox_deployed_source": "f1e869cd00bef0934090a61713982c6eaee504a1",
     "sandbox_install_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39195896598",
-    "webhook_registration_status": "blocked_by_automatic_approval_review",
+    "webhook_registration_status": "registered_and_verified_disabled",
     "sandbox_checkout_enabled": false,
-    "production_payment_configuration_modified": false
+    "production_payment_configuration_modified": false,
+    "webhook_delivery_enabled": false,
+    "webhook_signing_secret_installed": false,
+    "webhook_initial_activation_explicitly_approved": true
   },
   "ai_database": {
     "status": "source_merged_installation_pending",

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "20261019t034705z-543139ea",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T03:47:05Z",
+  "ended_at": "2026-10-19T03:49:53Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "4ae6eea8342c404b4604cc70f47e951082fab81a",
+  "summary": "Completed the explicitly approved sandbox webhook registration and immediate pause. Canonical Stripe read confirmed one matching endpoint disabled with livemode false. Endpoint signing secret was returned privately and not logged or committed. Website checkout remains disabled; production source and payment settings unchanged. Updated PR 26 and shared state; secure signer installation and actual merchant acceptance remain pending.",
+  "next_action": "Store the endpoint-specific signing secret securely as MLED_STRIPE_SANDBOX_WEBHOOK_SECRET, then install it only in the isolated sandbox private configuration with delivery and checkout still off. Configure sandbox tax and fake fulfillment terms before actual Checkout, signed delivery and replay acceptance.",
+  "changed_files": [
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t034705z-543139ea.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json"
+  ],
+  "checks": [
+    {
+      "name": "Authenticated Stripe creation, immediate disabled update and canonical sandbox endpoint read",
+      "command": "Authenticated Stripe creation, immediate disabled update and canonical sandbox endpoint read",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Shared workflow validator and all 13 lifecycle regression tests",
+      "command": "Shared workflow validator and all 13 lifecycle regression tests",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": []
+}
