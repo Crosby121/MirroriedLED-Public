@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T04:07:37Z",
+  "observed_at": "2026-10-19T04:11:00Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,7 +9,7 @@
   },
   "source": {
     "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
-    "summary": "PR 26 remains draft. Isolated sandbox source f1e869cd00bef0934090a61713982c6eaee504a1 remains installed. Endpoint signing secret was securely installed into only its private configuration by run 39197811440 from d126bacc2f4802fffb7ec384b0d180e5234188eb. PHP verified private signer read; HTTPS verified payments false; production homepage/config checksums preserved; transport cleanup succeeded. Canonical Stripe read confirms webhook disabled and livemode false. All 208 local tests and source CI passed. Final signer workflow dd85fd611ad9f7c0d13e59d14f612667296170ef is manual-only. Actual website Checkout writes and Stripe-signed delivery remain unverified; no production activation.",
+    "summary": "PR 26 remains draft; isolated sandbox source f1e869cd00bef0934090a61713982c6eaee504a1 and installed private signer remain as previously verified. Fresh authenticated sandbox Tax Settings read returned pending with missing_fields head_office; active Tax Registration list returned zero. No tax settings or registrations were changed and no address was invented. Owner must enter the head-office address securely in the selected sandbox before registration/automatic-tax acceptance. Checkout and webhook delivery remain off; actual website Checkout writes and Stripe-signed delivery unverified; production unchanged.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
@@ -287,6 +287,12 @@
       "basis": "observed_authenticated_GitHub_job_receipt_PHP_HTTPS_checks_Stripe_read_and_local_tests",
       "observed_at": "2026-10-19T04:07:37Z",
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39197811440"
+    },
+    {
+      "finding": "Fresh authenticated reads in the explicitly selected Mirroried Led sandbox returned Tax Settings status pending, missing_fields head_office, livemode false; active Tax Registration list was empty with has_more false. Stripe documentation confirms sandbox tax settings are separate and at least one sandbox registration is needed to test automatic tax. No tax write, invented address, registration, website configuration change or payment activation occurred. Owner head-office address entry in the sandbox is the next prerequisite; test registration and actual quoted-order checkout/signed delivery remain pending.",
+      "basis": "authenticated_Stripe_Tax_Settings_and_Registration_reads_and_primary_documentation",
+      "observed_at": "2026-10-19T04:11:00Z",
+      "evidence_url": "https://docs.stripe.com/tax/testing"
     }
   ],
   "connector": {
@@ -379,8 +385,8 @@
     "php_version": "8.3.33"
   },
   "payment_setup": {
-    "status": "isolated_sandbox_signer_installed_acceptance_pending",
-    "observed_at": "2026-10-19T04:07:37Z",
+    "status": "sandbox_tax_head_office_required",
+    "observed_at": "2026-10-19T04:11:00Z",
     "basis": "observed_GitHub_Actions_preflight_attempt_3",
     "sandbox_connection_smoke_payment_verified": true,
     "website_restricted_sandbox_key_verified": true,
@@ -402,7 +408,13 @@
     "webhook_initial_activation_explicitly_approved": true,
     "webhook_signer_runtime_read_verified": true,
     "webhook_signer_install_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39197811440",
-    "webhook_signer_installer_source": "d126bacc2f4802fffb7ec384b0d180e5234188eb"
+    "webhook_signer_installer_source": "d126bacc2f4802fffb7ec384b0d180e5234188eb",
+    "sandbox_tax_settings_status": "pending",
+    "sandbox_tax_missing_fields": [
+      "head_office"
+    ],
+    "sandbox_active_tax_registration_count": 0,
+    "sandbox_tax_settings_read_verified": true
   },
   "ai_database": {
     "status": "source_merged_installation_pending",

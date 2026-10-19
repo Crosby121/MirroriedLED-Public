@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T04:07:57Z",
+  "updated_at": "2026-10-19T04:11:00Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -269,14 +269,14 @@
       "status": "blocked",
       "priority": 1,
       "owner_session_id": null,
-      "last_session_id": "20261019t040037z-adc1574e",
+      "last_session_id": "20261019t040934z-1565d423",
       "depends_on": [],
       "acceptance": [
         "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
         "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
         "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
       ],
-      "next_action": "Configure sandbox tax settings/registration and fake fulfillment terms, create a verified artificial quote/account fixture, then verify actual website Checkout writes, Stripe-signed delivery, canonical reconciliation and replay handling. Keep production payments disabled and PR 26 draft.",
+      "next_action": "Owner enters business head-office address securely in Tax settings within Mirroried Led sandbox; recheck active, add a sandbox test registration, then continue fake quote fulfillment and actual website Checkout/signed webhook acceptance with production payments off.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"
