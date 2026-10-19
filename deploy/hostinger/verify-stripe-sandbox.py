@@ -17,8 +17,11 @@ urlopen = build_opener(NoRedirect()).open
 
 def main():
     key = os.environ.get('MLED_STRIPE_SANDBOX_KEY', '')
+    if not key:
+        print(json.dumps({'ok': False, 'error': 'sandbox_secret_unavailable'}))
+        return 1
     if not re.fullmatch(r'rk_test_[A-Za-z0-9]+', key):
-        print(json.dumps({'ok': False, 'error': 'missing_or_invalid_restricted_sandbox_key'}))
+        print(json.dumps({'ok': False, 'error': 'restricted_sandbox_key_required'}))
         return 1
     request = Request('https://api.stripe.com/v1/checkout/sessions?limit=1', headers={
         'Authorization': 'Bearer ' + key,

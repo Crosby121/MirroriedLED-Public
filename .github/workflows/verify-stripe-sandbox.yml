@@ -21,7 +21,7 @@ jobs:
           persist-credentials: false
       - name: Verify preflight safety tests without credentials
         run: python3 -m unittest discover -s tests -p 'test_stripe_sandbox_key.py' -q
-      - name: Check saved sandbox key without changing Stripe or the website
+      - name: Diagnose saved sandbox key without changing Stripe or the website
         env:
           MLED_STRIPE_SANDBOX_KEY: ${{ secrets.MLED_STRIPE_SANDBOX_KEY }}
         run: python3 deploy/hostinger/verify-stripe-sandbox.py

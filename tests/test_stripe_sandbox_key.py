@@ -41,6 +41,13 @@ class StripeSandboxKeyTests(unittest.TestCase):
                 if key:
                     self.assertNotIn(key, output)
 
+    def test_missing_secret_is_distinguished_from_wrong_key_type(self):
+        code, output, _ = self.run_check('')
+        self.assertEqual(json.loads(output)['error'], 'sandbox_secret_unavailable')
+        code, output, _ = self.run_check('sk_test_PrivateFixture123')
+        self.assertEqual(json.loads(output)['error'], 'restricted_sandbox_key_required')
+        self.assertNotIn('PrivateFixture', output)
+
     def test_read_only_request_and_minimal_success_report(self):
         key = 'rk_test_PrivateFixture123'
         payload = {'object': 'list', 'data': [{'id': 'cs_test_PrivateSession', 'livemode': False,
