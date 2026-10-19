@@ -127,3 +127,23 @@ Before expanding beyond this artificial card test, handle delayed payment failur
 and test their retry/unlock path. Dynamic methods may include delayed payments;
 current reconciliation handles successful or expired sessions but does not resolve
 `checkout.session.async_payment_failed`. Live launch remains blocked on acceptance.
+
+## Verify a paid test order
+
+`Verify Paid Sandbox Checkout` takes one-way fingerprints of the selected order,
+canonical Checkout Session, actual completed event and PaymentIntent. First verify
+those records through authenticated Stripe reads: test mode, paid109cents including
+9cents tax, successful payment intent, and event delivery success. The server helper
+opens only the isolated SQLite database with read-only/query-only settings. It
+requires the same paid snapshot, approved artificial proof, matching payment
+reference, exactly one payment confirmation, no review entry, and the exact actual
+provider event already present in the processed-webhook table. It emits only
+booleans and test amounts; identifiers and customer information stay private.
+
+Optional duplicate acceptance self-signs the already-processed canonical event ID
+and posts it twice to the fixed sandbox webhook, then rechecks the same invariants.
+This tests deduplication after actual provider delivery; it is not a provider resend.
+The helper refuses to replay an event that has not already been recorded, so this
+probe cannot manufacture the evidence of original Stripe processing. No provider
+call or production release is made. The workflow checks unchanged production
+homepage/config hashes and removes its private helper transport.
