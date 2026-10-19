@@ -3,8 +3,10 @@ import hashlib
 import importlib.util
 import json
 import os
+import shlex
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import textwrap
 import unittest
@@ -92,6 +94,110 @@ class CheckoutSandboxTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.install(module)
         self.assertEqual((target / 'keep').read_text(), 'existing stage')
+
+    def test_webhook_secret_install_is_private_idempotent_and_keeps_checkout_off(self):
+        module = self.helper()
+        self.install(module)
+        public_before = {str(p): p.read_bytes() for p in self.web.rglob('*') if p.is_file()}
+        private = self.domain / 'mirroriedled-private/checkout-sandbox'
+        (private / 'storage/keep.sqlite').write_bytes(b'sandbox records')
+        result = module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_FixtureSigner123'})
+        self.assertIs(result['webhook_signing_secret_installed'], True)
+        self.assertIs(result['payments_enabled'], False)
+        self.assertIs(result['signed_delivery_verified'], False)
+        for path, data in self.old.items():
+            self.assertEqual((self.domain / path).read_bytes(), data)
+        self.assertEqual(public_before, {str(p): p.read_bytes() for p in self.web.rglob('*') if p.is_file()})
+        self.assertEqual((private / 'storage/keep.sqlite').read_bytes(), b'sandbox records')
+        command = ['php', '-r', '$c=require $argv[1]; echo json_encode(["secret"=>$c["commerce"]["stripe_webhook_secret"],"mode"=>$c["commerce"]["mode"],"enabled"=>$c["commerce"]["enabled"],"tax"=>$c["commerce"]["tax_setup_confirmed"],"fulfillment"=>$c["commerce"]["fulfillment_setup_confirmed"]]);', str(private / 'config.php')]
+        self.assertEqual(json.loads(subprocess.check_output(command, text=True)), {'secret': 'whsec_FixtureSigner123', 'mode': 'test', 'enabled': False, 'tax': False, 'fulfillment': False})
+        self.assertEqual((private / 'credentials.json').stat().st_mode & 0o777, 0o600)
+        self.assertEqual((private / 'config.php').stat().st_mode & 0o777, 0o600)
+        module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_FixtureSigner123'})
+        self.assertNotIn('whsec_FixtureSigner123', json.dumps(result))
+
+    def test_webhook_install_refuses_wrong_secret_and_preserves_files(self):
+        module = self.helper()
+        self.install(module)
+        private = self.domain / 'mirroriedled-private/checkout-sandbox'
+        before = {str(p): p.read_bytes() for p in private.rglob('*') if p.is_file()}
+        for value in ['', 'rk_test_Fixture', 'whsec_Fixture\n', 'whsec_']:
+            with self.assertRaises(ValueError):
+                module.install_webhook_secret(self.web, {'stripe_webhook_secret': value})
+        self.assertEqual(before, {str(p): p.read_bytes() for p in private.rglob('*') if p.is_file()})
+
+    def test_signer_workflow_executes_its_php_verification_script(self):
+        module = self.helper()
+        self.install(module)
+        module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_WorkflowFixture'})
+        workflow = (ROOT / '.github/workflows/install-sandbox-webhook-secret.yml').read_text()
+        line = next(line for line in workflow.splitlines() if '"php -- ' in line)
+        remote = 'php -- ' + line.split('"php -- ', 1)[1].split('" <<', 1)[0]
+        command = shlex.split(remote.replace('${PUBLIC_HTML%/public_html}', str(self.domain)))
+        script = textwrap.dedent(workflow.split("<<'PHPVERIFY'\n", 1)[1].split('          PHPVERIFY', 1)[0])
+        result = subprocess.run(command, input=script, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, 'MLED_SANDBOX_SIGNER_CONFIG_VERIFIED=true\n')
+
+    def test_webhook_install_does_not_rotate_an_existing_different_secret(self):
+        module = self.helper()
+        self.install(module)
+        module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_FirstFixture'})
+        private = self.domain / 'mirroriedled-private/checkout-sandbox'
+        before = (private / 'credentials.json').read_bytes()
+        with self.assertRaises(ValueError):
+            module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_OtherFixture'})
+        self.assertEqual((private / 'credentials.json').read_bytes(), before)
+
+    def test_interrupted_signer_update_can_recover_with_same_secret(self):
+        module = self.helper()
+        self.install(module)
+        code = '''import importlib.util, os, sys
+from pathlib import Path
+spec=importlib.util.spec_from_file_location('interrupted_sandbox',sys.argv[1])
+m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+replace=m.os.replace
+def interrupt(*args):
+    replace(*args)
+    os._exit(23)
+m.os.replace=interrupt
+m.install_webhook_secret(Path(sys.argv[2]), {'stripe_webhook_secret':'whsec_RecoveryFixture'})
+'''
+        result = subprocess.run([sys.executable, '-c', code, str(SCRIPT), str(self.web)], capture_output=True)
+        self.assertEqual(result.returncode, 23)
+        result = module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_RecoveryFixture'})
+        self.assertIs(result['webhook_signing_secret_installed'], True)
+
+    def test_webhook_install_refuses_modified_configuration(self):
+        module = self.helper()
+        self.install(module)
+        private = self.domain / 'mirroriedled-private/checkout-sandbox'
+        config = private / 'config.php'
+        config.write_text(config.read_text().replace("'enabled' => false", "'enabled' => true"))
+        before = (private / 'credentials.json').read_bytes()
+        with self.assertRaises(ValueError):
+            module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_Fixture'})
+        self.assertEqual((private / 'credentials.json').read_bytes(), before)
+
+    def test_webhook_install_refuses_unsafe_credentials_and_public_root(self):
+        module = self.helper()
+        self.install(module)
+        private = self.domain / 'mirroriedled-private/checkout-sandbox'
+        credentials = private / 'credentials.json'
+        original = credentials.read_bytes()
+        credentials.unlink()
+        credentials.symlink_to(self.creds)
+        with self.assertRaises(ValueError):
+            module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_Fixture'})
+        credentials.unlink()
+        credentials.write_bytes(original)
+        credentials.chmod(0o644)
+        with self.assertRaises(ValueError):
+            module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_Fixture'})
+        credentials.chmod(0o600)
+        self.web.chmod(0o777)
+        with self.assertRaises(ValueError):
+            module.install_webhook_secret(self.web, {'stripe_webhook_secret': 'whsec_Fixture'})
 
     def test_generated_api_selects_sandbox_even_with_production_environment_override(self):
         module = self.helper()

@@ -46,3 +46,20 @@ Do not copy sandbox accounts, payment flags or database files into production.
 The installer is intentionally create-only. If verification fails after files
 were created, preserve them for inspection and diagnose the failure; rerunning
 does not overwrite or delete any test or production records.
+
+## Install the endpoint signing secret
+
+After registering and pausing the webhook in Mirroried Led sandbox, save its
+`whsec_` value as Actions secret `MLED_STRIPE_SANDBOX_WEBHOOK_SECRET`. The separate
+`Install Sandbox Webhook Secret` workflow reads that value privately, checks its
+format, and sends it over the trusted SSH connection through stdin. No secret is
+put in a command argument, public file, artifact or log.
+
+The helper recognizes only its own unchanged disabled sandbox configuration.
+It rejects unsafe paths/permissions, live API credentials and replacing an
+existing different signer. Atomic private credential/config updates preserve all
+public assets, production configuration and databases. The PHP runtime confirms
+the configured signer matches private storage while checkout, tax and fulfillment
+flags stay false. A session HTTPS check independently confirms payments remain
+off. The secret format and runtime read do not establish a Stripe-signed delivery;
+that remains a separate acceptance step. Stripe delivery remains paused.

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Create an isolated, initially payment-disabled copy of the reviewed storefront."""
 import argparse
+import fcntl
 import importlib.util
 import json
 import os
@@ -8,6 +9,7 @@ from pathlib import Path
 import re
 import shutil
 import stat
+import sys
 import tempfile
 
 
@@ -27,6 +29,26 @@ def exclusive(path, data):
     with path.open('xb') as output:
         os.fchmod(output.fileno(), 0o600)
         output.write(data)
+
+
+def sandbox_config():
+    return b'''<?php
+declare(strict_types=1);
+$config = require __DIR__ . '/base.php';
+$credentials = json_decode(file_get_contents(__DIR__ . '/credentials.json'), true, 16, JSON_THROW_ON_ERROR);
+if (!is_array($credentials) || !preg_match('/^rk_test_[A-Za-z0-9]+$/D', (string)($credentials['stripe_secret_key'] ?? ''))) {
+    throw new RuntimeException('Invalid sandbox configuration');
+}
+$config['business_enabled'] = true;
+$config['premium_enabled'] = false;
+$config['staff_users'] = [];
+$config['storage_path'] = __DIR__ . '/storage';
+$config['origin'] = 'https://mirroriedled.com';
+$config['commerce'] = ['enabled' => false, 'mode' => 'test',
+    'stripe_secret_key' => $credentials['stripe_secret_key'], 'stripe_webhook_secret' => '',
+    'tax_setup_confirmed' => false, 'fulfillment_setup_confirmed' => false];
+return $config;
+'''
 
 
 def install(webroot, archive, credentials, template, source_sha):
@@ -85,23 +107,7 @@ def install(webroot, archive, credentials, template, source_sha):
                 path.write_text(data)
         # All edits are confined to this generated copy. Keep a private exact hash receipt.
         hashes = {name: release.digest(unpacked / name) for name in release.PUBLIC_FILES}
-        config = b'''<?php
-declare(strict_types=1);
-$config = require __DIR__ . '/base.php';
-$credentials = json_decode(file_get_contents(__DIR__ . '/credentials.json'), true, 16, JSON_THROW_ON_ERROR);
-if (!is_array($credentials) || !preg_match('/^rk_test_[A-Za-z0-9]+$/D', (string)($credentials['stripe_secret_key'] ?? ''))) {
-    throw new RuntimeException('Invalid sandbox configuration');
-}
-$config['business_enabled'] = true;
-$config['premium_enabled'] = false;
-$config['staff_users'] = [];
-$config['storage_path'] = __DIR__ . '/storage';
-$config['origin'] = 'https://mirroriedled.com';
-$config['commerce'] = ['enabled' => false, 'mode' => 'test',
-    'stripe_secret_key' => $credentials['stripe_secret_key'], 'stripe_webhook_secret' => '',
-    'tax_setup_confirmed' => false, 'fulfillment_setup_confirmed' => false];
-return $config;
-'''
+        config = sandbox_config()
         accounts.private_directory(shared, require_owner_only=False)
         # Atomic reservations refuse pre-existing directories, including empty ones.
         private.mkdir(mode=0o700)
@@ -123,16 +129,101 @@ return $config;
             'private_storage_isolated': True, 'production_files_changed': False}
 
 
+def install_webhook_secret(webroot, supplied):
+    """Add only the signer to this installer's disabled, isolated configuration."""
+    if not isinstance(supplied, dict) or set(supplied) != {'stripe_webhook_secret'}:
+        raise ValueError('One sandbox webhook secret is required')
+    signer = supplied['stripe_webhook_secret']
+    if not isinstance(signer, str) or not re.fullmatch(r'whsec_[A-Za-z0-9]{1,200}', signer):
+        raise ValueError('Sandbox webhook signing secret required')
+    webroot = webroot.absolute()
+    if webroot.name != 'public_html' or webroot.parent.name != 'mirroriedled.com':
+        raise ValueError('Use the main domain public_html directory')
+    private = webroot.parent / 'mirroriedled-private/checkout-sandbox'
+    for path in (webroot, webroot.parent, private.parent, private):
+        release.no_symlinks(path)
+        info = path.stat()
+        mask = 0o077 if path == private else 0o022
+        if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & mask:
+            raise ValueError('Unsafe sandbox directory')
+
+    def read_private(name):
+        path = private / name
+        release.no_symlinks(path)
+        info = path.stat()
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_nlink != 1 or stat.S_IMODE(info.st_mode) & 0o077 or info.st_size > 65536:
+            raise ValueError('Unsafe sandbox private file')
+        return path.read_bytes()
+
+    def replace_private(name, data):
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile(dir=private, prefix='.signer-', delete=False) as output:
+                temporary = Path(output.name)
+                os.fchmod(output.fileno(), 0o600)
+                output.write(data)
+                output.flush()
+                os.fsync(output.fileno())
+            os.replace(temporary, private / name)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
+
+    lock = private / '.signer-install.lock'
+    descriptor = os.open(lock, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_nlink != 1 or stat.S_IMODE(info.st_mode) & 0o077:
+            raise ValueError('Unsafe sandbox lock file')
+        # Kernel releases this lock even if the worker is killed or times out.
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        receipt = json.loads(read_private('receipt.json'))
+        if receipt.get('payments_enabled') is not False or not re.fullmatch(r'[a-f0-9]{40}', str(receipt.get('source_sha', ''))):
+            raise ValueError('Disabled sandbox receipt required')
+        api = webroot / STAGE / 'customer-portal/backend/api.php'
+        release.no_symlinks(api)
+        api_source = api.read_text()
+        if '/mirroriedled-private/checkout-sandbox/config.php' not in api_source or 'X-MLED-Sandbox-Source: ' + receipt['source_sha'] not in api_source:
+            raise ValueError('Isolated sandbox API required')
+        original = sandbox_config()
+        configured = original.replace(b"'stripe_webhook_secret' => ''", b"'stripe_webhook_secret' => $credentials['stripe_webhook_secret'] ?? ''")
+        if read_private('config.php') not in (original, configured):
+            raise ValueError('Sandbox configuration changed; owner review required')
+        credentials = json.loads(read_private('credentials.json'))
+        if not isinstance(credentials, dict) or set(credentials) - {'stripe_secret_key', 'stripe_webhook_secret'} or not re.fullmatch(r'rk_test_[A-Za-z0-9]+', str(credentials.get('stripe_secret_key', ''))):
+            raise ValueError('Restricted sandbox credential required')
+        if credentials.get('stripe_webhook_secret') not in (None, signer):
+            raise ValueError('Existing signer preserved; rotation needs separate review')
+        credentials['stripe_webhook_secret'] = signer
+        replace_private('credentials.json', json.dumps(credentials).encode())
+        # Publish the configuration reference last. Interruption leaves checkout off.
+        replace_private('config.php', configured)
+    finally:
+        os.close(descriptor)
+    return {'webhook_signing_secret_installed': True, 'payments_enabled': False,
+            'signed_delivery_verified': False, 'production_files_changed': False}
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--webroot', required=True)
-    parser.add_argument('--archive', required=True, type=Path)
-    parser.add_argument('--credentials', required=True, type=Path)
-    parser.add_argument('--template', required=True, type=Path)
-    parser.add_argument('--source', required=True)
+    parser.add_argument('--archive', type=Path)
+    parser.add_argument('--credentials', type=Path)
+    parser.add_argument('--template', type=Path)
+    parser.add_argument('--source')
+    parser.add_argument('--webhook-secret-stdin', action='store_true')
     args = parser.parse_args()
     try:
-        print(json.dumps(install(release.webroot_path(args.webroot), args.archive,
-                                 args.credentials, args.template, args.source), sort_keys=True))
+        webroot = release.webroot_path(args.webroot)
+        if args.webhook_secret_stdin:
+            raw = sys.stdin.buffer.read(65537)
+            if len(raw) > 65536:
+                raise ValueError('Invalid signing-secret transport')
+            result = install_webhook_secret(webroot, json.loads(raw))
+        else:
+            if not all((args.archive, args.credentials, args.template, args.source)):
+                raise ValueError('Installation arguments are required')
+            result = install(webroot, args.archive, args.credentials, args.template, args.source)
+        print(json.dumps(result, sort_keys=True))
     except Exception:
         raise SystemExit('Sandbox installation failed; inspect paths and permissions without exposing credentials. Existing production data was not modified.') from None
