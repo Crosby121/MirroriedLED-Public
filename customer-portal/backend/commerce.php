@@ -85,14 +85,14 @@ final class CommercePortal
     }
     public static function locked(PDO $db,string $id): bool
     {
-        self::migrate($db);$q=$db->prepare("SELECT 1 FROM commerce_checkouts WHERE order_id=? AND state IN ('creating','open','paid','review') LIMIT 1");$q->execute([$id]);return $q->fetchColumn()!==false;
+        self::migrate($db);$q=$db->prepare("SELECT 1 FROM commerce_checkouts WHERE order_id=? AND state IN ('creating','open','processing','paid','review') LIMIT 1");$q->execute([$id]);return $q->fetchColumn()!==false;
     }
     public static function publicTerms(PDO $db,string $id): array
     {
         self::migrate($db);
         $q=$db->prepare('SELECT terms FROM commerce_offers WHERE order_id=?');$q->execute([$id]);$terms=$q->fetchColumn();
         $q=$db->prepare('SELECT address FROM commerce_addresses WHERE order_id=?');$q->execute([$id]);$address=$q->fetchColumn();
-        $q=$db->prepare('SELECT state,paid_cents,tax_cents,paid_at,expires_at FROM commerce_checkouts WHERE order_id=? ORDER BY id DESC LIMIT 1');$q->execute([$id]);$payment=$q->fetch()?:null;
+        $q=$db->prepare('SELECT state,paid_cents,tax_cents,paid_at,expires_at FROM commerce_checkouts WHERE order_id=? ORDER BY CASE state WHEN \'paid\' THEN 0 WHEN \'review\' THEN 1 ELSE 2 END,id DESC LIMIT 1');$q->execute([$id]);$payment=$q->fetch()?:null;
         return ['offer'=>$terms===false?null:json_decode($terms,true,16,JSON_THROW_ON_ERROR),'address'=>$address===false?null:json_decode($address,true,16,JSON_THROW_ON_ERROR),'payment'=>$payment];
     }
     public function handle(string $action,array $data): never
@@ -178,8 +178,10 @@ final class CommercePortal
         try {
             $order=$this->order($data['orderId']??null);$terms=self::publicTerms($this->db,$order['id'])['offer'];
             if (!$terms||$terms['expiresAt']<time()||$terms['proofId']!==$order['proof_id']||$order['approved_proof_id']!==$order['proof_id']||$order['status']!=='APPROVED'||($data['acceptTerms']??false)!==true||($data['offerVersion']??null)!==$terms['version']) throw new PortalError('Approve the current artwork proof and review the latest quote, delivery estimate and checkout terms.',409);
+            if ($this->rows("SELECT 1 FROM commerce_checkouts WHERE order_id=? AND state IN ('paid','review') LIMIT 1",[$order['id']])) throw new PortalError('This order already has a payment record. Review it in your account.',409);
             $prior=$this->rows('SELECT * FROM commerce_checkouts WHERE order_id=? AND offer_version=? ORDER BY attempt DESC LIMIT 1',[$order['id'],$terms['version']])[0]??null;
             if ($prior&&in_array($prior['state'],['paid','review'],true)) throw new PortalError('This order already has a payment record. Review it in your account.',409);
+            if ($prior&&$prior['state']==='processing') throw new PortalError('Your payment is still processing. Refresh its status before trying again.',409);
             if ($prior&&$prior['state']==='open'&&$prior['expires_at']>time()) { $this->db->exec('COMMIT');return ['checkoutUrl'=>$prior['url'],'orderId'=>$order['id']]; }
             if ($prior&&$prior['state']==='open') throw new PortalError('Refresh payment status before trying checkout again.',409);
             if ($prior&&$prior['state']==='creating') $row=$prior;
@@ -214,8 +216,8 @@ final class CommercePortal
     }
     private function refresh(array $data): array
     {
-        $order=$this->order($data['orderId']??null);$row=$this->rows('SELECT * FROM commerce_checkouts WHERE order_id=? ORDER BY id DESC LIMIT 1',[$order['id']])[0]??null;
-        if ($row&&$row['provider_id']&&in_array($row['state'],['open','creating'],true)) $this->reconcile($this->stripe('GET','/checkout/sessions/'.rawurlencode($row['provider_id']),['expand'=>['line_items']]));
+        $order=$this->order($data['orderId']??null);$row=$this->rows('SELECT * FROM commerce_checkouts WHERE order_id=? ORDER BY CASE state WHEN \'paid\' THEN 0 WHEN \'review\' THEN 1 ELSE 2 END,id DESC LIMIT 1',[$order['id']])[0]??null;
+        if ($row&&$row['provider_id']&&in_array($row['state'],['open','creating','processing'],true)) $this->reconcile($this->stripe('GET','/checkout/sessions/'.rawurlencode($row['provider_id']),['expand'=>['line_items','payment_intent']]));
         return ['commerce'=>self::publicTerms($this->db,$order['id'])];
     }
     public function webhook(): never
@@ -230,10 +232,10 @@ final class CommercePortal
         try {$event=json_decode($raw,true,64,JSON_THROW_ON_ERROR);}catch(Throwable){throw new PortalError('Invalid webhook.',400);}
         if (!is_string($event['id']??null)||!preg_match('/^evt_[A-Za-z0-9]+$/D',$event['id'])) throw new PortalError('Invalid webhook event.',400);
         if ($this->rows('SELECT 1 FROM commerce_webhooks WHERE event_id=?',[$event['id']])) portal_json(['ok'=>true]);
-        if (in_array($event['type']??'', ['checkout.session.completed','checkout.session.async_payment_succeeded','checkout.session.expired'],true)) {
+        if (in_array($event['type']??'', ['checkout.session.completed','checkout.session.async_payment_succeeded','checkout.session.async_payment_failed','checkout.session.expired'],true)) {
             $id=$event['data']['object']['id']??'';if(!is_string($id)||!preg_match('/^cs_(live|test)_[A-Za-z0-9]+$/D',$id))throw new PortalError('Invalid payment session.',400);
             // Retrieve canonical payment data using the merchant key as well as verifying the event.
-            $this->reconcile($this->stripe('GET','/checkout/sessions/'.rawurlencode($id),['expand'=>['line_items']]));
+            $this->reconcile($this->stripe('GET','/checkout/sessions/'.rawurlencode($id),['expand'=>['line_items','payment_intent']]));
         }
         $this->exec('INSERT OR IGNORE INTO commerce_webhooks(event_id,processed_at) VALUES(?,?)',[$event['id'],time()]);portal_json(['ok'=>true]);
     }
@@ -246,22 +248,49 @@ final class CommercePortal
             if ($row['state']==='paid') { $this->db->exec('COMMIT');return; }
             $s=json_decode($row['snapshot'],true,32,JSON_THROW_ON_ERROR);
             $order=$this->rows('SELECT * FROM business_orders WHERE id=?',[$row['order_id']])[0];
+            $intent=$session['payment_intent']??null;$intentId=is_array($intent)?($intent['id']??null):$intent;
+            $identity=($session['mode']??'')==='payment'&&($session['currency']??'')==='usd'&&($session['livemode']??null)===($s['mode']==='live')
+                &&($session['client_reference_id']??'')===$s['orderId']&&($session['metadata']['order_id']??'')===$s['orderId']&&($session['metadata']['checkout_record']??'')===(string)$row['id']&&($session['metadata']['proof_id']??'')===$s['proofId'];
+            $intentMatches=is_array($intent)&&is_string($intentId)&&preg_match('/^pi_[A-Za-z0-9]+$/D',$intentId)===1
+                &&($intent['livemode']??null)===($s['mode']==='live')&&($intent['currency']??'')==='usd'
+                &&($intent['metadata']['order_id']??'')===$s['orderId']&&is_int($intent['amount']??null)&&($intent['amount']??null)===($session['amount_total']??null);
             if (($session['payment_status']??'')!=='paid') {
-                if (($session['status']??'')==='expired') $this->exec("UPDATE commerce_checkouts SET state='expired' WHERE id=? AND state IN ('creating','open')",[$row['id']]);
+                // Completed Checkout can still be waiting for a delayed payment. Never unlock on "unpaid" alone.
+                if (!in_array($row['state'],['creating','open','processing'],true)) { $this->db->exec('COMMIT');return; }
+                if (!$identity) {
+                    $this->exec("UPDATE commerce_checkouts SET state='review' WHERE id=?",[$row['id']]);
+                    $this->event($order,'PAYMENT_REVIEW','A payment needs review. Contact Mirroried LED before trying to pay again.');
+                } elseif (($session['status']??'')==='expired') {
+                    $this->exec("UPDATE commerce_checkouts SET state='expired' WHERE id=?",[$row['id']]);
+                } elseif (($session['status']??'')==='complete') {
+                    if (is_array($intent)&&!$intentMatches) {
+                        $this->exec("UPDATE commerce_checkouts SET state='review' WHERE id=?",[$row['id']]);
+                        $this->event($order,'PAYMENT_REVIEW','A payment needs review. Contact Mirroried LED before trying to pay again.');
+                    } elseif ($intentMatches&&($intent['amount_received']??null)===0&&($intent['amount_capturable']??null)===0&&(($intent['status']??'')==='canceled'||(($intent['status']??'')==='requires_payment_method'&&is_array($intent['last_payment_error']??null)&&!empty($intent['last_payment_error'])))
+                        &&($session['amount_subtotal']??null)===$s['productCents']&&($session['total_details']['amount_shipping']??null)===$s['shippingCents']
+                        &&is_int($session['total_details']['amount_tax']??null)&&$session['total_details']['amount_tax']>=0
+                        &&($session['amount_total']??null)===$s['productCents']+$s['shippingCents']+$session['total_details']['amount_tax']) {
+                        $this->exec("UPDATE commerce_checkouts SET state='failed' WHERE id=?",[$row['id']]);
+                        $this->event($order,'PAYMENT_FAILED','Your payment did not complete. Your approved build is saved. Review the current quote and try payment again.');
+                    } else {
+                        $this->exec("UPDATE commerce_checkouts SET state='processing' WHERE id=?",[$row['id']]);
+                    }
+                }
                 $this->db->exec('COMMIT');return;
             }
             $tax=$session['total_details']['amount_tax']??null;$shipping=$session['total_details']['amount_shipping']??null;$total=$session['amount_total']??null;
-            $matches=($session['mode']??'')==='payment'&&($session['currency']??'')==='usd'&&($session['livemode']??null)===($s['mode']==='live')
+            $matches=($session['status']??'')==='complete'&&($session['mode']??'')==='payment'&&($session['currency']??'')==='usd'&&($session['livemode']??null)===($s['mode']==='live')
                 &&($session['client_reference_id']??'')===$s['orderId']&&($session['metadata']['order_id']??'')===$s['orderId']&&($session['metadata']['checkout_record']??'')===(string)$row['id']&&($session['metadata']['proof_id']??'')===$s['proofId']
                 &&($session['amount_subtotal']??null)===$s['productCents']&&$shipping===$s['shippingCents']&&is_int($tax)&&$tax>=0&&is_int($total)&&$total===$s['productCents']+$s['shippingCents']+$tax
                 &&($session['automatic_tax']['status']??'')==='complete'&&($session['total_details']['amount_discount']??0)===0
                 &&$order['proof_id']===$s['proofId']&&$order['approved_proof_id']===$s['proofId']&&(int)$order['quote_cents']===$s['productCents']&&$order['status']!=='CANCELLED'
-                &&is_string($session['payment_intent']??null)&&preg_match('/^pi_[A-Za-z0-9]+$/D',$session['payment_intent'])===1;
+                &&is_string($intentId)&&preg_match('/^pi_[A-Za-z0-9]+$/D',$intentId)===1
+                &&(!is_array($intent)||($intentMatches&&($intent['status']??'')==='succeeded'));
             $items=$session['line_items']['data']??[];
             $matches=$matches&&is_array($items)&&count($items)===1&&($items[0]['quantity']??null)===1&&($items[0]['amount_subtotal']??null)===$s['productCents'];
             if (!$matches) { $this->exec("UPDATE commerce_checkouts SET state='review' WHERE id=?",[$row['id']]);$this->event($order,'PAYMENT_REVIEW','A payment needs review. Contact Mirroried LED before trying to pay again.');$this->db->exec('COMMIT');return; }
-            $this->exec("UPDATE commerce_checkouts SET state='paid',payment_intent=?,paid_cents=?,tax_cents=?,paid_at=? WHERE id=?",[$session['payment_intent'],$total,$tax,time(),$row['id']]);
-            $this->exec('UPDATE business_orders SET finance_reference=?,updated_at=?,revision=revision+1 WHERE id=?',[$session['payment_intent'],time(),$order['id']]);
+            $this->exec("UPDATE commerce_checkouts SET state='paid',payment_intent=?,paid_cents=?,tax_cents=?,paid_at=? WHERE id=?",[$intentId,$total,$tax,time(),$row['id']]);
+            $this->exec('UPDATE business_orders SET finance_reference=?,updated_at=?,revision=revision+1 WHERE id=?',[$intentId,time(),$order['id']]);
             $this->event($order,'PAYMENT_CONFIRMED','Your payment is confirmed. Production is estimated at '.$s['productionMinDays'].'–'.$s['productionMaxDays'].' business days after payment and artwork approval, followed by '.$s['transitMinDays'].'–'.$s['transitMaxDays'].' business days in transit.');
             $this->db->exec('COMMIT');
         } catch(Throwable $e) { try {$this->db->exec('ROLLBACK');}catch(Throwable){}throw $e; }

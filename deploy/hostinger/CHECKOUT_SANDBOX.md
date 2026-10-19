@@ -123,10 +123,10 @@ bootstrap is removed after the verified activation. Existing different checkout
 patches or checkout records require separate review; this is an initial enable
 operation, not a general migration or reconfiguration tool.
 
-Before expanding beyond this artificial card test, handle delayed payment failures
-and test their retry/unlock path. Dynamic methods may include delayed payments;
-current reconciliation handles successful or expired sessions but does not resolve
-`checkout.session.async_payment_failed`. Live launch remains blocked on acceptance.
+The recovery patch handles `checkout.session.async_payment_failed` by retrieving
+canonical session and expanded PaymentIntent data. Completed unpaid payments stay
+locked until verified failure; failed attempts can be retried with a new session.
+Actual delayed-payment failure acceptance remains required before live launch.
 
 ## Verify a paid test order
 
@@ -151,3 +151,27 @@ homepage/config hashes and removes its private helper transport.
 The final payment-verification workflow is manual-only and requires explicit
 acknowledgement and all four canonical fingerprints. Its initial branch/path push
 bootstrap is removed after verification.
+
+## Update the isolated payment-recovery files
+
+`Update Sandbox Payment Recovery` changes only commerce.php, shop/shop.js and
+shop/index.html. It verifies the exact current checkout patch, private test config,
+selected paid artificial order, source hashes and single confirmation. Before
+publishing, the installed restricted sandbox key must successfully read the actual
+canonical paid session with expanded PaymentIntent, proving the new read permission.
+No provider writes or broadening of key permissions are performed by the helper.
+
+Private atomic backups and a source-bound journal allow same-source interruption
+recovery. Files may match only the reviewed original or exact generated replacement;
+unknown source or receipt changes are preserved and rejected. The private receipt
+records the new PHP and UI hashes and prior patch source. The installed base API
+source header is retained; the checkout header identifies the new patch. Browser
+storage namespaces and sandbox/noindex markers are regenerated, and the UI script
+URL changes to avoid retaining the previous code in a browser cache.
+
+After publication, the workflow rechecks the existing paid order and known-event
+self-signed duplicate probe, exact public JS/HTML hashes, runtime headers/cookie scope
+and unchanged production homepage/config hashes. Private config and order data are
+not rewritten. Subscribe the verified sandbox endpoint to async_payment_failed only
+after these checks. Production payments remain disabled. A source/payload simulation
+does not replace actual delayed-method failure acceptance.

@@ -42,7 +42,7 @@ class CommerceTests(unittest.TestCase):
         script=self.server.root/'acceptance.php'
         fixture=self.server.root/'payment.json';fixture.write_text(json.dumps(session or {}))
         code="<?php require "+php_quote(str(source))+"; $config=require "+php_quote(str(self.server.config))+"; $db=new PDO('sqlite:' . $config['storage_path'] . '/portal.sqlite',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]); $user=$db->query('SELECT * FROM users WHERE id="+str(self.h.customer_id)+"')->fetch();"
-        code+=" $transport=function($method,$path,$params,$key) { file_put_contents("+php_quote(str(self.server.root/'provider-requests.jsonl'))+",json_encode([$method,$path,$params,$key]).PHP_EOL,FILE_APPEND); if($path==='/customers')return ['id'=>'cus_TESTONLY']; if($path==='/checkout/sessions')return ['id'=>'cs_test_ACCEPTANCE','url'=>'https://checkout.stripe.com/c/pay/cs_test_ACCEPTANCE','expires_at'=>time()+3600]; throw new RuntimeException('Unexpected provider request'); }; $service=new CommercePortal($db,$config,$user,$transport);"
+        code+=" $transport=function($method,$path,$params,$key) { file_put_contents("+php_quote(str(self.server.root/'provider-requests.jsonl'))+",json_encode([$method,$path,$params,$key]).PHP_EOL,FILE_APPEND); if($path==='/customers')return ['id'=>'cus_TESTONLY']; if($path==='/checkout/sessions')return ['id'=>'cs_test_ACCEPTANCE'.($params['metadata']['checkout_record']==='1'?'':$params['metadata']['checkout_record']),'url'=>'https://checkout.stripe.com/c/pay/cs_test_ACCEPTANCE'.($params['metadata']['checkout_record']==='1'?'':$params['metadata']['checkout_record']),'expires_at'=>time()+3600]; throw new RuntimeException('Unexpected provider request'); }; $service=new CommercePortal($db,$config,$user,$transport);"
         if fail_checkout:
             code=code.replace("if($path==='/checkout/sessions')return", "if($path==='/checkout/sessions')throw new RuntimeException('Simulated timeout'); if($path==='/checkout/sessions')return")
         if operation=='checkout':
@@ -125,7 +125,7 @@ class CommerceTests(unittest.TestCase):
     def test_forged_paid_return_and_mismatched_amount_never_mark_paid(self):
         order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
         unpaid=self.paid_session(order);unpaid['payment_status']='unpaid';self.cli(order['id'],'reconcile',unpaid)
-        self.assertEqual(self.db().execute('SELECT state FROM commerce_checkouts').fetchone()[0],'open')
+        self.assertEqual(self.db().execute('SELECT state FROM commerce_checkouts').fetchone()[0],'processing')
         wrong=self.paid_session(order);wrong['amount_total']=1;result=self.cli(order['id'],'reconcile',wrong);self.assertEqual(result['payment']['state'],'review')
         self.assertEqual(self.db().execute("SELECT COUNT(*) FROM business_events WHERE kind='PAYMENT_CONFIRMED'").fetchone()[0],0)
     def test_delivery_change_invalidates_shipping_offer_and_owner_boundaries(self):
@@ -145,6 +145,95 @@ class CommerceTests(unittest.TestCase):
         order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
         self.post(self.h.customer,'commerce-address',{'orderId':order['id'],'address':ADDRESS},409)
         self.post(self.h.staff,'business-proof',{'orderId':order['id'],'revision':order['revision']},409)
+
+    def delayed_session(self, order, status='processing'):
+        session=self.paid_session(order)
+        session['payment_status']='unpaid'
+        session['payment_intent']={'id':'pi_TESTONLY','status':status,'livemode':False,'amount':40750,'amount_received':0,'amount_capturable':0,'currency':'usd','metadata':{'order_id':order['id']},'last_payment_error':{'code':'payment_failed'} if status=='requires_payment_method' else None}
+        return session
+
+    def test_processing_payment_stays_locked_and_does_not_open_another_checkout(self):
+        order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
+        result=self.cli(order['id'],'reconcile',self.delayed_session(order))
+        self.assertEqual(result['payment']['state'],'processing')
+        self.cli(order['id'],expected_http_status=409)
+        self.post(self.h.customer,'commerce-address',{'orderId':order['id'],'address':ADDRESS},409)
+        self.assertEqual(self.db().execute('SELECT COUNT(*) FROM commerce_checkouts').fetchone()[0],1)
+
+    def test_failed_delayed_payment_unlocks_one_new_attempt_without_duplicate_events(self):
+        order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
+        failed=self.delayed_session(order,'requires_payment_method')
+        result=self.cli(order['id'],'reconcile',failed);self.assertEqual(result['payment']['state'],'failed')
+        self.cli(order['id'],'reconcile',failed)
+        self.assertEqual(self.db().execute("SELECT COUNT(*) FROM business_events WHERE kind='PAYMENT_FAILED'").fetchone()[0],1)
+        self.assertEqual(self.db().execute("SELECT COUNT(*) FROM business_events WHERE kind='PAYMENT_CONFIRMED'").fetchone()[0],0)
+        retry=self.cli(order['id']);self.assertTrue(retry['checkoutUrl'].endswith('ACCEPTANCE2'))
+        calls=[json.loads(line) for line in (self.server.root/'provider-requests.jsonl').read_text().splitlines()];calls=[call for call in calls if call[1]=='/checkout/sessions']
+        self.assertNotEqual(calls[0][3],calls[1][3])
+        self.assertEqual(self.db().execute('SELECT state FROM commerce_checkouts ORDER BY id').fetchall(),[('failed',),('open',)])
+
+    def test_unverified_failed_intent_does_not_unlock_checkout(self):
+        order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
+        failed=self.delayed_session(order,'requires_payment_method');failed['payment_intent']['livemode']=True
+        result=self.cli(order['id'],'reconcile',failed)
+        self.assertEqual(result['payment']['state'],'review')
+        self.cli(order['id'],expected_http_status=409)
+
+    def test_stale_failed_notification_cannot_downgrade_paid_checkout(self):
+        order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
+        paid=self.paid_session(order);paid['payment_intent']=self.delayed_session(order)['payment_intent'];paid['payment_intent']['status']='succeeded'
+        self.cli(order['id'],'reconcile',paid)
+        result=self.cli(order['id'],'reconcile',self.delayed_session(order,'requires_payment_method'))
+        self.assertEqual(result['payment']['state'],'paid')
+        self.assertEqual(self.db().execute("SELECT COUNT(*) FROM business_events WHERE kind='PAYMENT_CONFIRMED'").fetchone()[0],1)
+
+    def test_cancelled_browser_checkout_reopens_and_expired_checkout_allows_new_attempt(self):
+        order,offer=self.approved_offer();self.enable_test();first=self.cli(order['id'])
+        opened=self.paid_session(order);opened.update(payment_status='unpaid',status='open')
+        self.cli(order['id'],'reconcile',opened);self.assertEqual(self.cli(order['id']),first)
+        opened['status']='expired';result=self.cli(order['id'],'reconcile',opened)
+        self.assertEqual(result['payment']['state'],'expired')
+        self.assertTrue(self.cli(order['id'])['checkoutUrl'].endswith('ACCEPTANCE2'))
+
+    def test_paid_record_blocks_checkout_even_if_a_later_failed_row_exists(self):
+        order,offer=self.approved_offer();self.enable_test();self.cli(order['id']);self.cli(order['id'],'reconcile',self.paid_session(order))
+        db=self.db();db.execute("INSERT INTO commerce_checkouts(order_id,offer_version,attempt,snapshot,state,created_at) SELECT order_id,offer_version,2,snapshot,'failed',created_at FROM commerce_checkouts");db.commit()
+        self.cli(order['id'],expected_http_status=409)
+
+    def test_requires_payment_method_without_failure_evidence_remains_processing(self):
+        order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
+        pending=self.delayed_session(order,'requires_payment_method');pending['payment_intent']['last_payment_error']=None
+        result=self.cli(order['id'],'reconcile',pending);self.assertEqual(result['payment']['state'],'processing')
+        self.cli(order['id'],expected_http_status=409)
+
+    def test_wrong_mode_expiry_cannot_unlock_checkout(self):
+        order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
+        wrong=self.paid_session(order);wrong.update(status='expired',payment_status='unpaid',livemode=True)
+        result=self.cli(order['id'],'reconcile',wrong);self.assertEqual(result['payment']['state'],'review')
+        self.cli(order['id'],expected_http_status=409)
+
+    def test_signed_async_failure_uses_canonical_provider_state_and_deduplicates(self):
+        # A localhost-only fixture chooses its callable at startup, never from an API request.
+        order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
+        canonical=self.server.root/'canonical.json';canonical.write_text(json.dumps(self.delayed_session(order,'requires_payment_method')))
+        source=self.server.public/'customer-portal/backend/portal.php'
+        fixture=self.server.public/'webhook-fixture.php'
+        calls=self.server.root/'webhook-reads.jsonl'
+        fixture.write_text("<?php require "+php_quote(str(source))+"; $config=require "+php_quote(str(self.server.config))+"; $db=new PDO('sqlite:'.$config['storage_path'].'/portal.sqlite',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]); $transport=function($method,$path,$params,$key){file_put_contents("+php_quote(str(calls))+",json_encode([$method,$path,$params]).PHP_EOL,FILE_APPEND);return json_decode(file_get_contents("+php_quote(str(canonical))+"),true);};try{(new CommercePortal($db,$config,null,$transport))->webhook();}catch(PortalError $e){portal_json(['ok'=>false],$e->httpStatus);}")
+        import urllib.request,urllib.error
+        body=json.dumps({'id':'evt_ASYNCFAILED','type':'checkout.session.async_payment_failed','data':{'object':{'id':'cs_test_ACCEPTANCE','payment_status':'paid'}}}).encode()
+        stamp=str(int(time.time()));signature=hmac.new(b'whsec_TESTONLY',stamp.encode()+b'.'+body,hashlib.sha256).hexdigest()
+        def send(signature):
+            request=urllib.request.Request(self.server.origin+'/webhook-fixture.php',data=body,headers={'Stripe-Signature':f't={stamp},v1={signature}','Content-Type':'application/json'})
+            try: response=urllib.request.urlopen(request,timeout=10)
+            except urllib.error.HTTPError as e: response=e
+            with response:return response.status
+        self.assertEqual(send('0'*64),400);self.assertFalse(calls.exists())
+        self.assertEqual(send(signature),200);self.assertEqual(send(signature),200)
+        self.assertEqual(self.db().execute('SELECT state FROM commerce_checkouts').fetchone()[0],'failed')
+        self.assertEqual(self.db().execute("SELECT COUNT(*) FROM business_events WHERE kind='PAYMENT_FAILED'").fetchone()[0],1)
+        reads=[json.loads(line) for line in calls.read_text().splitlines()]
+        self.assertEqual(len(reads),1);self.assertEqual(reads[0][0],'GET');self.assertIn('payment_intent',reads[0][2]['expand'])
 
     def test_shipping_offer_versions_do_not_repeat_after_invalidation(self):
         order,offer=self.approved_offer()

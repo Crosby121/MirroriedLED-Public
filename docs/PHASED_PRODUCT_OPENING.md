@@ -64,7 +64,7 @@ Register the merchant webhook at:
 `https://mirroriedled.com/customer-portal/backend/api.php?action=commerce-webhook`
 
 Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`
-and `checkout.session.expired`. Use the endpoint's own signing secret, rather than
+`checkout.session.async_payment_failed` and `checkout.session.expired`. Use the endpoint's own signing secret, rather than
 an unrelated CLI secret. Configure customer receipts/invoices in the actual
 merchant account. Keys and receipts are not activated by shipping this source.
 
@@ -101,6 +101,14 @@ Stripe API version `2026-09-30.endive`, allow dynamic payment methods and persis
 a unique integration identifier in the immutable checkout snapshot. A timed-out
 retry reuses identical provider parameters and the original idempotency key.
 Legacy incomplete snapshots without that identifier require support review.
+
+A completed unpaid Checkout remains locked as processing until canonical expanded
+PaymentIntent data proves failure. A matching canceled intent or failed payment
+method with zero received/capturable funds marks the attempt failed, records one
+customer notice and permits a fresh attempt with a new idempotency key. Unknown,
+processing or mismatched results cannot unlock payment. Paid records never regress,
+and any paid/review record blocks another checkout across all attempts. Subscribe
+to failed asynchronous payments as well as success/expiry events.
 
 Cancelled browser checkout can be reopened while its session is valid. Expired
 sessions are reconciled before retry. A mismatched paid session is held for

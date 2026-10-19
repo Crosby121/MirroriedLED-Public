@@ -78,6 +78,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_sandbox_quote.py' -v
           python3 -m unittest discover -s tests -p 'test_sandbox_checkout_enable.py' -v
           python3 -m unittest discover -s tests -p 'test_sandbox_payment_verify.py' -v
+          python3 -m unittest discover -s tests -p 'test_sandbox_recovery_update.py' -v
 
       - name: Verify public customer portal package
         run: |
