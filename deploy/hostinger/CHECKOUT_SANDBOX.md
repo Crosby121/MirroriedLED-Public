@@ -1,0 +1,48 @@
+# Isolated website checkout sandbox
+
+The `Install Isolated Checkout Sandbox` workflow prepares the complete reviewed
+public allowlist in `public_html/MLED_checkout_TEST`. Its expected URL is
+`https://mirroriedled.com/MLED_checkout_TEST/shop/`; a completed install and HTTPS
+verification are required before claiming it exists. This is separate from the
+legacy eight-file `MLED_v5_TEST` deployment.
+
+The installer refuses existing sandbox directories, symlinks, foreign ownership
+and group/world-writable domain or public roots. It preserves production public
+files and the existing `mirroriedled-private/customer-portal` configuration/data.
+Its own configuration, restricted test key, receipt and database live in
+`mirroriedled-private/checkout-sandbox`, outside public_html. The private folder
+is 0700 and private files are 0600. Only `rk_test_` credentials are accepted.
+
+The generated copy makes these deployment-only changes:
+
+- The API explicitly selects the sandbox private configuration and fails closed
+  if the override cannot be installed; it never falls back to production.
+- Server storage and session save files are separate; cookies use the sandbox
+  portal path. Browser carts, pending orders, artwork IndexedDB and stadium
+  selections use distinct sandbox names.
+- HTML has a visible sandbox notice and noindex metadata. The folder disables
+  indexes and sends a noindex header where Apache headers are available.
+- A private receipt records every generated public-file checksum and exact
+  source commit. HTTPS checks compare public assets with this receipt and verify
+  the runtime source header, isolated session cookie path and internal PHP denial.
+
+The initial private config has commerce disabled, mode test, no staff, no webhook
+secret and false tax/fulfillment confirmation flags. Installing the key does not
+enable checkout or establish write permissions, webhook delivery or payment
+reconciliation. Premium media and real production release stay disabled.
+
+The workflow reads `MLED_STRIPE_SANDBOX_KEY` and existing main-site Hostinger SSH
+settings through GitHub Actions secrets. The production environment supplies
+those existing SSH settings only. Private credential transport is removed after
+installation; no credential or customer artifact is uploaded. Remote cleanup is
+armed only after successful exclusive creation and refuses unsafe paths.
+
+Next, register the deployed sandbox API webhook, store its endpoint-specific
+signing secret privately, configure sandbox tax settings/registration and fake
+fulfillment terms, then exercise an actual sandbox quoted order. Real merchant
+registrations and production terms remain separately required for a live launch.
+Do not copy sandbox accounts, payment flags or database files into production.
+
+The installer is intentionally create-only. If verification fails after files
+were created, preserve them for inspection and diagnose the failure; rerunning
+does not overwrite or delete any test or production records.
