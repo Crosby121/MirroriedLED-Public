@@ -16,5 +16,14 @@
   "next_action": "",
   "changed_files": [],
   "checks": [],
-  "findings": []
+  "findings": [
+    {
+      "finding": "Owner confirmed customer approval of the actual finished mirror engraving is required before shipping; dispatch within three business days after approval. This is separate from initial digital proof approval and does not establish production duration.",
+      "basis": "owner_explicit_confirmation"
+    },
+    {
+      "finding": "Independent product and deployment reviews found no blockers after fixing a dormant legacy customer button reset regression. Review included 19 business,22 commerce and7 deployment tests.",
+      "basis": "independent_review_and_local_verification"
+    }
+  ]
 }

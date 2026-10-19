@@ -34,6 +34,13 @@ Other sizes, options, shipping and turnaround are not priced by this approval.
    remain. A product checkout offer additionally requires a verified **live**
    payment before production release. Test payments cannot authorize production.
    Tracking and actual fulfillment updates appear in the customer's account.
+7. For mirrors, production/QC staff publish a photo of the actual finished
+   engraving. The customer must approve the current photo version before shipping
+   or pickup. A revised engraving photo requires fresh approval. Dispatch is due
+   within three business days after that approval (Monday–Friday, Pacific time);
+   the saved ship-by date appears in both accounts. QC must also pass. Carrier
+   transit begins after shipment. Production time before the photo is ready still
+   needs owner confirmation.
 
 This is a reviewed custom-order flow. **Instant final pricing for every possible
 build is not implemented**: incomplete supplier data and fabrication costs need
@@ -95,8 +102,8 @@ Do not claim tax readiness from this credential preflight.
 Sign in at `/shop/` using an owner-assigned numeric staff account. Open Team.
 Publish the current proof and complete product price; publish the separate
 **Complete pricing & delivery** form using the customer's saved destination.
-Production/transit days are business-day estimates starting after confirmed
-payment and final artwork approval. Sales must confirm materials, shipping cost
+Production days are business-day estimates starting after confirmed payment and
+final artwork approval; carrier transit begins after shipment. Sales must confirm materials, shipping cost
 and production capacity. Any changed address invalidates the shipping offer;
 quote/proof revisions invalidate checkout terms. Offer versions are monotonic.
 An active checkout locks address/proof/price changes, avoiding a payment for an
