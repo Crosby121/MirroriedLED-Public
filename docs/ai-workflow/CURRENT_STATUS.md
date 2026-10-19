@@ -1,11 +1,11 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-19T04:36:15Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-19T07:43:08Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · PR 26 remains draft. A user-selected order in the isolated test shop was located by a one-way fingerprint and received a private artwork-reference proof and explicitly labeled $1 product/$0 shipping sandbox quote with artificial fulfillment estimates. Run 39200193536 from source 5028f2cd0617b37fbb87a12827eae213f0275a96 verified preparation, unchanged production homepage/config hashes, disabled-payment HTTPS capability and helper cleanup. Customer approval is pending; no persistent staff role, checkout enablement or production source/config change occurred. All 219 local tests and source CI passed; final quote workflow e9f86f04fd5b4cea2850f41a34d87c962cc7edac is manual-only. Actual website Checkout writes and signed webhook acceptance remain pending. |
+| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · PR 26 remains draft. Customer approval of the selected artificial $1 sandbox quote is verified. Isolated checkout backend patch 347964696ee781a38be15103d5752ef3e669afbd was deployed over base f1e869cd00bef0934090a61713982c6eaee504a1 in run 39217543467. Runtime source/cookie/capability checks and self-signed harmless event, duplicate and negative-signature probes passed; production homepage/private config hashes remained unchanged. The sandbox Stripe webhook is canonically enabled with livemode false. All 228 local and deployment-job tests passed, as did source CI. Final activation workflow 61fc1e24a3808afd8e4bfc90b0d3e699a0234ecf is manual-only. Customer now opens test Checkout; actual website provider writes, test-card payment, Stripe-signed delivery and reconciliation/replay acceptance remain unverified. No production payment activation occurred. |
 | Verified live Hostinger commit | 8690ab93f30ffd6913407b1ca5374e808bd6ad93 |
 | Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696) · No failed step |
 | Deployment blocker | Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation. |
@@ -43,6 +43,11 @@ Evidence snapshot: 2026-10-19T04:36:15Z (UTC). Refresh GitHub at the start of ea
 - [Sandbox quote source shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39200199515): **passed**.
 - [Final manual-only quote workflow shared validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39200266405): **passed**.
 - [Final manual-only quote source Storefront CI](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39200266309): **passed**.
+- [Approved isolated checkout activation, source/runtime verification, harmless signed probes and unchanged production hashes](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217543467): **passed**.
+- [Checkout activation source Storefront CI](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217549676): **passed**.
+- [Checkout activation source shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217549695): **passed**.
+- [Final manual-only checkout workflow shared validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217730535): **passed**.
+- [Final manual-only checkout source Storefront CI](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217730500): **passed**.
 
 ## Task queue
 
@@ -51,7 +56,7 @@ Evidence snapshot: 2026-10-19T04:36:15Z (UTC). Refresh GitHub at the start of ea
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
 | WF-007 — Address workflow capture privacy and streaming review findings | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
-| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | in_progress | 20261019t044009z-ecdcb26a | Customer refreshes test-shop orders, opens the private sandbox proof, checks the review box and approves the $1 product/$0 shipping test quote. Then align current Checkout API parameters and complete actual sandbox Checkout/signed webhook/reconciliation/replay acceptance, keeping production payments off. |
+| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Customer refreshes isolated test-shop orders, accepts current terms and opens test Checkout, then completes the artificial test-card payment. Verify provider writes, canonical payment, Stripe-signed delivery and duplicate reconciliation. Handle failed delayed-payment retries before broader rollout; production payments stay off. |
 | WF-009 — Preserve browser delta offsets when credentials are masked | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
 | WF-010 — Update owner component costs and 12-inch LED/power-supply research | done | Unclaimed | Continue WF-008: confirm exact LED/glass/power/fabrication/shipping/tax costs and production capacity, verify actual merchant sandbox checkout and signed webhook, configure live merchant settings and resolve main-site SSH deployment settings before an exact live release. |
 | WF-013 — Publish mirror artwork and stadium product browsing | done | Unclaimed | Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused. |

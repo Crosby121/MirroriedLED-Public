@@ -5,16 +5,82 @@
   "application_identity": "declared",
   "github_account": "Crosby121",
   "started_at": "2026-10-19T04:40:09Z",
-  "ended_at": null,
-  "status": "active",
+  "ended_at": "2026-10-19T07:43:32Z",
+  "status": "blocked",
   "task_ids": [
     "WF-008"
   ],
   "branch": "fix/storefront-integration-20261019",
   "base_commit": "edee3827b74b3b64d6f16e75497af729cb082262",
-  "summary": "",
-  "next_action": "",
-  "changed_files": [],
-  "checks": [],
+  "summary": "Customer approval is verified and isolated checkout enabled by exact patch 347964696ee781a38be15103d5752ef3e669afbd, run 39217543467. Harmless HMAC/replay/negative-signature probes and production preservation passed. Only the test-mode Stripe webhook was enabled after checks. Full228 tests and source CI passed; review found no Critical/Important issues for this artificial card test. Final manual-only workflow published and branch head verified at 61fc1e24a3808afd8e4bfc90b0d3e699a0234ecf. Actual customer test Checkout/payment and provider-signed delivery still require acceptance.",
+  "next_action": "Customer refreshes isolated test-shop orders, accepts current terms and opens test Checkout, then completes the artificial test-card payment. Verify provider writes, canonical payment, Stripe-signed delivery and duplicate reconciliation. Handle failed delayed-payment retries before broader rollout; production payments stay off.",
+  "changed_files": [
+    ".github/workflows/enable-sandbox-checkout.yml",
+    ".github/workflows/storefront-ci.yml",
+    "customer-portal/backend/commerce.php",
+    "deploy/hostinger/CHECKOUT_SANDBOX.md",
+    "deploy/hostinger/enable-sandbox-checkout.py",
+    "docs/PHASED_PRODUCT_OPENING.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t044009z-ecdcb26a.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_commerce_backend.py",
+    "tests/test_sandbox_checkout_enable.py"
+  ],
+  "checks": [
+    {
+      "name": "All 228 Python/PHP tests passed locally and in activation job",
+      "command": "All 228 Python/PHP tests passed locally and in activation job",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "PHP commerce syntax, workflow YAML/bash syntax and actionlint passed",
+      "command": "PHP commerce syntax, workflow YAML/bash syntax and actionlint passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "13 shared workflow tests and workflow validator passed",
+      "command": "13 shared workflow tests and workflow validator passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Independent review: 7 activation and 12 commerce tests passed; no Critical/Important issue for isolated test",
+      "command": "Independent review: 7 activation and 12 commerce tests passed; no Critical/Important issue for isolated test",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Activation run39217543467 success; approval/source/cookie/test capability verified; production homepage/private config hashes unchanged; transport cleanup passed",
+      "command": "Activation run39217543467 success; approval/source/cookie/test capability verified; production homepage/private config hashes unchanged; transport cleanup passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Self-signed unknown-event replay accepted; invalid/stale/tampered signatures rejected; actual Stripe-signed delivery not yet verified",
+      "command": "Self-signed unknown-event replay accepted; invalid/stale/tampered signatures rejected; actual Stripe-signed delivery not yet verified",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Authenticated canonical Stripe read: sandbox endpoint enabled, livemodefalse, exact isolated URL/events/APIversion",
+      "command": "Authenticated canonical Stripe read: sandbox endpoint enabled, livemodefalse, exact isolated URL/events/APIversion",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Published code3479646 and final manual-only workflow61fc1e2, verified GitHub branch heads; source CI39217549676/39217549695 and final workflow CI39217730535 passed",
+      "command": "Published code3479646 and final manual-only workflow61fc1e2, verified GitHub branch heads; source CI39217549676/39217549695 and final workflow CI39217730535 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Final manual-only source Storefront CI39217730500 passed",
+      "result": "passed"
+    }
+  ],
   "findings": []
 }
