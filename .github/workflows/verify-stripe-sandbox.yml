@@ -1,10 +1,6 @@
 name: Verify Stripe Sandbox Key
 
 on:
-  # One-time bootstrap on this reviewed work branch; remove after verification.
-  push:
-    branches: [fix/storefront-integration-20261019]
-    paths: [.github/workflows/verify-stripe-sandbox.yml]
   workflow_dispatch:
 
 permissions:
