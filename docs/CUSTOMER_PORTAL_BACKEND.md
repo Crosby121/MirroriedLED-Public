@@ -75,3 +75,26 @@ python3 -m unittest discover -s tests -p 'test_customer_portal_backend.py' -v
 ```
 
 The HTTP integration suite starts an isolated PHP server with a private temporary database and tests unconfigured/unsafe setup, CSRF, origin checks, session rotation, free entitlements, password hashing, trusted media detection, private ownership, ranges, sign-out, quotas and throttling. It needs PHP with the two extensions; the optional real-video fixture test additionally uses `ffmpeg`. Tests do not send email, take payment, connect hardware or alter the deployed site.
+
+## Verified account configuration — October 18, 2026 (Pacific)
+
+The missing default private configuration was installed outside `public_html`
+using the existing hosting SSH connection. The setup job preserved the public
+website and did not create staff accounts or activate payments. Public HTTPS
+status now reports `configured:true`, `capabilities.signup:true`,
+`capabilities.business:true` and `capabilities.payments:false`. This verifies
+backend availability; it does not claim a fresh live signup, password reset,
+email delivery, merchant payment, or hardware acceptance.
+
+Evidence: [private setup run 39189529036](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39189529036).
+The prior read-only run 39189161597 confirmed PHP 8.3.35, Python 3.11.17 and
+required extensions; its metadata showed the default config and storage absent.
+The setup helper refuses unsafe parents/symlinks, writes mode 0600 configuration
+inside mode 0700 directories, and never replaces existing configuration or data.
+The final setup workflow is manual only and requires its explicit acknowledgement
+input. The one-time push trigger was removed after verified success.
+
+Draft PR 26's new `/shop/` and `commerce.php` are still not deployed. Keep
+merchant activation separate. Verify the owner's account before assigning any
+numeric staff role. Real sandbox checkout/signed webhook acceptance and final
+product, shipping, tax and fulfillment terms remain launch requirements.

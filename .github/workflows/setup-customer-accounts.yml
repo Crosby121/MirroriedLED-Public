@@ -1,10 +1,6 @@
 name: Initialize Private Customer Accounts on Hostinger
 
 on:
-  push:
-    branches: [fix/storefront-integration-20261019]
-    paths:
-      - .github/workflows/setup-customer-accounts.yml
   workflow_dispatch:
     inputs:
       acknowledge_private_setup:
@@ -18,7 +14,7 @@ permissions:
 
 jobs:
   verify:
-    if: ${{ github.event_name == 'push' || inputs.acknowledge_private_setup }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.acknowledge_private_setup }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
     environment: production

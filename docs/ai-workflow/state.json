@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T02:10:57Z",
+  "observed_at": "2026-10-19T02:21:55Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,7 +9,7 @@
   },
   "source": {
     "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
-    "summary": "Current main includes Stadium Builds galleries. PR 26 integrates draft PR 14 without eight prior conflicts, preserves gallery images and hosted Python 3.11, and reconciles shared history. Native local 176 Python/37 Node tests pass. Actual merchant acceptance/private setup and fresh live release remain pending; source publication is not deployment.",
+    "summary": "Current main galleries and public files are preserved. PR 26 integrates the phased ordering draft and retains launch gates. Missing live private account config/storage have now been created through verified SSH; HTTPS reports configured/signup/business true and payments false. No staff identity, merchant acceptance or new storefront deployment is claimed.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
@@ -91,6 +91,11 @@
         "name": "Final PR 26 workflow validation at 6652c68",
         "result": "passed",
         "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39188714867"
+      },
+      {
+        "name": "Private customer account setup and live HTTPS configuration status",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39189529036"
       }
     ]
   },
@@ -186,6 +191,12 @@
       "basis": "source_changes_and_verified_GitHub_tests",
       "evidence": "https://github.com/Crosby121/MirroriedLED-Public/pull/22",
       "observed_at": "2026-10-06T23:51:52Z"
+    },
+    {
+      "finding": "Live account configuration is now installed. HTTPS reports configured:true, signup:true, business:true and payments:false. No staff accounts or merchant activation were created; draft shop/commerce source remains undeployed. A fresh actual signup/payment was not performed.",
+      "basis": "verified_GitHub_setup_receipt_and_live_HTTPS",
+      "evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39189529036",
+      "observed_at": "2026-10-19T02:21:55Z"
     }
   ],
   "connector": {
