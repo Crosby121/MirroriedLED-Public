@@ -4,6 +4,7 @@ declare(strict_types=1);
 /** Physical-product checkout. A browser redirect never proves payment. */
 final class CommercePortal
 {
+    private const STRIPE_API_VERSION = '2026-09-30.endive';
     public const READS = ['commerce-orders'];
     public const WRITES = ['commerce-address', 'commerce-offer', 'commerce-checkout', 'commerce-refresh'];
     public const PRODUCTS = ['Custom Infinity Mirror', 'Address Sign or Mailbox'];
@@ -160,7 +161,7 @@ final class CommercePortal
         if ($this->transport!==null) return ($this->transport)($method,$path,$params,$key);
         $url='https://api.stripe.com/v1'.$path;
         if ($method==='GET'&&$params) $url.='?'.http_build_query($params);
-        $curl=curl_init($url);$headers=['Authorization: Bearer '.$this->config['commerce']['stripe_secret_key']];
+        $curl=curl_init($url);$headers=['Authorization: Bearer '.$this->config['commerce']['stripe_secret_key'], 'Stripe-Version: '.self::STRIPE_API_VERSION];
         if ($key!==null) $headers[]='Idempotency-Key: '.$key;
         curl_setopt_array($curl,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_CUSTOMREQUEST=>$method,CURLOPT_HTTPHEADER=>$headers,CURLOPT_CONNECTTIMEOUT=>10,CURLOPT_TIMEOUT=>30,CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_FOLLOWLOCATION=>false]);
         if ($method==='POST') curl_setopt($curl,CURLOPT_POSTFIELDS,http_build_query($params));
@@ -183,15 +184,18 @@ final class CommercePortal
             if ($prior&&$prior['state']==='open') throw new PortalError('Refresh payment status before trying checkout again.',409);
             if ($prior&&$prior['state']==='creating') $row=$prior;
             else {
-                $attempt=$prior?(int)$prior['attempt']+1:1;$snapshot=$terms+['orderId'=>$order['id'],'userId'=>(int)$this->user['id'],'email'=>$this->user['email'],'mode'=>$this->config['commerce']['mode']??'live'];
+                $suffix='';foreach(unpack('C*',random_bytes(8)) as $byte)$suffix.=chr(97+$byte%26);
+                $attempt=$prior?(int)$prior['attempt']+1:1;$snapshot=$terms+['orderId'=>$order['id'],'userId'=>(int)$this->user['id'],'email'=>$this->user['email'],'mode'=>$this->config['commerce']['mode']??'live','integrationIdentifier'=>'mirroriedled_hosted_'.$suffix];
                 $this->exec('INSERT INTO commerce_checkouts(order_id,offer_version,attempt,snapshot,created_at) VALUES(?,?,?,?,?)',[$order['id'],$terms['version'],$attempt,json_encode($snapshot,JSON_THROW_ON_ERROR),time()]);
                 $row=$this->rows('SELECT * FROM commerce_checkouts WHERE id=?',[$this->db->lastInsertId()])[0];
             }
+            $snapshot=json_decode($row['snapshot'],true,32,JSON_THROW_ON_ERROR);
+            if (!preg_match('/^mirroriedled_hosted_[a-z]{8}$/D',(string)($snapshot['integrationIdentifier']??''))) throw new PortalError('This unfinished checkout needs support review before retrying. Your order is saved.',409);
             $this->db->exec('COMMIT');
         } catch(Throwable $e) { if ($this->db->inTransaction()) $this->db->exec('ROLLBACK');else { try {$this->db->exec('ROLLBACK');}catch(Throwable){} }throw $e; }
         $s=json_decode($row['snapshot'],true,32,JSON_THROW_ON_ERROR);$a=$s['address'];$origin=$this->config['origin'];
         $basePath=rtrim(dirname(dirname(dirname((string)($_SERVER['SCRIPT_NAME']??'/customer-portal/backend/api.php')))),'/');
-        $params=['mode'=>'payment','payment_method_types'=>['card'],'customer_email'=>$s['email'],'client_reference_id'=>$s['orderId'],'automatic_tax'=>['enabled'=>'true'],
+        $params=['mode'=>'payment','integration_identifier'=>$s['integrationIdentifier'],'customer_email'=>$s['email'],'client_reference_id'=>$s['orderId'],'automatic_tax'=>['enabled'=>'true'],
             'line_items'=>[['price_data'=>['currency'=>'usd','unit_amount'=>$s['productCents'],'tax_behavior'=>'exclusive','product_data'=>['name'=>'Mirroried LED custom build '.$s['orderId'],'tax_code'=>'txcd_99999999']], 'quantity'=>1]],
             'shipping_options'=>[['shipping_rate_data'=>['type'=>'fixed_amount','display_name'=>'Delivery to '.$a['city'].', '.$a['state'].' '.$a['postalCode'],'fixed_amount'=>['amount'=>$s['shippingCents'],'currency'=>'usd'],'tax_behavior'=>'exclusive']]],
             'metadata'=>['order_id'=>$s['orderId'],'checkout_record'=>(string)$row['id'],'proof_id'=>$s['proofId']],

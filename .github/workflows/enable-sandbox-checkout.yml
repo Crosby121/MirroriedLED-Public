@@ -1,0 +1,209 @@
+name: Enable Approved Sandbox Checkout
+
+on:
+  push:
+    branches: [fix/storefront-integration-20261019]
+    paths: [.github/workflows/enable-sandbox-checkout.yml]
+  workflow_dispatch:
+    inputs:
+      order_fingerprint:
+        description: "SHA-256 of the exact authorized sandbox order reference"
+        type: string
+        required: true
+      acknowledge_sandbox_checkout:
+        description: "Enable only the approved $1 sandbox quote with test tax and artificial fulfillment"
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+concurrency:
+  group: hostinger-main-website
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/fix/storefront-integration-20261019' && ((github.event_name == 'workflow_dispatch' && inputs.acknowledge_sandbox_checkout) || github.event_name == 'push') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: production
+    env:
+      SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+      SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+      SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+      PUBLIC_HTML: ${{ secrets.HOSTINGER_PUBLIC_HTML }}
+      SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+      ORDER_FINGERPRINT: ${{ inputs.order_fingerprint || '47841d2f978239ea36e4af4ad55468ad8f72967a95606b6271b098436b21be71' }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Test checkout and preservation boundaries
+        run: |
+          php -l customer-portal/backend/commerce.php
+          php -m | grep -q pdo_sqlite
+          php -m | grep -q dom
+          php -m | grep -q posix
+          python3 -m unittest discover -s tests -q
+          python3 tools/ai_workflow.py validate
+          python3 - <<'PYVALIDATE'
+          import os, re
+          if not re.fullmatch(r'[a-f0-9]{64}', os.environ['ORDER_FINGERPRINT']):
+              raise SystemExit('Exact authorized order fingerprint required')
+          PYVALIDATE
+      - name: Prepare the existing key for a read-only login check
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+          profile = json.loads(Path('deploy/hostinger/main-website.json').read_text())
+          assert profile['domain'] == 'mirroriedled.com'
+          values = {name: os.environ.get(name) or str(profile[field]) for name, field in {
+              'SSH_HOST': 'ssh_host', 'SSH_PORT': 'ssh_port', 'SSH_USER': 'ssh_user',
+              'PUBLIC_HTML': 'public_html', 'REMOTE_PYTHON': 'python_executable'}.items()}
+          assert re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.-]*', values['SSH_HOST'])
+          assert values['SSH_PORT'].isdigit() and 1 <= int(values['SSH_PORT']) <= 65535
+          assert re.fullmatch(r'u[0-9]+', values['SSH_USER'])
+          assert values['PUBLIC_HTML'] == '/home/' + values['SSH_USER'] + '/domains/mirroriedled.com/public_html'
+          assert values['REMOTE_PYTHON'] in {'python3', '/opt/alt/python311/bin/python3', '/opt/alt/python38/bin/python3'}
+          key = os.environ.get('SSH_PRIVATE_KEY', '').lstrip('\ufeff').replace('\r', '').strip()
+          if '\\n' in key and '\n' not in key:
+              key = key.replace('\\n', '\n')
+          hosts = os.environ.get('SSH_KNOWN_HOSTS', '').replace('\r', '').strip()
+          if not key or not hosts:
+              raise SystemExit('Main-site private key or trusted host setting is unavailable')
+          folder = Path(os.environ['RUNNER_TEMP']) / 'mled-readonly-auth'
+          folder.mkdir(mode=0o700)
+          for name, value in [('key', key), ('known_hosts', hosts)]:
+              target = folder / name
+              target.touch(mode=0o600)
+              target.write_text(value + '\n')
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              for name, value in values.items():
+                  output.write(name + '=' + value + '\n')
+          PY
+          ssh-keygen -y -P '' -f "$RUNNER_TEMP/mled-readonly-auth/key" > "$RUNNER_TEMP/mled-readonly-auth/public"
+          echo 'Deployment key public fingerprint:'
+          ssh-keygen -lf "$RUNNER_TEMP/mled-readonly-auth/public" -E sha256 | awk '{print $1, $2, $NF}'
+      - name: Enable only the approved isolated sandbox checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          REMOTE_SANDBOX_STAGE="${PUBLIC_HTML%/public_html}/.mled-checkout-setup-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/mled-readonly-auth/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' - '$PUBLIC_HTML' '$REMOTE_SANDBOX_STAGE'" <<'TRANSPORT'
+          import os, stat, sys
+          from pathlib import Path
+          root, stage = map(Path, sys.argv[1:])
+          for path in (root, *root.parents, stage):
+              if path.is_symlink():
+                  raise SystemExit('Unsafe transport ancestor')
+          for path in (root, root.parent):
+              info = path.stat()
+              if info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o022:
+                  raise SystemExit('Unsafe transport parent ownership or permissions')
+          if stage.parent != root.parent:
+              raise SystemExit('Invalid transport location')
+          stage.mkdir(mode=0o700)
+          TRANSPORT
+          # Arm cleanup only after this run exclusively created its private transport.
+          printf 'REMOTE_SANDBOX_STAGE=%s\n' "$REMOTE_SANDBOX_STAGE" >> "$GITHUB_ENV"
+          scp "${SSH_OPTIONS[@]}" -P "$SSH_PORT" deploy/hostinger/enable-sandbox-checkout.py deploy/hostinger/checkout-sandbox.py deploy/hostinger/website-release.py deploy/hostinger/setup-customer-accounts.py customer-portal/backend/commerce.php "$SSH_USER@$SSH_HOST:$REMOTE_SANDBOX_STAGE/"
+          before="$(ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "sha256sum '$PUBLIC_HTML/index.html' '${PUBLIC_HTML%/public_html}/mirroriedled-private/customer-portal/config.php'")"
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' '$REMOTE_SANDBOX_STAGE/enable-sandbox-checkout.py' --webroot '$PUBLIC_HTML' --commerce '$REMOTE_SANDBOX_STAGE/commerce.php' --source '$GITHUB_SHA' --order-fingerprint '$ORDER_FINGERPRINT' --sandbox-tax-confirmed --fake-fulfillment-confirmed"
+          after="$(ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "sha256sum '$PUBLIC_HTML/index.html' '${PUBLIC_HTML%/public_html}/mirroriedled-private/customer-portal/config.php'")"
+          test "$before" = "$after"
+          echo 'MLED_PRODUCTION_HOMEPAGE_AND_CONFIG_PRESERVED=true'
+      - name: Verify isolated checkout and harmless signed notifications
+        env:
+          SANDBOX_WEBHOOK_SECRET: ${{ secrets.MLED_STRIPE_SANDBOX_WEBHOOK_SECRET }}
+        run: |
+          python3 - <<'PYVERIFY'
+          import hashlib, hmac, json, os, re, time, uuid
+          from urllib.error import HTTPError
+          from urllib.request import build_opener, HTTPRedirectHandler, Request
+          class NoRedirect(HTTPRedirectHandler):
+              def redirect_request(self, *args, **kwargs):
+                  return None
+          client = build_opener(NoRedirect)
+          base = 'https://mirroriedled.com/MLED_checkout_TEST/customer-portal/backend/'
+          with client.open(base + 'api.php?action=session', timeout=20) as response:
+              data = json.load(response)
+              assert data.get('configured') is True
+              assert data.get('capabilities', {}).get('payments') is True
+              assert response.headers.get('X-MLED-Sandbox-Source') == 'f1e869cd00bef0934090a61713982c6eaee504a1'
+              assert response.headers.get('X-MLED-Checkout-Source') == os.environ['GITHUB_SHA']
+              assert '/MLED_checkout_TEST/customer-portal/' in response.headers.get('Set-Cookie', '')
+          with client.open('https://mirroriedled.com/customer-portal/backend/api.php?action=session', timeout=20) as response:
+              assert json.load(response).get('capabilities', {}).get('payments') is False
+          try:
+              client.open(base + 'commerce.php', timeout=20)
+              raise AssertionError('Internal commerce source exposed')
+          except HTTPError as error:
+              assert error.code in (403, 404)
+          secret = os.environ['SANDBOX_WEBHOOK_SECRET']
+          assert re.fullmatch(r'whsec_[A-Za-z0-9]+', secret)
+          # Unknown event type: verifies signature/replay handling without provider calls or order mutation.
+          raw = json.dumps({'id': 'evt_MLEDProbe' + uuid.uuid4().hex, 'type': 'mirroried.sandbox.signature_probe', 'livemode': False, 'data': {'object': {}}}, separators=(',', ':')).encode()
+          def signature(body, stamp):
+              digest = hmac.new(secret.encode(), str(stamp).encode() + b'.' + body, hashlib.sha256).hexdigest()
+              return 't=' + str(stamp) + ',v1=' + digest
+          def post(body, header, expected):
+              request = Request(base + 'api.php?action=commerce-webhook', data=body, headers={'Content-Type': 'application/json', 'Stripe-Signature': header}, method='POST')
+              try:
+                  with client.open(request, timeout=20) as response:
+                      assert response.status == expected
+                      assert json.load(response).get('ok') is True
+              except HTTPError as error:
+                  assert error.code == expected
+          stamp = int(time.time())
+          signed = signature(raw, stamp)
+          post(raw, signed, 200)
+          post(raw, signed, 200)
+          post(raw, 't=' + str(stamp) + ',v1=' + '0' * 64, 400)
+          post(raw, signature(raw, stamp - 601), 400)
+          post(raw + b' ', signed, 400)
+          print('MLED_CUSTOMER_APPROVAL_VERIFIED=true')
+          print('MLED_SANDBOX_CHECKOUT_ENABLED=true')
+          print('MLED_SELF_SIGNED_PROBE_AND_REPLAY_VERIFIED=true')
+          print('MLED_STRIPE_SIGNED_DELIVERY_VERIFIED=false')
+          print('MLED_PRODUCTION_PAYMENT_ACTIVATION=false')
+          PYVERIFY
+      - name: Remove private transport files
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          trap 'rm -f -- "$RUNNER_TEMP/sandbox-credentials.json" "$RUNNER_TEMP/sandbox-receipt.json"; rm -rf -- "$RUNNER_TEMP/mled-readonly-auth"' EXIT
+          if [[ -n "${REMOTE_SANDBOX_STAGE:-}" && -f "$RUNNER_TEMP/mled-readonly-auth/key" ]]; then
+            SSH_OPTIONS=(-i "$RUNNER_TEMP/mled-readonly-auth/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts")
+            ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' - '$REMOTE_SANDBOX_STAGE'" <<'CLEANUP'
+          import os, re, stat, sys
+          from pathlib import Path
+          stage = Path(sys.argv[1])
+          if not re.fullmatch(r'\.mled-checkout-setup-[0-9]+-[0-9]+', stage.name):
+              raise SystemExit('Invalid cleanup location')
+          for path in (stage, *stage.parents):
+              if path.is_symlink():
+                  raise SystemExit('Unsafe cleanup ancestor')
+          info = stage.stat()
+          if not stage.is_dir() or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o077:
+              raise SystemExit('Unsafe cleanup ownership or permissions')
+          for name in ('enable-sandbox-checkout.py', 'commerce.php', 'sandbox-credentials.json', 'sandbox-website.zip', 'config.example.php', 'checkout-sandbox.py', 'website-release.py', 'setup-customer-accounts.py'):
+              (stage / name).unlink(missing_ok=True)
+          cache = stage / '__pycache__'
+          if cache.exists():
+              if cache.is_symlink() or not cache.is_dir():
+                  raise SystemExit('Unsafe cleanup cache')
+              for path in cache.iterdir():
+                  if path.is_symlink() or not path.is_file() or path.suffix != '.pyc':
+                      raise SystemExit('Unexpected cleanup file')
+                  path.unlink()
+              cache.rmdir()
+          stage.rmdir()
+          CLEANUP
+          fi

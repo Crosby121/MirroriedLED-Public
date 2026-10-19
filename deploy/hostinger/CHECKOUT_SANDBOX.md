@@ -92,3 +92,28 @@ after interruption; partial private temporary copies cannot poison the final pro
 The final quote workflow is manual-only and requires a selected order fingerprint
 and explicit test-quote acknowledgement. Its one-time push bootstrap was removed
 after successful private proof/quote preparation.
+
+## Enable an approved artificial quote
+
+`Enable Approved Sandbox Checkout` requires the selected order fingerprint and
+explicit acknowledgement. The helper reads the private database without changing
+approval: the current one-dollar artwork-reference proof must already be approved
+by its customer, with an unexpired California offer and no checkout records.
+Restricted test credentials, the installed endpoint signer, fresh active sandbox
+tax settings/registration and artificial fulfillment terms are required.
+
+Only the isolated commerce backend and its private readiness flags are updated.
+The original backend is backed up privately using atomic publication under a
+process lock; interrupted same-source deployment can resume. The receipt keeps
+both the installed base source and the separate checkout patch source/hash.
+Production homepage/config hashes must remain identical. Private accounts, roles,
+artwork and approved order data are preserved.
+
+HTTPS verification checks the base/checkout source headers, sandbox cookie scope,
+internal PHP denial, test checkout capability and disabled production payments.
+A harmless self-signed unknown event tests HMAC validation and duplicate delivery;
+invalid, stale and tampered signatures must be rejected. This probe makes no
+provider calls and does not prove actual Stripe-signed delivery. Resume only the
+sandbox provider webhook after these checks, then the customer opens test Checkout.
+An actual test-card payment, canonical reconciliation and provider delivery/replay
+are still required. Test payments cannot release production work.

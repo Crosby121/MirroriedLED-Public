@@ -96,7 +96,11 @@ payment and final artwork approval. Sales must confirm materials, shipping cost
 and production capacity. Any changed address invalidates the shipping offer;
 quote/proof revisions invalidate checkout terms. Offer versions are monotonic.
 An active checkout locks address/proof/price changes, avoiding a payment for an
-outdated design. Repeated checkout calls reuse the same provider session.
+outdated design. Repeated checkout calls reuse the same provider session. Provider requests pin
+Stripe API version `2026-09-30.endive`, allow dynamic payment methods and persist
+a unique integration identifier in the immutable checkout snapshot. A timed-out
+retry reuses identical provider parameters and the original idempotency key.
+Legacy incomplete snapshots without that identifier require support review.
 
 Cancelled browser checkout can be reopened while its session is valid. Expired
 sessions are reconciled before retry. A mismatched paid session is held for

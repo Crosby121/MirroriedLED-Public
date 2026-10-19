@@ -36,21 +36,30 @@ class CommerceTests(unittest.TestCase):
         return order,terms
     def approved_offer(self,sign=False):
         order,terms=self.quoted(sign);offer=self.post(self.h.staff,'commerce-offer',terms)['commerce']['offer'];order=self.post(self.h.customer,'business-approve',{'orderId':order['id'],'revision':order['revision'],'proofId':order['proof']['id'],'acceptQuote':True})['order'];return order,offer
-    def cli(self,order_id,operation='checkout',session=None):
+    def cli(self,order_id,operation='checkout',session=None,fail_checkout=False,expected_http_status=None):
         # A PHP callable is injected by this test process only; the HTTP app cannot select one.
         source=self.server.public/'customer-portal/backend/portal.php'
         script=self.server.root/'acceptance.php'
         fixture=self.server.root/'payment.json';fixture.write_text(json.dumps(session or {}))
         code="<?php require "+php_quote(str(source))+"; $config=require "+php_quote(str(self.server.config))+"; $db=new PDO('sqlite:' . $config['storage_path'] . '/portal.sqlite',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]); $user=$db->query('SELECT * FROM users WHERE id="+str(self.h.customer_id)+"')->fetch();"
         code+=" $transport=function($method,$path,$params,$key) { file_put_contents("+php_quote(str(self.server.root/'provider-requests.jsonl'))+",json_encode([$method,$path,$params,$key]).PHP_EOL,FILE_APPEND); if($path==='/customers')return ['id'=>'cus_TESTONLY']; if($path==='/checkout/sessions')return ['id'=>'cs_test_ACCEPTANCE','url'=>'https://checkout.stripe.com/c/pay/cs_test_ACCEPTANCE','expires_at'=>time()+3600]; throw new RuntimeException('Unexpected provider request'); }; $service=new CommercePortal($db,$config,$user,$transport);"
+        if fail_checkout:
+            code=code.replace("if($path==='/checkout/sessions')return", "if($path==='/checkout/sessions')throw new RuntimeException('Simulated timeout'); if($path==='/checkout/sessions')return")
         if operation=='checkout':
             version=self.db().execute('SELECT version FROM commerce_offers WHERE order_id=?',(order_id,)).fetchone()[0]
             code+="$service->handle('commerce-checkout',['orderId'=>"+php_quote(order_id)+",'offerVersion'=>"+str(version)+",'acceptTerms'=>true]);"
         else: code+="$service->reconcile(json_decode(file_get_contents("+php_quote(str(fixture))+"),true)); echo json_encode(CommercePortal::publicTerms($db,"+php_quote(order_id)+"));"
+        if expected_http_status is not None:
+            code=code.replace("$service->handle('commerce-checkout'", "try{$service->handle('commerce-checkout'")+"}catch(PortalError $error){echo json_encode(['httpStatus'=>$error->httpStatus]);}"
         script.write_text(code)
         result=subprocess.run([PHP,str(script)],capture_output=True,text=True)
+        if fail_checkout:
+            self.assertNotEqual(result.returncode,0)
+            return None
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
-        return json.loads(result.stdout)
+        result=json.loads(result.stdout)
+        if expected_http_status is not None:self.assertEqual(result.get('httpStatus'),expected_http_status)
+        return result
     def db(self):
         db=sqlite3.connect(self.server.storage/'portal.sqlite');self.addCleanup(db.close);return db
     def paid_session(self,order):
@@ -86,12 +95,33 @@ class CommerceTests(unittest.TestCase):
         calls=(self.server.root/'provider-requests.jsonl').read_text().splitlines();self.assertEqual(len(calls),2)
         session_params=json.loads(calls[1])[2];self.assertEqual(session_params['line_items'][0]['price_data']['unit_amount'],35000);self.assertEqual(session_params['shipping_options'][0]['shipping_rate_data']['fixed_amount']['amount'],2500)
         self.assertEqual(session_params['automatic_tax']['enabled'],'true');self.assertNotIn('shipping_address_collection',session_params)
+        self.assertNotIn('payment_method_types', session_params)
+        self.assertRegex(session_params.get('integration_identifier',''), r'^mirroriedled_hosted_[a-z]{8}$')
         again=self.cli(order['id']);self.assertEqual(result,again);self.assertEqual(len((self.server.root/'provider-requests.jsonl').read_text().splitlines()),2)
         paid=self.paid_session(order);confirmed=self.cli(order['id'],'reconcile',paid);self.assertEqual(confirmed['payment']['state'],'paid');self.assertEqual(confirmed['payment']['paid_cents'],40750)
         self.cli(order['id'],'reconcile',paid)
         self.assertEqual(self.db().execute("SELECT COUNT(*) FROM business_events WHERE kind='PAYMENT_CONFIRMED'").fetchone()[0],1)
         current=self.h.current(order);self.post(self.h.staff,'business-release',{'orderId':order['id'],'revision':current['revision']},409)
         self.post(self.h.staff,'business-cancel',{'orderId':order['id'],'revision':current['revision'],'note':'Payment unresolved'},409)
+
+    def test_checkout_identifier_and_parameters_are_stable_after_provider_timeout(self):
+        order,offer=self.approved_offer();self.enable_test()
+        self.cli(order['id'],fail_checkout=True)
+        self.cli(order['id'])
+        calls=[json.loads(line) for line in (self.server.root/'provider-requests.jsonl').read_text().splitlines()]
+        attempts=[call for call in calls if call[1]=='/checkout/sessions']
+        self.assertEqual(len(attempts),2)
+        self.assertRegex(attempts[0][2].get('integration_identifier',''),r'^mirroriedled_hosted_[a-z]{8}$')
+        self.assertEqual(attempts[0],attempts[1])
+
+    def test_legacy_incomplete_checkout_requires_review_before_more_provider_calls(self):
+        order,offer=self.approved_offer();self.enable_test()
+        self.cli(order['id'],fail_checkout=True)
+        db=self.db();snapshot=json.loads(db.execute('SELECT snapshot FROM commerce_checkouts').fetchone()[0]);snapshot.pop('integrationIdentifier',None)
+        db.execute('UPDATE commerce_checkouts SET snapshot=?',(json.dumps(snapshot),));db.commit()
+        before=(self.server.root/'provider-requests.jsonl').read_text()
+        self.cli(order['id'],expected_http_status=409)
+        self.assertEqual((self.server.root/'provider-requests.jsonl').read_text(),before)
     def test_forged_paid_return_and_mismatched_amount_never_mark_paid(self):
         order,offer=self.approved_offer();self.enable_test();self.cli(order['id'])
         unpaid=self.paid_session(order);unpaid['payment_status']='unpaid';self.cli(order['id'],'reconcile',unpaid)
