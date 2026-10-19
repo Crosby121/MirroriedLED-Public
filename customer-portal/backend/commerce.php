@@ -31,7 +31,7 @@ final class CommercePortal
         $c=$config['commerce']??[];
         $mode=$c['mode']??'live';
         return ($config['business_enabled']??false)===true && ($c['enabled']??false)===true && in_array($mode,['live','test'],true)
-            && preg_match('/^sk_'.$mode.'_[A-Za-z0-9]+$/D',(string)($c['stripe_secret_key']??''))===1
+            && preg_match('/^(?:rk|sk)_'.$mode.'_[A-Za-z0-9]+$/D',(string)($c['stripe_secret_key']??''))===1
             && preg_match('/^whsec_[A-Za-z0-9]+$/D',(string)($c['stripe_webhook_secret']??''))===1
             && ($c['tax_setup_confirmed']??false)===true && ($c['fulfillment_setup_confirmed']??false)===true && extension_loaded('curl');
     }

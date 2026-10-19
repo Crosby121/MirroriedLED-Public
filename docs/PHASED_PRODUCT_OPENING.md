@@ -45,7 +45,11 @@ environment. Do not paste credentials into chat or commit them.
 
 - `commerce.enabled`: defaults to false.
 - `commerce.mode`: `test` for sandbox acceptance, `live` for actual orders.
-- `commerce.stripe_secret_key`: `MLED_STRIPE_SECRET_KEY` environment value.
+- `commerce.stripe_secret_key`: `MLED_STRIPE_SECRET_KEY` private environment value.
+  Prefer a restricted server key (`rk_test_` in the sandbox or `rk_live_` for
+  approved live operation); the legacy `sk_` server-key form remains supported.
+  The key environment must match `commerce.mode`; publishable `pk_` keys are rejected.
+  Prefix validation does not verify API permissions or actual merchant acceptance.
 - `commerce.stripe_webhook_secret`: `MLED_STRIPE_WEBHOOK_SECRET` value.
 - `commerce.tax_setup_confirmed`: confirm the actual merchant registrations and
   tax treatment for these physical products, including the general tangible

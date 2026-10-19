@@ -11,6 +11,7 @@ return [
     'commerce' => [
         'enabled' => false,
         'mode' => 'live', // Use test only for provider sandbox acceptance, never fulfillment.
+        // Prefer a restricted server key (rk_test_ / rk_live_) with only needed permissions.
         'stripe_secret_key' => getenv('MLED_STRIPE_SECRET_KEY') ?: '',
         'stripe_webhook_secret' => getenv('MLED_STRIPE_WEBHOOK_SECRET') ?: '',
         // Set after the merchant's actual registrations, product taxability,

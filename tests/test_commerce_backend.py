@@ -60,6 +60,16 @@ class CommerceTests(unittest.TestCase):
         data=self.h.customer.json('commerce-status')[1];self.assertFalse(data['paymentsAvailable'])
         order,offer=self.approved_offer();self.post(self.h.customer,'commerce-checkout',{'orderId':order['id'],'offerVersion':offer['version'],'acceptTerms':True},503)
         self.assertEqual(self.db().execute('SELECT COUNT(*) FROM commerce_checkouts').fetchone()[0],0)
+    def test_restricted_server_key_support_preserves_the_test_live_boundary(self):
+        self.enable_test()
+        original=self.server.config.read_text()
+        # Artificial fixture keys only. No provider requests or live-mode calls.
+        for key,available in [('rk_test_TESTONLY',True),('rk_live_TESTONLY',False),('pk_test_TESTONLY',False),('sk_live_TESTONLY',False),('sk_test_TESTONLY',True)]:
+            with self.subTest(key=key):
+                self.server.config.write_text(original.replace('sk_test_TESTONLY',key))
+                data=self.h.customer.json('commerce-status')[1]
+                self.assertEqual(data['paymentsAvailable'],available)
+                self.assertEqual(data['paymentMode'],'test' if available else None)
     def test_two_products_preserve_quotes_and_scope_proof_before_payment(self):
         for sign in [False,True]:
             order,terms=self.quoted(sign);self.post(self.h.customer,'commerce-offer',terms,403)
