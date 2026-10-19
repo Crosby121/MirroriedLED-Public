@@ -78,11 +78,19 @@
     return `<details><summary>Infinity mirror configuration</summary><p>${esc(s.depthIn)} in depth · ${esc(s.finish)}<br>${s.rim.enabled?`${esc(s.rim.rows)} rim rows × ${esc(s.rim.countPerRow)} LEDs`:'No rim strips'} · ${s.rim.addressable?'addressable effects':'steady glow'}${s.audioReactive?' · audio reactive':''}<br>${p?`${esc(p.name)} × ${esc(p.count)} · ${esc(p.cols)} across × ${esc(p.rows)} high`:'Rim only'}<br>Controller: ${esc(s.controllerId)}${s.rear==='hub75'&&s.rim.enabled?` · rim: ${esc(s.rimControllerId)}`:''}<br>${esc(builder.rules)}</p>${estimate}</details>`;
   }
   function itemsHtml(items) { return `<ul>${items.map(item=>`<li><strong>${esc(item.product)}</strong> · ${esc(item.size)} · ${esc(item.quantity || 1)}<br>${esc(item.artwork)}<br>${item.artworkSource==='upload'?'Uploaded artwork':'Mirroried LED team design'}${item.notes ? `<br>${esc(item.notes)}`:''}${builderDetails(item.builder)}</li>`).join('')}</ul>`; }
+  function engravingHtml(order,customer=false) {
+    if(!order.engravingApprovalRequired)return '';
+    const r=order.engravingReview,active=['BUILDING','QC_HOLD','QC_PASSED'].includes(order.status);
+    if(!r)return '<p><strong>Engraving approval pending.</strong> A photo of the actual engraving must be approved by the customer before shipment or pickup. Ship within three business days after approval (Monday–Friday, Pacific time).</p>';
+    const url=new URL(endpoint);url.searchParams.set('action','business-file');url.searchParams.set('id',r.file_id);
+    return `<section aria-label="Finished engraving review"><h4>Actual engraving · photo ${esc(r.version)}</h4><a href="${esc(url.href)}" target="_blank" rel="noopener"><img src="${esc(url.href)}" alt="Actual mirror engraving, review version ${esc(r.version)}" style="display:block;max-width:100%;max-height:420px;object-fit:contain"></a><p>${esc(r.summary)}</p>${r.approved_at?`<p><strong>Customer approved ${esc(when(r.approved_at))}.</strong><br>Ship by ${esc(r.ship_by_date)} (Pacific time). Transit begins after shipment.</p>`:`<p>Shipping is blocked until the customer approves this version.</p>${customer&&active?`<form class="approve-engraving"><label class="check-row"><input type="checkbox" required>I approve the actual engraving in photo ${esc(r.version)}. Ship within three business days after my approval.</label><button type="submit" class="button primary">Approve finished engraving</button></form>`:''}`}</section>`;
+  }
   function cardHtml(order) {
     return `<article class="build-card" data-order="${esc(order.id)}"><div class="build-meta"><span>${esc(labels[order.status] || order.status)}</span><span>${esc(money(order.quoteCents))}</span></div><h3>${esc(order.id)}</h3>${itemsHtml(order.items)}
       ${order.proof?`<div><h4>Proof ${esc(order.proof.version)} · ${esc(money(Number(order.proof.quote_cents)))}</h4><p class="proof-summary">${esc(order.proof.summary)}</p></div>`:''}
       ${order.files.length?`<p>${filesHtml(order.files)}</p>`:''}
       ${order.status==='QUOTED'?`<form class="approve-proof"><label class="check-row"><input type="checkbox" required>I reviewed proof ${esc(order.proof?.version)} and accept the quoted ${esc(money(order.quoteCents))} total.</label><button type="submit" class="button primary">Approve this proof & quote</button></form>`:''}
+      ${engravingHtml(order,true)}
       ${order.status==='REQUESTED'?'<form class="attach-artwork"><label>Add private artwork<input type="file" name="file" accept=".png,.jpg,.jpeg,.pdf,.svg" required></label><button type="submit" class="button secondary">Upload artwork</button></form>':''}
       ${order.carrier?`<p><strong>${esc(order.carrier)}</strong> · ${esc(order.tracking)}</p>`:''}
       <details><summary>Build timeline</summary><ul>${order.timeline.map(event=>`<li>${esc(when(event.created_at))} · ${esc(event.customer_message)}</li>`).join('')}</ul></details><p class="business-message card-message" role="status"></p></article>`;
@@ -95,6 +103,7 @@
       card.querySelector('.approve-proof')?.addEventListener('submit',async event=>{
         event.preventDefault(); await cardAction(card,event.submitter,async()=>api('business-approve',{orderId:order.id,revision:order.revision,proofId:order.proof.id,acceptQuote:true}),'Proof and quote approved.');
       });
+      card.querySelector('.approve-engraving')?.addEventListener('submit',async event=>{event.preventDefault();await cardAction(card,event.submitter,()=>api('business-engraving-approve',{orderId:order.id,revision:order.revision,reviewId:order.engravingReview.id,acceptEngraving:true}),'Finished engraving approved; ship-by date saved.');});
       card.querySelector('.attach-artwork')?.addEventListener('submit',async event=>{
         event.preventDefault(); const file=event.target.querySelector('input[type=file]').files[0];
         await cardAction(card,event.submitter,()=>uploadFile(order.id,'artwork',file),'Private artwork saved.');
@@ -190,14 +199,14 @@
 
   async function formAction(formId,messageId,action,success) {
     if(!ready())return;const button=$(formId).querySelector('button[type=submit]');button.disabled=true;message(messageId,'Saving…');
-    try{await action();await refresh();message(messageId,success);}catch(error){message(messageId,error.message,true);}finally{button.disabled=!ready();}
+    try{await action();await refresh();message(messageId,success);}catch(error){message(messageId,error.message,true);}finally{button.disabled=!ready()||(formId==='teamFulfillForm'&&selectedOrder?.status!=='FULFILLING'&&selectedOrder?.engravingApprovalRequired&&!selectedOrder?.engravingReview?.approved_at);}
   }
   function orderPayload(extra={}) { if(!selectedOrder)throw new Error('Choose a build first.');return {orderId:selectedOrder.id,revision:selectedOrder.revision,...extra}; }
   function options(id,items,filter=()=>true) { $(id).innerHTML='<option value="">Choose a file</option>'+items.filter(filter).map(file=>`<option value="${esc(file.id)}">${esc(file.name)}</option>`).join(''); }
   function renderSelected() {
     selectedOrder=orders.find(o=>o.id===$('teamOrder').value)||null;
     const order=selectedOrder;const state=order?.status;
-    $('teamOrderDetails').innerHTML=order?`<div class="build-card"><div class="build-meta"><span>${esc(labels[state])}</span><span>Revision ${esc(order.revision)}</span><span>${esc(money(order.quoteCents))}</span></div><h3>${esc(order.customer.name)}</h3><p>${esc(order.customer.email)}</p><p>Payment: ${esc(order.commerce?.payment?.state||'Awaiting checkout')}${order.commerce?.payment?.state==='paid'?' · '+esc(money(Number(order.commerce.payment.paid_cents))):''}</p>${itemsHtml(order.items)}<p>${filesHtml(order.files)}</p>${order.proof?`<p class="proof-summary">Proof ${esc(order.proof.version)}: ${esc(order.proof.summary)}</p>`:''}<p><strong>Materials reserved</strong></p><ul>${order.reservations.map(r=>`<li>${esc(r.name)} · ${esc(r.lot)} · ${esc(qty(r.quantity))} ${esc(r.unit)}</li>`).join('')||'<li>No materials reserved.</li>'}</ul>${order.machine?`<p>${esc(order.machine)} · ${esc(when(order.scheduledAt))}</p>`:''}<div class="business-actions"><button type="button" id="downloadManifest" class="button secondary">Download shop handoff</button></div></div>`:'<p class="empty-business">New customer build requests will appear here.</p>';
+    $('teamOrderDetails').innerHTML=order?`<div class="build-card"><div class="build-meta"><span>${esc(labels[state])}</span><span>Revision ${esc(order.revision)}</span><span>${esc(money(order.quoteCents))}</span></div><h3>${esc(order.customer.name)}</h3><p>${esc(order.customer.email)}</p><p>Payment: ${esc(order.commerce?.payment?.state||'Awaiting checkout')}${order.commerce?.payment?.state==='paid'?' · '+esc(money(Number(order.commerce.payment.paid_cents))):''}</p>${itemsHtml(order.items)}<p>${filesHtml(order.files)}</p>${order.proof?`<p class="proof-summary">Proof ${esc(order.proof.version)}: ${esc(order.proof.summary)}</p>`:''}${engravingHtml(order)}<p><strong>Materials reserved</strong></p><ul>${order.reservations.map(r=>`<li>${esc(r.name)} · ${esc(r.lot)} · ${esc(qty(r.quantity))} ${esc(r.unit)}</li>`).join('')||'<li>No materials reserved.</li>'}</ul>${order.machine?`<p>${esc(order.machine)} · ${esc(when(order.scheduledAt))}</p>`:''}<div class="business-actions"><button type="button" id="downloadManifest" class="button secondary">Download shop handoff</button></div></div>`:'<p class="empty-business">New customer build requests will appear here.</p>';
     const mutable=['REQUESTED','QUOTED','APPROVED'].includes(state);
     $('teamFileForm').hidden=!mutable||!hasRole('sales','production');
     $('teamQuoteForm').hidden=!mutable||!hasRole('sales');
@@ -208,6 +217,13 @@
     $('teamReleaseForm').hidden=state!=='APPROVED'||!hasRole('production');
     $('teamBuildPanel').hidden=state!=='READY'||!hasRole('production');
     $('teamQcForm').hidden=!['BUILDING','QC_HOLD'].includes(state)||!hasRole('qc');
+    const engravingStage=order?.engravingApprovalRequired&&['BUILDING','QC_HOLD','QC_PASSED'].includes(state)&&hasRole('production','qc');
+    $('teamEngravingFileForm').hidden=!engravingStage;
+    $('teamEngravingReviewForm').hidden=!engravingStage;
+    options('teamEngravingFile',order?.files||[],f=>f.purpose==='engraving');
+    const approvalPending=order?.engravingApprovalRequired&&!order?.engravingReview?.approved_at;
+    $('teamFulfillButton').disabled=state!=='FULFILLING'&&approvalPending;
+    $('teamShippingGate').textContent=state!=='FULFILLING'&&approvalPending?'Waiting for customer approval of the current finished engraving photo.':order?.engravingReview?.ship_by_date?'Ship by '+order.engravingReview.ship_by_date+' (Pacific time).':'';
     $('teamFulfillForm').hidden=!['QC_PASSED','FULFILLING'].includes(state)||!hasRole('fulfillment');
     $('teamCancelForm').hidden=!['REQUESTED','QUOTED','APPROVED','READY'].includes(state)||!hasRole('sales','production');
     $('teamFulfillButton').textContent=state==='FULFILLING'?'Record completed delivery / pickup':'Record shipment / pickup';
@@ -242,6 +258,8 @@
     $('refreshTeam').addEventListener('click',()=>refresh().catch(error=>message('businessAvailability',error.message,true)));
     const bind=(id,action,body,success)=>$(id).addEventListener('submit',event=>{event.preventDefault();formAction(id,'teamActionMessage',()=>api(action,body()),success);});
     $('teamFileForm').addEventListener('submit',event=>{event.preventDefault();formAction('teamFileForm','teamActionMessage',async()=>{const result=await uploadFile(selectedOrder?.id,$('teamFilePurpose').value,$('teamFile').files[0]);$('teamFileForm').reset();return result;},'Private file saved.');});
+    $('teamEngravingFileForm').addEventListener('submit',event=>{event.preventDefault();formAction('teamEngravingFileForm','teamActionMessage',async()=>{const result=await uploadFile(selectedOrder?.id,'engraving',$('teamEngravingImage').files[0]);$('teamEngravingFileForm').reset();return result;},'Finished engraving photo saved privately. Publish it for customer review below.');});
+    bind('teamEngravingReviewForm','business-engraving-review',()=>orderPayload({fileId:$('teamEngravingFile').value,summary:$('teamEngravingSummary').value}),'Finished engraving photo published in the customer account. Shipping waits for their approval.');
     bind('teamQuoteForm','business-proof',()=>orderPayload({fileId:$('teamProofFile').value,quoteCents:Math.round(Number($('teamQuoteAmount').value)*100),summary:$('teamProofSummary').value}),'Quote and proof ready for customer review.');
     bind('teamCheckoutForm','commerce-offer',()=>orderPayload({proofId:selectedOrder.proof.id,shippingCents:Math.round(Number($('teamShippingAmount').value)*100),productionMinDays:Number($('teamProductionMin').value),productionMaxDays:Number($('teamProductionMax').value),transitMinDays:Number($('teamTransitMin').value),transitMaxDays:Number($('teamTransitMax').value),fulfillmentConfirmed:$('teamFulfillmentConfirmed').checked}),'Complete pricing and delivery terms published.');
     bind('teamReserveForm','business-reserve',()=>orderPayload({stockId:Number($('teamStock').value),quantity:$('teamReserveQty').value}),'Materials reserved.');

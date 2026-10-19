@@ -69,6 +69,19 @@ class CommerceTests(unittest.TestCase):
         data=self.h.customer.json('commerce-status')[1];self.assertFalse(data['paymentsAvailable'])
         order,offer=self.approved_offer();self.post(self.h.customer,'commerce-checkout',{'orderId':order['id'],'offerVersion':offer['version'],'acceptTerms':True},503)
         self.assertEqual(self.db().execute('SELECT COUNT(*) FROM commerce_checkouts').fetchone()[0],0)
+
+    def test_mirror_terms_disclose_finished_engraving_approval_separately_from_transit(self):
+        order,offer=self.approved_offer()
+        self.assertIn('three business days',offer['engravingShipping'])
+        self.assertIn('actual engraving',offer['engravingShipping'])
+        self.enable_test();self.cli(order['id'])
+        calls=[json.loads(x) for x in (self.server.root/'provider-requests.jsonl').read_text().splitlines()]
+        submit=calls[-1][2]['custom_text']['submit']['message']
+        self.assertIn('actual engraving',submit)
+        self.assertIn('Transit after shipment:',submit)
+        sign,sign_offer=self.approved_offer(True)
+        self.assertNotIn('engravingShipping',sign_offer)
+        self.assertFalse(sign['engravingApprovalRequired'])
     def test_restricted_server_key_support_preserves_the_test_live_boundary(self):
         self.enable_test()
         original=self.server.config.read_text()

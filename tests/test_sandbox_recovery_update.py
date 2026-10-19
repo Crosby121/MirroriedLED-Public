@@ -4,6 +4,8 @@ import io
 import json
 from pathlib import Path
 import tempfile
+import subprocess
+import sqlite3
 import unittest
 from unittest.mock import patch
 import test_sandbox_payment_verify as verification
@@ -72,5 +74,29 @@ class RecoveryUpdateTests(unittest.TestCase):
             with self.assertRaises(Interrupted):self.run_update()
         self.run_update()
         self.assertTrue(self.v.run_verify()['canonical_test_payment_recorded'])
+
+    def test_engraving_backend_and_team_customer_assets_are_patched_together(self):
+        result=self.run_update()
+        for name in ('customer-portal/backend/business.php','customer-portal/business.js','customer-portal/operations.html','shop/shop.js','shop/index.html'):
+            self.assertIn(name,result['hashes'])
+        backend=(self.web/'MLED_checkout_TEST/customer-portal/backend/business.php').read_text()
+        self.assertIn('X-MLED-Business-Source: '+'c'*40,backend)
+        self.assertIn('business-engraving-approve',backend)
+
+    def test_installed_schema_initializes_without_altering_existing_private_records(self):
+        self.run_update()
+        with sqlite3.connect(self.a.q.dbpath) as db:
+            db.execute('DROP TABLE IF EXISTS business_engraving_reviews')
+            before=list(db.iterdump())
+        config=(self.private/'config.php').read_bytes()
+        result=subprocess.run([PHP,str(ROOT/'deploy/hostinger/verify-sandbox-engraving.php'),str(self.web),self.a.q.fingerprint],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertTrue(json.loads(result.stdout)['engraving_schema_verified'])
+        self.assertNotIn(self.a.q.order['id'],result.stdout)
+        with sqlite3.connect(self.a.q.dbpath) as db:
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM business_engraving_reviews').fetchone()[0],0)
+            db.execute('DROP TABLE business_engraving_reviews')
+            self.assertEqual(list(db.iterdump()),before)
+        self.assertEqual((self.private/'config.php').read_bytes(),config)
 
 if __name__=='__main__':unittest.main()

@@ -142,6 +142,9 @@ final class CommercePortal
             $terms=['version'=>$version,'proofId'=>$order['proof_id'],'productCents'=>$product,'shippingCents'=>$shipping,'beforeTaxCents'=>$product+$shipping,'currency'=>'USD',
                 'productionMinDays'=>$pMin,'productionMaxDays'=>$pMax,'transitMinDays'=>$tMin,'transitMaxDays'=>$tMax,'expiresAt'=>time()+$expires*86400,'address'=>$address,
                 'productionStarts'=>'After payment confirmation and approval of the final artwork proof. Estimates use business days.','tax'=>'Final tax and total are calculated and shown in secure checkout before payment.'];
+            if (BusinessPortal::requiresEngravingApproval($order)) {
+                $terms['engravingShipping']='You must approve a photo of the actual engraving on your mirror before shipping. We ship within three business days after that approval (Monday–Friday, Pacific time). Transit begins after shipment.';
+            }
             $this->exec('INSERT INTO commerce_offers(order_id,proof_id,version,terms,created_at) VALUES(?,?,?,?,?) ON CONFLICT(order_id) DO UPDATE SET proof_id=excluded.proof_id,version=excluded.version,terms=excluded.terms,created_at=excluded.created_at',[$order['id'],$order['proof_id'],$version,json_encode($terms,JSON_THROW_ON_ERROR),time()]);
             $this->exec('INSERT INTO commerce_offer_history(order_id,version,terms) VALUES(?,?,?)',[$order['id'],$version,json_encode($terms,JSON_THROW_ON_ERROR)]);
             $this->event($order,'CHECKOUT_OFFER','Your complete product and shipping quote, production estimate and secure checkout terms are ready.');
@@ -204,7 +207,7 @@ final class CommercePortal
             'payment_intent_data'=>['metadata'=>['order_id'=>$s['orderId']]],'invoice_creation'=>['enabled'=>'true'],
             'success_url'=>$origin.$basePath.'/shop/?payment=returned&order='.rawurlencode($s['orderId']),
             'cancel_url'=>$origin.$basePath.'/shop/?payment=cancelled&order='.rawurlencode($s['orderId']),
-            'custom_text'=>['submit'=>['message'=>'Production: '.$s['productionMinDays'].'–'.$s['productionMaxDays'].' business days after payment and artwork approval. Shipping: '.$s['transitMinDays'].'–'.$s['transitMaxDays'].' business days. Ship to '.$a['line1'].', '.$a['city'].', '.$a['state'].' '.$a['postalCode'].'.']]];
+            'custom_text'=>['submit'=>['message'=>'Production: '.$s['productionMinDays'].'–'.$s['productionMaxDays'].' business days after payment and artwork approval. '.(isset($s['engravingShipping'])?'Approve the actual engraving photo before shipping; ships within three business days after approval. Transit after shipment: ':'Shipping: ').$s['transitMinDays'].'–'.$s['transitMaxDays'].' business days. Ship to '.$a['line1'].', '.$a['city'].', '.$a['state'].' '.$a['postalCode'].'.']]];
         // The quoted shipping destination stays in the private order. Stripe calculates
         // shipping-address tax from a customer with exactly that saved address.
         $customer=$this->stripe('POST','/customers',['email'=>$s['email'],'name'=>$a['name'],'address'=>['line1'=>$a['line1'],'line2'=>$a['line2'],'city'=>$a['city'],'state'=>$a['state'],'postal_code'=>$a['postalCode'],'country'=>'US'],'shipping'=>['name'=>$a['name'],'address'=>['line1'=>$a['line1'],'line2'=>$a['line2'],'city'=>$a['city'],'state'=>$a['state'],'postal_code'=>$a['postalCode'],'country'=>'US']]],'mled-customer-'.$row['id']);

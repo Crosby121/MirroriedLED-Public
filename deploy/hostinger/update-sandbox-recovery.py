@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Patch only the isolated payment-recovery files, preserving paid records and configuration."""
+"""Patch the reviewed isolated checkout and engraving workflow, preserving private records."""
 import argparse
 import copy
 import fcntl
@@ -15,7 +15,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 spec=importlib.util.spec_from_file_location('sandbox_enable',Path(__file__).with_name('enable-sandbox-checkout.py'))
 enable=importlib.util.module_from_spec(spec);spec.loader.exec_module(enable)
-FILES=('customer-portal/backend/commerce.php','shop/shop.js','shop/index.html')
+FILES=('customer-portal/backend/commerce.php','shop/shop.js','shop/index.html','customer-portal/backend/business.php','customer-portal/business.js','customer-portal/operations.html')
 KEYS=('mirroriedled_storefront_cart_vnext','mirroriedled_quote_draft_v1','mled_pending_build','mirroriedled_infinity_drafts_v1','mledStadiumTestSelectionV1')
 
 
@@ -92,7 +92,8 @@ def patch(webroot, folder, source, expected_source, order_hash, client=None):
             if len(data)>131072:raise ValueError('Oversized recovery source')
             if name.endswith('.php'):
                 if not data.startswith(b'<?php') or data.count(b'declare(strict_types=1);')!=1:raise ValueError('Reviewed PHP required')
-                data=data.replace(b'declare(strict_types=1);',b"declare(strict_types=1);\nheader('X-MLED-Checkout-Source: "+source.encode()+b"');",1)
+                header=b'X-MLED-Business-Source' if name.endswith('/business.php') else b'X-MLED-Checkout-Source'
+                data=data.replace(b'declare(strict_types=1);',b"declare(strict_types=1);\nheader('"+header+b": "+source.encode()+b"');",1)
             elif name.endswith('.js'):
                 if b'checkout_sandbox_' in data:raise ValueError('Untransformed reviewed JS required')
                 for key in KEYS:data=data.replace(key.encode(),('checkout_sandbox_'+key).encode())
@@ -119,7 +120,9 @@ def patch(webroot, folder, source, expected_source, order_hash, client=None):
                 old=(stage/name).read_bytes()
                 if sha(old)!=original['public_hashes'][name]:raise ValueError('Original recovery backup missing')
                 enable.atomic(saved,old)
-        for name,data in generated.items():enable.atomic(stage/name,data,0o644)
+        # Publish the backward-compatible business API before commerce uses its new predicate.
+        for name in sorted(generated,key=lambda n:n!='customer-portal/backend/business.php'):
+            enable.atomic(stage/name,generated[name],0o644)
         enable.atomic(receipt_path,json.dumps(desired_receipt,sort_keys=True).encode())
         if paid_record(private/'storage/portal.sqlite',order_hash)!=before or config_path.read_bytes()!=config:raise ValueError('Concurrent private record/configuration change; review required')
     finally:os.close(fd)

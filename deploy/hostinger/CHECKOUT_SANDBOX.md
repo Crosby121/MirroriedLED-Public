@@ -154,8 +154,9 @@ bootstrap is removed after verification.
 
 ## Update the isolated payment-recovery files
 
-`Update Sandbox Payment Recovery` changes only commerce.php, shop/shop.js and
-shop/index.html. It verifies the exact current checkout patch, private test config,
+`Update Sandbox Payment Recovery` changes six reviewed files: commerce.php,
+business.php, customer-portal/business.js, customer-portal/operations.html,
+shop/shop.js and shop/index.html. It verifies the exact current checkout patch, private test config,
 selected paid artificial order, source hashes and single confirmation. Before
 publishing, the installed restricted sandbox key must successfully read the actual
 canonical paid session with expanded PaymentIntent, proving the new read permission.
@@ -165,7 +166,7 @@ Private atomic backups and a source-bound journal allow same-source interruption
 recovery. Files may match only the reviewed original or exact generated replacement;
 unknown source or receipt changes are preserved and rejected. The private receipt
 records the new PHP and UI hashes and prior patch source. The installed base API
-source header is retained; the checkout header identifies the new patch. Browser
+source header is retained; the checkout and business headers identify the new patch. Browser
 storage namespaces and sandbox/noindex markers are regenerated, and the UI script
 URL changes to avoid retaining the previous code in a browser cache.
 
@@ -179,3 +180,41 @@ does not replace actual delayed-method failure acceptance.
 The final recovery updater is manual-only and requires the current installed patch
 commit, canonical fingerprints and explicit acknowledgement. Its one-time
 branch/path bootstrap is removed after the verified patch.
+
+
+## Finished engraving approval and dispatch
+
+Owner-confirmed policy: the customer reviews a photo of the **actual engraving on
+their mirror**, separate from the digital artwork proof approved before production.
+Custom Infinity Mirror orders cannot record shipment or pickup until the owner of
+that order approves its latest finished-engraving review. QC must also pass; payment,
+material and production-release prerequisites remain in force. Address signs keep
+their existing process.
+
+Production or QC staff upload a private PNG/JPEG/WebP photo after build start and
+publish it with review notes. The customer opens their order, reviews that version,
+and selects **Approve finished engraving**. A new photo review version clears
+shipping readiness until the customer approves it. Each version, approving account,
+approval timestamp and ship-by date remain in private history. Portal updates are
+implemented; email/SMS delivery is not connected.
+
+Ship within **three business days after customer approval**. The approval date is
+day zero; the next three Monday–Friday dates are counted in America/Los_Angeles,
+including correct daylight-saving transitions. No holiday closure calendar or
+cutoff time has been specified. The saved ship-by date is shown to both customer
+and team. Carrier transit starts after shipment; this dispatch window does not
+supply the still-unconfirmed production lead time. Late shipments can be recorded
+truthfully without altering the original approval or deadline.
+
+New mirror checkout offers disclose the engraving approval/dispatch rule. Existing
+accepted offer history and creating/paid checkout snapshots are not rewritten;
+legacy provider retries retain their original request text.
+
+After updating the six files, the CLI-only `verify-sandbox-engraving.php` helper
+checks exact receipt hashes, private test-only configuration and the selected
+approved test order. It initializes the additive review table through the installed
+BusinessPortal constructor, verifies the customer-facing order still has no finished
+engraving approval, and compares every pre-existing table's rows and private config
+before committing. It never assigns staff roles, changes a price, publishes a photo,
+approves engraving or advances production. The original artificial paid test order
+stays unreleased. Keep this helper outside public_html and remove its transport.

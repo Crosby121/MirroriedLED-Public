@@ -1,6 +1,9 @@
 name: Update Sandbox Payment Recovery
 
 on:
+  push:
+    branches: [fix/storefront-integration-20261019]
+    paths: [.github/workflows/update-sandbox-recovery.yml]
   workflow_dispatch:
     inputs:
       order_fingerprint:
@@ -25,7 +28,7 @@ on:
         required: true
         default: "c41729550993e30ee44c54b55329b99fab0c23ae"
       acknowledge_recovery_patch:
-        description: "Update only three sandbox recovery files after restricted-key preflight; preserve paid records"
+        description: "Update six reviewed sandbox checkout/engraving files; preserve private records"
         type: boolean
         required: true
         default: false
@@ -37,7 +40,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   prepare:
-    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/fix/storefront-integration-20261019' && github.event_name == 'workflow_dispatch' && inputs.acknowledge_recovery_patch }}
+    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/fix/storefront-integration-20261019' && ((github.event_name == 'workflow_dispatch' && inputs.acknowledge_recovery_patch) || github.event_name == 'push') }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     environment: production
@@ -48,11 +51,11 @@ jobs:
       PUBLIC_HTML: ${{ secrets.HOSTINGER_PUBLIC_HTML }}
       SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
       SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
-      ORDER_FINGERPRINT: ${{ inputs.order_fingerprint }}
-      SESSION_FINGERPRINT: ${{ inputs.session_fingerprint }}
-      EVENT_FINGERPRINT: ${{ inputs.event_fingerprint }}
-      INTENT_FINGERPRINT: ${{ inputs.intent_fingerprint }}
-      EXPECTED_CHECKOUT_SOURCE: ${{ inputs.expected_checkout_source }}
+      ORDER_FINGERPRINT: ${{ inputs.order_fingerprint || '47841d2f978239ea36e4af4ad55468ad8f72967a95606b6271b098436b21be71' }}
+      SESSION_FINGERPRINT: ${{ inputs.session_fingerprint || '5b93ce650d292a2cd513b01b47d84de0da711b9c373a60831152d109ceed1551' }}
+      EVENT_FINGERPRINT: ${{ inputs.event_fingerprint || 'bd878bd1eab341b33f5e50013f3b87bb9fe2523c008bfac831d5304f2378d161' }}
+      INTENT_FINGERPRINT: ${{ inputs.intent_fingerprint || '701fba92abe38c5de6a2eb6e905c24efdf463d2044df516f06b6e4fac90b11f7' }}
+      EXPECTED_CHECKOUT_SOURCE: ${{ inputs.expected_checkout_source || 'c41729550993e30ee44c54b55329b99fab0c23ae' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -61,6 +64,9 @@ jobs:
         run: |
           php -m | grep -q pdo_sqlite
           php -l customer-portal/backend/commerce.php
+          php -l customer-portal/backend/business.php
+          php -l deploy/hostinger/verify-sandbox-engraving.php
+          node --check customer-portal/business.js
           node --check shop/shop.js
           python3 -m unittest discover -s tests -q
           python3 tools/ai_workflow.py validate
@@ -132,7 +138,7 @@ jobs:
           TRANSPORT
           # Arm cleanup only after this run exclusively created its private transport.
           printf 'REMOTE_SANDBOX_STAGE=%s\n' "$REMOTE_SANDBOX_STAGE" >> "$GITHUB_ENV"
-          scp "${SSH_OPTIONS[@]}" -P "$SSH_PORT" deploy/hostinger/update-sandbox-recovery.py customer-portal/backend/commerce.php shop/shop.js shop/index.html deploy/hostinger/verify-sandbox-payment.py deploy/hostinger/enable-sandbox-checkout.py deploy/hostinger/checkout-sandbox.py deploy/hostinger/website-release.py deploy/hostinger/setup-customer-accounts.py "$SSH_USER@$SSH_HOST:$REMOTE_SANDBOX_STAGE/"
+          scp "${SSH_OPTIONS[@]}" -P "$SSH_PORT" deploy/hostinger/update-sandbox-recovery.py customer-portal/backend/commerce.php customer-portal/backend/business.php customer-portal/business.js customer-portal/operations.html shop/shop.js shop/index.html deploy/hostinger/verify-sandbox-engraving.php deploy/hostinger/verify-sandbox-payment.py deploy/hostinger/enable-sandbox-checkout.py deploy/hostinger/checkout-sandbox.py deploy/hostinger/website-release.py deploy/hostinger/setup-customer-accounts.py "$SSH_USER@$SSH_HOST:$REMOTE_SANDBOX_STAGE/"
           before="$(ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "sha256sum '$PUBLIC_HTML/index.html' '${PUBLIC_HTML%/public_html}/mirroriedled-private/customer-portal/config.php'")"
           ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' '$REMOTE_SANDBOX_STAGE/update-sandbox-recovery.py' --webroot '$PUBLIC_HTML' --folder '$REMOTE_SANDBOX_STAGE' --source '$GITHUB_SHA' --expected-source '$EXPECTED_CHECKOUT_SOURCE' --order-fingerprint '$ORDER_FINGERPRINT'" > "$RUNNER_TEMP/recovery-receipt.json"
           python3 - <<'RECEIPT'
@@ -145,6 +151,7 @@ jobs:
           print('MLED_SANDBOX_RECOVERY_PATCH_VERIFIED=true')
           print('MLED_RESTRICTED_KEY_EXPANDED_INTENT_READ_VERIFIED=true')
           RECEIPT
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "php '$REMOTE_SANDBOX_STAGE/verify-sandbox-engraving.php' '$PUBLIC_HTML' '$ORDER_FINGERPRINT'"
           ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' '$REMOTE_SANDBOX_STAGE/verify-sandbox-payment.py' --webroot '$PUBLIC_HTML' --order-fingerprint '$ORDER_FINGERPRINT' --session-fingerprint '$SESSION_FINGERPRINT' --event-fingerprint '$EVENT_FINGERPRINT' --intent-fingerprint '$INTENT_FINGERPRINT' --replay-known-event"
           after="$(ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "sha256sum '$PUBLIC_HTML/index.html' '${PUBLIC_HTML%/public_html}/mirroriedled-private/customer-portal/config.php'")"
           test "$before" = "$after"
@@ -164,11 +171,12 @@ jobs:
               assert data.get('capabilities', {}).get('payments') is True
               assert response.headers.get('X-MLED-Sandbox-Source') == 'f1e869cd00bef0934090a61713982c6eaee504a1'
               assert response.headers.get('X-MLED-Checkout-Source') == os.environ['GITHUB_SHA']
+              assert response.headers.get('X-MLED-Business-Source') == os.environ['GITHUB_SHA']
               assert '/MLED_checkout_TEST/customer-portal/' in response.headers.get('Set-Cookie', '')
           with urlopen('https://mirroriedled.com/customer-portal/backend/api.php?action=session', timeout=20) as response:
               assert json.load(response).get('capabilities', {}).get('payments') is False
           receipt=json.loads((Path(os.environ['RUNNER_TEMP'])/'recovery-receipt.json').read_text())
-          for name in ('shop/shop.js','shop/index.html'):
+          for name in ('shop/shop.js','shop/index.html','customer-portal/business.js','customer-portal/operations.html'):
               with urlopen('https://mirroriedled.com/MLED_checkout_TEST/'+name,timeout=20) as response:
                   assert hashlib.sha256(response.read()).hexdigest()==receipt['hashes'][name]
           print('MLED_RECOVERY_PUBLIC_ASSETS_VERIFIED=true')
@@ -195,7 +203,7 @@ jobs:
           info = stage.stat()
           if not stage.is_dir() or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o077:
               raise SystemExit('Unsafe cleanup ownership or permissions')
-          for name in ('update-sandbox-recovery.py', 'commerce.php', 'shop.js', 'index.html', 'verify-sandbox-payment.py', 'enable-sandbox-checkout.py', 'sandbox-credentials.json', 'sandbox-website.zip', 'config.example.php', 'checkout-sandbox.py', 'website-release.py', 'setup-customer-accounts.py'):
+          for name in ('update-sandbox-recovery.py', 'verify-sandbox-engraving.php', 'business.php', 'business.js', 'operations.html', 'commerce.php', 'shop.js', 'index.html', 'verify-sandbox-payment.py', 'enable-sandbox-checkout.py', 'sandbox-credentials.json', 'sandbox-website.zip', 'config.example.php', 'checkout-sandbox.py', 'website-release.py', 'setup-customer-accounts.py'):
               (stage / name).unlink(missing_ok=True)
           cache = stage / '__pycache__'
           if cache.exists():
