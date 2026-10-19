@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T07:55:17Z",
+  "updated_at": "2026-10-19T08:05:38Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -266,21 +266,22 @@
     {
       "id": "WF-008",
       "title": "Open phased Infinity Mirror and address-sign ordering (PR #14)",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": 1,
-      "owner_session_id": "20261019t075517z-370ed9ce",
-      "last_session_id": "20261019t044009z-ecdcb26a",
+      "owner_session_id": null,
+      "last_session_id": "20261019t075517z-370ed9ce",
       "depends_on": [],
       "acceptance": [
         "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
         "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
         "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
       ],
-      "next_action": "Customer refreshes isolated test-shop orders, accepts current terms and opens test Checkout, then completes the artificial test-card payment. Verify provider writes, canonical payment, Stripe-signed delivery and duplicate reconciliation. Handle failed delayed-payment retries before broader rollout; production payments stay off.",
+      "next_action": "Before paid launch, resolve failed delayed-payment retry/unlock behavior and remaining actual failure/cancel/expiry acceptance; confirm real 12-inch product/hardware/shipping/production terms and owner/staff workflow; then separately review approved live merchant/tax setup and exact-source phased release. Production payments stay off.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json",
-        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217543467"
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217543467",
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39219632873"
       ]
     },
     {

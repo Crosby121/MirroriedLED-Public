@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T07:43:08Z",
+  "observed_at": "2026-10-19T08:01:25Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,7 +9,7 @@
   },
   "source": {
     "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
-    "summary": "PR 26 remains draft. Customer approval of the selected artificial $1 sandbox quote is verified. Isolated checkout backend patch 347964696ee781a38be15103d5752ef3e669afbd was deployed over base f1e869cd00bef0934090a61713982c6eaee504a1 in run 39217543467. Runtime source/cookie/capability checks and self-signed harmless event, duplicate and negative-signature probes passed; production homepage/private config hashes remained unchanged. The sandbox Stripe webhook is canonically enabled with livemode false. All 228 local and deployment-job tests passed, as did source CI. Final activation workflow 61fc1e24a3808afd8e4bfc90b0d3e699a0234ecf is manual-only. Customer now opens test Checkout; actual website provider writes, test-card payment, Stripe-signed delivery and reconciliation/replay acceptance remain unverified. No production payment activation occurred.",
+    "summary": "PR 26 remains draft. Actual website sandbox Checkout is complete and paid: $1.00 product, $0 shipping, $0.09 tax, $1.09 total; the canonical PaymentIntent succeeded. Stripe reports successful event delivery. Private acceptance run 39219632873 verified the matching approved artificial proof, paid checkout/reference, actual provider event receipt and exactly one confirmation, preserved after two self-signed duplicates of the already-processed event. Production homepage/private config hashes are unchanged; no production release. All 234 local tests passed, including a forced-OPcache fixture regression; final source CI passed. Final verification workflow 4de0e10c312817faf02a3a163b444f487e625a59 is manual-only. Confirmed real prices/shipping/capacity, broader failure acceptance and approved live merchant setup remain pending; production payments stay off.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
@@ -186,6 +186,31 @@
         "name": "Final manual-only checkout source Storefront CI",
         "result": "passed",
         "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217730500"
+      },
+      {
+        "name": "Actual paid sandbox order, provider event receipt, duplicate replay and unchanged production hashes",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39219632873"
+      },
+      {
+        "name": "Payment verifier source Storefront CI",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39219638739"
+      },
+      {
+        "name": "Payment verifier shared workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39219638889"
+      },
+      {
+        "name": "Fixture cache fix shared workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39220263094"
+      },
+      {
+        "name": "Fixture cache fix final Storefront CI",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39220263111"
       }
     ]
   },
@@ -361,6 +386,12 @@
       "basis": "approved_private_database_guard_HTTPS_checks_GitHub_job_receipt_authenticated_Stripe_update_and_read_tests_and_independent_review",
       "observed_at": "2026-10-19T07:43:08Z",
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217543467"
+    },
+    {
+      "finding": "User completed actual website sandbox Checkout. Canonical Stripe reads verified complete/paid, $1.09 total ($1 product, $0 shipping, $0.09 tax), test mode, matching order and succeeded PaymentIntent. The actual completed event appeared under delivery_success:true with zero pending webhooks. Private query-only acceptance verified the approved artificial proof, paid snapshot/reference, actual provider event receipt and exactly one confirmation. Two self-signed duplicates of the already-processed event preserved uniqueness; this was not a Stripe resend. Run 39219632873 passed runtime checks, unchanged production hashes and transport cleanup. All 234 local tests passed, including a forced-OPcache regression. Final manual-only source CI exposed cached mutable test configuration; reproduced exact 503 with forced cache, then fixed only the local HTTP fixture by disabling OPcache. Independent reviews found no Critical/Important issue. No production release, permanent staff assignment or live payment activation occurred. Broader delayed-payment failure handling and actual failure/cancel/expiry acceptance, confirmed real pricing/fulfillment, and approved live setup remain pending. Final source Storefront CI 39220263111 and shared workflow CI 39220263094 passed at the fixture correction.",
+      "basis": "owner_completion_canonical_authenticated_Stripe_reads_readonly_private_audit_known_event_self_signed_replay_tests_and_independent_review",
+      "observed_at": "2026-10-19T08:01:25Z",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39219632873"
     }
   ],
   "connector": {
@@ -453,15 +484,15 @@
     "php_version": "8.3.33"
   },
   "payment_setup": {
-    "status": "sandbox_checkout_enabled_customer_test_payment_pending",
-    "observed_at": "2026-10-19T07:43:08Z",
-    "basis": "approved_private_order_Hostinger_runtime_signature_probe_and_canonical_Stripe_endpoint_read",
+    "status": "actual_sandbox_checkout_payment_and_signed_delivery_verified_live_launch_gated",
+    "observed_at": "2026-10-19T08:01:25Z",
+    "basis": "canonical_Stripe_session_intent_delivery_success_event_reads_private_SSH_acceptance_and_known_event_self_signed_replay",
     "sandbox_connection_smoke_payment_verified": true,
     "website_restricted_sandbox_key_verified": true,
     "checkout_read_verified": true,
-    "checkout_write_verified": false,
+    "checkout_write_verified": true,
     "website_private_credentials_configured": true,
-    "signed_website_webhook_verified": false,
+    "signed_website_webhook_verified": true,
     "live_checkout_activated_by_this_session": false,
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39193263549/attempts/3",
     "private_credentials_scope": "isolated_checkout_sandbox_only",
@@ -495,7 +526,20 @@
     "sandbox_checkout_activation_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217543467",
     "sandbox_self_signed_probe_verified": true,
     "sandbox_self_signed_replay_verified": true,
-    "sandbox_negative_signature_checks_verified": true
+    "sandbox_negative_signature_checks_verified": true,
+    "sandbox_actual_test_payment_verified": true,
+    "sandbox_canonical_payment_status": "paid",
+    "sandbox_canonical_payment_total_cents": 109,
+    "sandbox_canonical_payment_product_cents": 100,
+    "sandbox_canonical_payment_shipping_cents": 0,
+    "sandbox_canonical_payment_tax_cents": 9,
+    "sandbox_canonical_payment_intent_status": "succeeded",
+    "sandbox_provider_event_delivery_success_verified": true,
+    "sandbox_actual_provider_event_processed_verified": true,
+    "sandbox_payment_single_confirmation_verified": true,
+    "sandbox_known_event_self_signed_replay_verified": true,
+    "sandbox_payment_acceptance_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39219632873",
+    "sandbox_payment_verifier_source": "ec9a2a9ae7504c172ef0cb5d969d0886c91e4e3b"
   },
   "ai_database": {
     "status": "source_merged_installation_pending",
