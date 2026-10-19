@@ -63,3 +63,6 @@ the configured signer matches private storage while checkout, tax and fulfillmen
 flags stay false. A session HTTPS check independently confirms payments remain
 off. The secret format and runtime read do not establish a Stripe-signed delivery;
 that remains a separate acceptance step. Stripe delivery remains paused.
+
+The final signer workflow is manual-only with explicit acknowledgement. The
+initial branch-scoped bootstrap was removed after the verified installation.
