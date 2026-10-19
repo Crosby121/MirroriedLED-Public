@@ -76,8 +76,9 @@ class PortalServer:
         self.log = tempfile.TemporaryFile()
         env = os.environ.copy()
         env["MLED_PORTAL_CONFIG"] = str(self.config)
+        # Tests rewrite private PHP config between requests; never cache fixture code.
         self.process = subprocess.Popen(
-            [PHP, "-d", "upload_max_filesize=129M", "-d", "post_max_size=130M", "-S", f"127.0.0.1:{self.port}", "-t", str(self.public)],
+            [PHP, "-d", "opcache.enable=0", "-d", "upload_max_filesize=129M", "-d", "post_max_size=130M", "-S", f"127.0.0.1:{self.port}", "-t", str(self.public)],
             env=env,
             stdout=self.log,
             stderr=self.log,

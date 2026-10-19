@@ -38,6 +38,14 @@ class BusinessTests(unittest.TestCase):
         self.server.roles[self.staff_id] = ['admin']
         self.server.write_config()
 
+    def test_fixture_config_changes_are_visible_without_cache_delay(self):
+        self.server.enabled = False
+        self.server.write_config()
+        self.post(self.customer, 'business-request', {'items': []}, 503)
+        self.server.enabled = True
+        self.server.write_config()
+        self.assertEqual(self.request()['status'], 'REQUESTED')
+
     def tearDown(self):
         self.server.close()
 
