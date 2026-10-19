@@ -1,11 +1,11 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-19T03:49:37Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-19T04:07:37Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · PR 26 remains draft. Isolated checkout sandbox source f1e869cd00bef0934090a61713982c6eaee504a1 is installed and verified with separate private storage and the restricted test key. After explicit owner approval, the sandbox webhook was created and immediately disabled; a canonical read confirmed disabled status and livemode:false. Its signing secret is not installed. Checkout remains disabled, actual website Checkout writes and signed delivery are unverified. Production website source/payments remain unchanged. |
+| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · PR 26 remains draft. Isolated sandbox source f1e869cd00bef0934090a61713982c6eaee504a1 remains installed. Endpoint signing secret was securely installed into only its private configuration by run 39197811440 from d126bacc2f4802fffb7ec384b0d180e5234188eb. PHP verified private signer read; HTTPS verified payments false; production homepage/config checksums preserved; transport cleanup succeeded. Canonical Stripe read confirms webhook disabled and livemode false. All 208 local tests and source CI passed. Final signer workflow dd85fd611ad9f7c0d13e59d14f612667296170ef is manual-only. Actual website Checkout writes and Stripe-signed delivery remain unverified; no production activation. |
 | Verified live Hostinger commit | 8690ab93f30ffd6913407b1ca5374e808bd6ad93 |
 | Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696) · No failed step |
 | Deployment blocker | Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation. |
@@ -33,6 +33,11 @@ Evidence snapshot: 2026-10-19T03:49:37Z (UTC). Refresh GitHub at the start of ea
 - [Isolated checkout sandbox installation and exact generated HTTPS/runtime checks](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39195896598): **passed**.
 - [Sandbox source Storefront CI with 201 tests](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39195901505): **passed**.
 - [Sandbox source shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39195901548): **passed**.
+- [Isolated sandbox signer installation, PHP read, disabled HTTPS capability and production checksums](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39197811440): **passed**.
+- [Sandbox signer source Storefront CI with 208 tests](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39197814848): **passed**.
+- [Sandbox signer source shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39197814837): **passed**.
+- [Final manual-only signer workflow shared validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39197882197): **passed**.
+- [Final manual-only signer source Storefront CI](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39197882194): **passed**.
 
 ## Task queue
 
@@ -41,7 +46,7 @@ Evidence snapshot: 2026-10-19T03:49:37Z (UTC). Refresh GitHub at the start of ea
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
 | WF-007 — Address workflow capture privacy and streaming review findings | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
-| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | in_progress | 20261019t040037z-adc1574e | Store the endpoint-specific signing secret securely as MLED_STRIPE_SANDBOX_WEBHOOK_SECRET, then install it only in the isolated sandbox private configuration with delivery and checkout still off. Configure sandbox tax and fake fulfillment terms before actual Checkout, signed delivery and replay acceptance. |
+| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Configure sandbox tax settings/registration and fake fulfillment terms, create a verified artificial quote/account fixture, then verify actual website Checkout writes, Stripe-signed delivery, canonical reconciliation and replay handling. Keep production payments disabled and PR 26 draft. |
 | WF-009 — Preserve browser delta offsets when credentials are masked | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
 | WF-010 — Update owner component costs and 12-inch LED/power-supply research | done | Unclaimed | Continue WF-008: confirm exact LED/glass/power/fabrication/shipping/tax costs and production capacity, verify actual merchant sandbox checkout and signed webhook, configure live merchant settings and resolve main-site SSH deployment settings before an exact live release. |
 | WF-013 — Publish mirror artwork and stadium product browsing | done | Unclaimed | Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused. |
