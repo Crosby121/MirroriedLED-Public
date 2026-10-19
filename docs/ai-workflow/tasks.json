@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T02:11:06Z",
+  "updated_at": "2026-10-19T02:14:52Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -266,9 +266,9 @@
     {
       "id": "WF-008",
       "title": "Open phased Infinity Mirror and address-sign ordering (PR #14)",
-      "status": "blocked",
+      "status": "in_progress",
       "priority": 1,
-      "owner_session_id": null,
+      "owner_session_id": "20261019t021452z-98d36616",
       "last_session_id": "20261019t020502z-3961126a",
       "depends_on": [],
       "acceptance": [
