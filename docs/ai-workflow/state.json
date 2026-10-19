@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T08:01:25Z",
+  "observed_at": "2026-10-19T08:23:39Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,7 +9,7 @@
   },
   "source": {
     "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
-    "summary": "PR 26 remains draft. Actual website sandbox Checkout is complete and paid: $1.00 product, $0 shipping, $0.09 tax, $1.09 total; the canonical PaymentIntent succeeded. Stripe reports successful event delivery. Private acceptance run 39219632873 verified the matching approved artificial proof, paid checkout/reference, actual provider event receipt and exactly one confirmation, preserved after two self-signed duplicates of the already-processed event. Production homepage/private config hashes are unchanged; no production release. All 234 local tests passed, including a forced-OPcache fixture regression; final source CI passed. Final verification workflow 4de0e10c312817faf02a3a163b444f487e625a59 is manual-only. Confirmed real prices/shipping/capacity, broader failure acceptance and approved live merchant setup remain pending; production payments stay off.",
+    "summary": "PR 26 remains draft. The previously verified $1.09 website sandbox payment and signed provider event remain recorded once. Recovery patch cfcaba1538c193fdc60e90f1bb9101c2a78c2714 was installed only in isolated commerce.php and generated shop JS/HTML by run 39222078093. Completed unpaid payments now stay locked as processing; matching canonical failed intents with zero received/capturable funds permit a fresh attempt. Failed notifications are signed, canonically retrieved and deduplicated; paid records cannot regress or permit another payment. The actual restricted sandbox key passed expanded PaymentIntent read, original paid audit/replay and exact HTTPS asset/runtime checks passed, and production homepage/private config hashes are unchanged. The test endpoint is canonically subscribed to async_payment_failed. All 248 local/deployment tests and source CI passed; final updater b733874f81257ff14b9e35289893009c5c15224e is manual-only. Actual delayed-method failure and remaining negative-case acceptance, owner product/shipping/pricing/capacity and approved live merchant setup remain pending. Production payments stay off.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
@@ -211,6 +211,31 @@
         "name": "Fixture cache fix final Storefront CI",
         "result": "passed",
         "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39220263111"
+      },
+      {
+        "name": "Isolated recovery patch, actual restricted-key expansion, original paid audit/replay, exact HTTPS assets and preserved production hashes",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222078093"
+      },
+      {
+        "name": "Recovery source Storefront CI",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222083353"
+      },
+      {
+        "name": "Recovery source shared workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222083360"
+      },
+      {
+        "name": "Final manual-only recovery updater Storefront CI",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222341203"
+      },
+      {
+        "name": "Final manual-only recovery updater shared workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222341202"
       }
     ]
   },
@@ -392,6 +417,12 @@
       "basis": "owner_completion_canonical_authenticated_Stripe_reads_readonly_private_audit_known_event_self_signed_replay_tests_and_independent_review",
       "observed_at": "2026-10-19T08:01:25Z",
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39219632873"
+    },
+    {
+      "finding": "Reproduced failed delayed payments remaining open, processing-payment retry risk and a later failed row obscuring an existing paid record. Added canonical expanded-intent handling, explicit processing/failed states, conservative zero-received/capturable failure gates, one failure notice, fresh-attempt idempotency, cross-attempt paid/review protection and clearer customer messages. Signed async failure events retrieve canonical state; stale failures cannot downgrade paid records. All 248 tests passed, including 21 commerce and five updater cases; independent reviews found no Critical/Important issue. Guarded updater privately preflighted the actual installed rk_test_ expanded read, atomically backed up and changed only three isolated files, preserved receipt history/config/customer records, reverified the original paid order/replay and exact JS/HTML/runtime source. Production hashes unchanged. Added failed-event subscription only after stage verification and canonically verified test mode. Final updater manual-only. Actual delayed-method failure and remaining negative-case acceptance are not claimed, and no live activation occurred.",
+      "basis": "red_then_green_provider_fixture_and_signed_localhost_webhook_tests_independent_review_private_Hostinger_receipt_HTTPS_checks_authenticated_test_endpoint_update_and_read",
+      "observed_at": "2026-10-19T08:23:39Z",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222078093"
     }
   ],
   "connector": {
@@ -484,8 +515,8 @@
     "php_version": "8.3.33"
   },
   "payment_setup": {
-    "status": "actual_sandbox_checkout_payment_and_signed_delivery_verified_live_launch_gated",
-    "observed_at": "2026-10-19T08:01:25Z",
+    "status": "sandbox_payment_and_recovery_patch_verified_live_launch_gated",
+    "observed_at": "2026-10-19T08:23:39Z",
     "basis": "canonical_Stripe_session_intent_delivery_success_event_reads_private_SSH_acceptance_and_known_event_self_signed_replay",
     "sandbox_connection_smoke_payment_verified": true,
     "website_restricted_sandbox_key_verified": true,
@@ -522,7 +553,7 @@
     "sandbox_test_quote_shipping_cents": 0,
     "sandbox_customer_approval_verified": true,
     "sandbox_quote_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39200193536",
-    "sandbox_checkout_patch_source": "347964696ee781a38be15103d5752ef3e669afbd",
+    "sandbox_checkout_patch_source": "cfcaba1538c193fdc60e90f1bb9101c2a78c2714",
     "sandbox_checkout_activation_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217543467",
     "sandbox_self_signed_probe_verified": true,
     "sandbox_self_signed_replay_verified": true,
@@ -539,7 +570,20 @@
     "sandbox_payment_single_confirmation_verified": true,
     "sandbox_known_event_self_signed_replay_verified": true,
     "sandbox_payment_acceptance_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39219632873",
-    "sandbox_payment_verifier_source": "ec9a2a9ae7504c172ef0cb5d969d0886c91e4e3b"
+    "sandbox_payment_verifier_source": "ec9a2a9ae7504c172ef0cb5d969d0886c91e4e3b",
+    "sandbox_ui_patch_source": "cfcaba1538c193fdc60e90f1bb9101c2a78c2714",
+    "sandbox_recovery_patch_verified": true,
+    "sandbox_recovery_patch_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222078093",
+    "sandbox_restricted_key_expanded_intent_read_verified": true,
+    "sandbox_failed_event_subscription_verified": true,
+    "sandbox_webhook_event_types": [
+      "checkout.session.completed",
+      "checkout.session.async_payment_succeeded",
+      "checkout.session.expired",
+      "checkout.session.async_payment_failed"
+    ],
+    "delayed_failure_recovery_simulation_verified": true,
+    "actual_delayed_method_failure_acceptance_verified": false
   },
   "ai_database": {
     "status": "source_merged_installation_pending",
