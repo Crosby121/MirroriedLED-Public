@@ -88,3 +88,7 @@ non-identifying booleans and test amounts and removes its private helper transpo
 Private proof copying uses a verified temporary sibling and atomic publication
 under the same process lock. A process-scoped lock serializes retries and releases automatically
 after interruption; partial private temporary copies cannot poison the final proof.
+
+The final quote workflow is manual-only and requires a selected order fingerprint
+and explicit test-quote acknowledgement. Its one-time push bootstrap was removed
+after successful private proof/quote preparation.

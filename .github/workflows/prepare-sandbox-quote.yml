@@ -1,9 +1,6 @@
 name: Prepare Sandbox Test Quote
 
 on:
-  push:
-    branches: [fix/storefront-integration-20261019]
-    paths: [.github/workflows/prepare-sandbox-quote.yml]
   workflow_dispatch:
     inputs:
       order_fingerprint:
@@ -23,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   prepare:
-    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/fix/storefront-integration-20261019' && (github.event_name == 'push' || inputs.acknowledge_test_quote) }}
+    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/fix/storefront-integration-20261019' && github.event_name == 'workflow_dispatch' && inputs.acknowledge_test_quote }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     environment: production
@@ -34,7 +31,7 @@ jobs:
       PUBLIC_HTML: ${{ secrets.HOSTINGER_PUBLIC_HTML }}
       SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
       SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
-      ORDER_FINGERPRINT: ${{ inputs.order_fingerprint || '47841d2f978239ea36e4af4ad55468ad8f72967a95606b6271b098436b21be71' }}
+      ORDER_FINGERPRINT: ${{ inputs.order_fingerprint }}
     steps:
       - uses: actions/checkout@v5
         with:
