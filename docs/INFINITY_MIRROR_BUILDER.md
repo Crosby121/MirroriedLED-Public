@@ -54,6 +54,16 @@ blank outer margin; it keeps the original for the production proof. This is not
 an automatic certification of fine detail or frosted diffusion. PDF/SVG source
 artwork can be attached separately through the Customer Portal.
 
+## Owner-approved standard retail price
+
+On October 19, 2026 (Pacific time), the owner set the **standard 12×12 mirror
+selling price at $150.00 USD (15000 cents), before tax and shipping**. Public
+copy distinguishes that standard retail price from supplier/component estimates.
+The selected configuration, artwork proof, shipping and final order total still
+require quote review. This approval does not price other sizes or establish the
+cost/inclusion of unspecified upgrades, shipping, or production turnaround.
+Existing paid/artificial test quotes are retained; no customer order is repriced.
+
 ## Price tracker and supplier policy
 
 The preview shows a running USD estimate. The item breakdown includes quantities,

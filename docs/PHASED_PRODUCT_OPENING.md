@@ -7,6 +7,10 @@ rejected for customers while authorized staff retain the existing workflow.
 Premium media endpoints require `premium_enabled=true` or a verified staff role;
 the private data and premium implementation are retained.
 
+The owner-approved standard **12×12 mirror is $150.00 before tax and shipping**.
+Final quote review confirms the selected configuration, artwork and delivery terms.
+Other sizes, options, shipping and turnaround are not priced by this approval.
+
 ## Customer journey
 
 1. Configure an Infinity Mirror, including artwork and LED/controller choices,
