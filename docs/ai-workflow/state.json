@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T02:47:27Z",
+  "observed_at": "2026-10-19T03:09:47Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,7 +9,7 @@
   },
   "source": {
     "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
-    "summary": "Live accounts remain configured and PR 26 remains draft. The USD 1.00 sandbox connection test is canonically complete/paid with livemode:false and a matching checkout.session.completed event. Restricted server-key readiness defect is repaired and 185 local Python tests pass. Isolated app credentials, signed webhook delivery/reconciliation and final fulfillment terms still gate paid ordering.",
+    "summary": "PR 26 remains draft and live payments remain disabled. The separate USD 1 sandbox smoke payment is verified. Read-only GitHub credential preflight now confirms the saved sandbox secret is present but fails restricted test-key validation. All 192 local Python tests passed; website staging, signed webhook acceptance and final fulfillment terms remain pending.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
@@ -207,6 +207,12 @@
       "finding": "Retrieved the previously created sandbox connection test after customer completion: Checkout status complete, payment_status paid, amount_total 100 USD cents, livemode false, fulfillment none. Found the matching checkout.session.completed event. No endpoint was registered, so this does not prove website webhook delivery or app reconciliation. No live money or product order was created.",
       "basis": "authenticated_canonical_Stripe_Checkout_and_event_reads",
       "observed_at": "2026-10-19T02:47:27Z"
+    },
+    {
+      "finding": "Read-only GitHub Actions sandbox credential run 39193263549 reached the secret-backed check and returned restricted_sandbox_key_required. This distinguishes a nonempty invalid saved value from an unavailable secret without exposing its content. No provider API request, website deployment, private hosting change or live activation occurred. Final preflight workflow is manual only.",
+      "basis": "observed_GitHub_Actions_redacted_diagnostic",
+      "observed_at": "2026-10-19T03:09:47Z",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39193263549"
     }
   ],
   "connector": {
@@ -299,9 +305,12 @@
     "php_version": "8.3.33"
   },
   "payment_setup": {
-    "status": "deferred_by_user",
-    "observed_at": "2026-10-06T23:51:52Z",
-    "basis": "user_instruction",
+    "status": "sandbox_credential_correction_required",
+    "observed_at": "2026-10-19T03:09:47Z",
+    "basis": "user_authorized_setup_and_executed_GitHub_preflight",
+    "sandbox_connection_smoke_payment_verified": true,
+    "website_restricted_sandbox_key_verified": false,
+    "signed_website_webhook_verified": false,
     "live_checkout_activated_by_this_session": false
   },
   "ai_database": {
