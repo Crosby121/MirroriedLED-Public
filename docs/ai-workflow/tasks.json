@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T02:47:27Z",
+  "updated_at": "2026-10-19T02:50:45Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -269,14 +269,14 @@
       "status": "blocked",
       "priority": 1,
       "owner_session_id": null,
-      "last_session_id": "20261019t024542z-6754d20f",
+      "last_session_id": "20261019t025030z-4fdc8fd3",
       "depends_on": [],
       "acceptance": [
         "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
         "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
         "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
       ],
-      "next_action": "Provision a restricted sandbox server key and endpoint signing secret through private hosting/CI configuration, prepare isolated staging with separate storage, and complete the actual quoted-order signed-webhook acceptance. Keep live payments disabled and PR 26 draft until tax/product/shipping/production terms and live activation are separately confirmed.",
+      "next_action": "Open API keys in Mirroried Led sandbox and begin creating a restricted key for the website. Review its resource permissions against POST customers, POST checkout/sessions with inline prices, shipping, automatic tax and invoice creation, plus GET checkout/sessions expanded line_items. Store credentials only in a private secret destination; do not register an undeployed webhook or enable production billing. Isolated full PHP staging and signed merchant acceptance remain pending.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"

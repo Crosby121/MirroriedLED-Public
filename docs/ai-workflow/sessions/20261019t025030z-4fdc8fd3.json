@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "20261019t025030z-4fdc8fd3",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T02:50:30Z",
+  "ended_at": "2026-10-19T02:50:45Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "b9276e2b43905ceb85342bc9a90ec9665462ce24",
+  "summary": "Reviewed draft PR 26 and actual server API calls for the next sandbox activation step. Website credentials remain separate from the connected Stripe chat account. Existing staging deploy is an eight-file static subset and cannot establish isolated PHP checkout acceptance. No source deployment, secret creation or webhook registration performed; user must create the sandbox restricted server credential securely before provider permission acceptance.",
+  "next_action": "Open API keys in Mirroried Led sandbox and begin creating a restricted key for the website. Review its resource permissions against POST customers, POST checkout/sessions with inline prices, shipping, automatic tax and invoice creation, plus GET checkout/sessions expanded line_items. Store credentials only in a private secret destination; do not register an undeployed webhook or enable production billing. Isolated full PHP staging and signed merchant acceptance remain pending.",
+  "changed_files": [
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t025030z-4fdc8fd3.json",
+    "docs/ai-workflow/tasks.json"
+  ],
+  "checks": [
+    {
+      "name": "Shared workflow validation and 13 workflow lifecycle tests passed; git diff --check clean",
+      "result": "passed",
+      "basis": "executed_local_checks"
+    }
+  ],
+  "findings": []
+}
