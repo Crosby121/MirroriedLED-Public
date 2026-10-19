@@ -1,11 +1,11 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-19T02:10:00Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-19T02:10:57Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · Refreshed current main and both open work PRs. Draft PR 14 has eight conflicting paths; integration continues in PR 26 with current gallery files, main deployment runtime and payment gates retained. Prior live release evidence is historical; current live version has not been reverified. |
+| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · Current main includes Stadium Builds galleries. PR 26 integrates draft PR 14 without eight prior conflicts, preserves gallery images and hosted Python 3.11, and reconciles shared history. Native local 176 Python/37 Node tests pass. Actual merchant acceptance/private setup and fresh live release remain pending; source publication is not deployment. |
 | Verified live Hostinger commit | 8690ab93f30ffd6913407b1ca5374e808bd6ad93 |
 | Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696) · No failed step |
 | Deployment blocker | Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation. |
@@ -27,6 +27,8 @@ Evidence snapshot: 2026-10-19T02:10:00Z (UTC). Refresh GitHub at the start of ea
 - [Exact PR 23 Storefront CI](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37555953229): **passed**.
 - [Merged AI database workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37556079531): **passed**.
 - [Merged AI database website packaging](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37556079594): **passed**.
+- [Final PR 26 storefront/native commerce validation at 6652c68](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39188714876): **passed**.
+- [Final PR 26 workflow validation at 6652c68](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39188714867): **passed**.
 
 ## Task queue
 
@@ -35,7 +37,7 @@ Evidence snapshot: 2026-10-19T02:10:00Z (UTC). Refresh GitHub at the start of ea
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
 | WF-007 — Address workflow capture privacy and streaming review findings | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
-| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | in_progress | 20261019t020502z-3961126a | Payment account creation is deferred by the user. Keep PR 14 draft; retain its task-ID reconciliation and merchant/private-account launch requirements before any merge or checkout activation. |
+| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Keep PR 26 and original PR 14 draft. Complete actual Stripe sandbox Checkout and signed-webhook acceptance, confirm private customer account setup and final prices/shipping/production capacity, then approve and verify an exact production release. Visual browser replay remains pending after browser download failure. |
 | WF-009 — Preserve browser delta offsets when credentials are masked | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
 | WF-010 — Update owner component costs and 12-inch LED/power-supply research | done | Unclaimed | Continue WF-008: confirm exact LED/glass/power/fabrication/shipping/tax costs and production capacity, verify actual merchant sandbox checkout and signed webhook, configure live merchant settings and resolve main-site SSH deployment settings before an exact live release. |
 | WF-013 — Publish mirror artwork and stadium product browsing | done | Unclaimed | Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused. |

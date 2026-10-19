@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T02:10:00Z",
+  "observed_at": "2026-10-19T02:10:57Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,7 +9,7 @@
   },
   "source": {
     "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
-    "summary": "Refreshed current main and both open work PRs. Draft PR 14 has eight conflicting paths; integration continues in PR 26 with current gallery files, main deployment runtime and payment gates retained. Prior live release evidence is historical; current live version has not been reverified.",
+    "summary": "Current main includes Stadium Builds galleries. PR 26 integrates draft PR 14 without eight prior conflicts, preserves gallery images and hosted Python 3.11, and reconciles shared history. Native local 176 Python/37 Node tests pass. Actual merchant acceptance/private setup and fresh live release remain pending; source publication is not deployment.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
@@ -81,6 +81,16 @@
         "name": "Merged AI database website packaging",
         "result": "passed",
         "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37556079594"
+      },
+      {
+        "name": "Final PR 26 storefront/native commerce validation at 6652c68",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39188714876"
+      },
+      {
+        "name": "Final PR 26 workflow validation at 6652c68",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39188714867"
       }
     ]
   },

@@ -101,9 +101,10 @@ Live verification uses `--require-commerce`: unconfigured customer accounts,
 disabled product ordering or test/unavailable payment configuration fail the
 launch check and restore the previous public files. This configuration check
 does not replace actual merchant payment acceptance.
-The separate sponsor VPS cannot deploy this main website. The previously observed
-missing `HOSTINGER_SSH_PRIVATE_KEY` and `HOSTINGER_SSH_KNOWN_HOSTS` remain a hosting
-blocker until resolved and freshly verified.
+The separate sponsor VPS cannot deploy this main website. The October 6 verified release passed authenticated SSH preflight and exact-source
+HTTPS verification (run 37538235814), resolving the earlier missing-settings
+blocker. Recheck those settings at release time; this integration does not
+perform or establish a new live deployment.
 
 A live launch additionally needs an actual sandbox Checkout payment and signed
 merchant webhook, then the real merchant configuration and confirmed product
