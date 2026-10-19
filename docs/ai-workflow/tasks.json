@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T03:33:31Z",
+  "updated_at": "2026-10-19T03:45:38Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -266,17 +266,17 @@
     {
       "id": "WF-008",
       "title": "Open phased Infinity Mirror and address-sign ordering (PR #14)",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": 1,
-      "owner_session_id": "20261019t033331z-534b18d0",
-      "last_session_id": "20261019t033031z-89f5ccb1",
+      "owner_session_id": null,
+      "last_session_id": "20261019t033331z-534b18d0",
       "depends_on": [],
       "acceptance": [
         "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
         "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
         "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
       ],
-      "next_action": "Prepare isolated full PHP staging with separate private configuration/storage and the verified sandbox restricted credential; register the deployed staging webhook and securely install its endpoint signing secret. Complete actual quoted-order Checkout write permissions, signed event delivery, canonical reconciliation and replay acceptance before considering live merchant/tax and product/shipping/production launch gates. Keep PR 26 draft and live payments disabled.",
+      "next_action": "Resolve the explicit automatic-review boundary for creating the sandbox webhook, whose API initially creates it active, then pause delivery immediately and install its endpoint-specific signing secret privately. Do not bypass the rejection. After approval/secure setup, configure sandbox-only tax registration and fake fulfillment terms, verify actual quoted-order Checkout writes, signed delivery, canonical reconciliation and replay handling. Keep production payments disabled and PR 26 draft.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"

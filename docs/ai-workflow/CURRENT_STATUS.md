@@ -1,11 +1,11 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-19T03:31:24Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-19T03:45:38Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
 | Repository | [Crosby121/MirroriedLED-Public](https://github.com/Crosby121/MirroriedLED-Public) · main |
-| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · PR 26 remains draft and live payments remain disabled. The USD 1 sandbox smoke payment is verified. Updated restricted sandbox server credential passed the real read-only GitHub preflight (run 39193263549 attempt 3). Hosting configuration, Checkout write-path acceptance, isolated PHP staging, signed webhook delivery/reconciliation and final fulfillment terms remain pending. |
+| Observed website source | [054192a](https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19) · PR 26 remains draft. Isolated checkout sandbox source f1e869cd00bef0934090a61713982c6eaee504a1 is installed at /MLED_checkout_TEST with separate private config/database, browser storage and the verified restricted test key. Exact generated public-file HTTPS checks, protected PHP, session cookie scope and unchanged production homepage passed in run 39195896598; browser showed the sandbox notice and enabled account forms. All 201 local tests passed. Checkout remains disabled. Automatic approval review rejected active webhook creation before signing-secret setup; no endpoint was created. Production website source/payments remain unchanged. |
 | Verified live Hostinger commit | 8690ab93f30ffd6913407b1ca5374e808bd6ad93 |
 | Last Hostinger attempt | [verified](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696) · No failed step |
 | Deployment blocker | Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation. |
@@ -30,6 +30,9 @@ Evidence snapshot: 2026-10-19T03:31:24Z (UTC). Refresh GitHub at the start of ea
 - [Final PR 26 storefront/native commerce validation at 6652c68](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39188714876): **passed**.
 - [Final PR 26 workflow validation at 6652c68](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39188714867): **passed**.
 - [Private customer account setup and live HTTPS configuration status](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39189529036): **passed**.
+- [Isolated checkout sandbox installation and exact generated HTTPS/runtime checks](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39195896598): **passed**.
+- [Sandbox source Storefront CI with 201 tests](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39195901505): **passed**.
+- [Sandbox source shared workflow validation](https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39195901548): **passed**.
 
 ## Task queue
 
@@ -38,7 +41,7 @@ Evidence snapshot: 2026-10-19T03:31:24Z (UTC). Refresh GitHub at the start of ea
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
 | WF-007 — Address workflow capture privacy and streaming review findings | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
-| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | in_progress | 20261019t033331z-534b18d0 | Prepare isolated full PHP staging with separate private configuration/storage and the verified sandbox restricted credential; register the deployed staging webhook and securely install its endpoint signing secret. Complete actual quoted-order Checkout write permissions, signed event delivery, canonical reconciliation and replay acceptance before considering live merchant/tax and product/shipping/production launch gates. Keep PR 26 draft and live payments disabled. |
+| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Resolve the explicit automatic-review boundary for creating the sandbox webhook, whose API initially creates it active, then pause delivery immediately and install its endpoint-specific signing secret privately. Do not bypass the rejection. After approval/secure setup, configure sandbox-only tax registration and fake fulfillment terms, verify actual quoted-order Checkout writes, signed delivery, canonical reconciliation and replay handling. Keep production payments disabled and PR 26 draft. |
 | WF-009 — Preserve browser delta offsets when credentials are masked | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
 | WF-010 — Update owner component costs and 12-inch LED/power-supply research | done | Unclaimed | Continue WF-008: confirm exact LED/glass/power/fabrication/shipping/tax costs and production capacity, verify actual merchant sandbox checkout and signed webhook, configure live merchant settings and resolve main-site SSH deployment settings before an exact live release. |
 | WF-013 — Publish mirror artwork and stadium product browsing | done | Unclaimed | Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused. |
