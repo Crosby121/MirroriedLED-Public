@@ -67,6 +67,7 @@ jobs:
           php -l customer-portal/backend/business.php
           php -l customer-portal/backend/builder.php
           php -l customer-portal/backend/commerce.php
+          php -l deploy/hostinger/prepare-sandbox-quote.php
           php -m | grep -q pdo_sqlite
           php -m | grep -q fileinfo
           php -m | grep -q dom
@@ -74,6 +75,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_business_backend.py' -v
           python3 -m unittest discover -s tests -p 'test_infinity_builder_backend.py' -v
           python3 -m unittest discover -s tests -p 'test_commerce_backend.py' -v
+          python3 -m unittest discover -s tests -p 'test_sandbox_quote.py' -v
 
       - name: Verify public customer portal package
         run: |

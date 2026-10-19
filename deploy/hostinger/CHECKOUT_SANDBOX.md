@@ -66,3 +66,25 @@ that remains a separate acceptance step. Stripe delivery remains paused.
 
 The final signer workflow is manual-only with explicit acknowledgement. The
 initial branch-scoped bootstrap was removed after the verified installation.
+
+## Prepare a selected test quote
+
+The CLI-only `prepare-sandbox-quote.php` helper accepts a SHA-256 fingerprint of
+one owner-selected sandbox order reference. Raw order IDs, names, addresses,
+artwork and account records stay in private storage. It validates the isolated
+API/config/database paths and requires checkout off, mode test, no persistent
+staff roles, a single 12-inch mirror and a saved California delivery address.
+
+It copies the uploaded artwork into a private test proof and invokes the existing
+business proof/offer validation with temporary CLI operator scope. It grants no
+browser role and never approves on the customer's behalf. The summary states
+SANDBOX, $1 product plus test tax, $0 shipping and no fabrication/shipping; the
+1–2 day production/transit ranges are artificial acceptance fixtures. Other orders,
+public assets and production configuration remain unchanged. Same-quote retries
+preserve approval and avoid duplicate proof/offer versions. Existing unrelated
+quotes, active checkouts and unsafe paths are rejected. The workflow emits only
+non-identifying booleans and test amounts and removes its private helper transport.
+
+Private proof copying uses a verified temporary sibling and atomic publication
+under the same process lock. A process-scoped lock serializes retries and releases automatically
+after interruption; partial private temporary copies cannot poison the final proof.
