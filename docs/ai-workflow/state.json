@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T08:23:39Z",
+  "observed_at": "2026-10-19T08:29:51Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,7 +9,7 @@
   },
   "source": {
     "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
-    "summary": "PR 26 remains draft. The previously verified $1.09 website sandbox payment and signed provider event remain recorded once. Recovery patch cfcaba1538c193fdc60e90f1bb9101c2a78c2714 was installed only in isolated commerce.php and generated shop JS/HTML by run 39222078093. Completed unpaid payments now stay locked as processing; matching canonical failed intents with zero received/capturable funds permit a fresh attempt. Failed notifications are signed, canonically retrieved and deduplicated; paid records cannot regress or permit another payment. The actual restricted sandbox key passed expanded PaymentIntent read, original paid audit/replay and exact HTTPS asset/runtime checks passed, and production homepage/private config hashes are unchanged. The test endpoint is canonically subscribed to async_payment_failed. All 248 local/deployment tests and source CI passed; final updater b733874f81257ff14b9e35289893009c5c15224e is manual-only. Actual delayed-method failure and remaining negative-case acceptance, owner product/shipping/pricing/capacity and approved live merchant setup remain pending. Production payments stay off.",
+    "summary": "PR 26 remains draft. Owner confirmed the standard 12×12 mirror retail price at $150 before tax and shipping. Four source pages display that standard price; the isolated customer-shop copy is deployed and exact-hash verified by run 39223060247 at c41729550993e30ee44c54b55329b99fab0c23ae. Other price-copy pages remain source-only until an approved release. The updater preserved the $1.09 paid test order, its single confirmation and provider-event replay; production homepage/private config hashes are unchanged. All 248 deployment tests and source CI passed; final updater e1e08caeb8d960f0d8cdea9460b47d64d57e97bc is manual-only. No orders were repriced and live payments stay off. Next obtain actual production lead time and complete hardware/shipping terms, actual negative-case acceptance and owner/staff workflow before approved live setup/release.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
@@ -236,6 +236,31 @@
         "name": "Final manual-only recovery updater shared workflow validation",
         "result": "passed",
         "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222341202"
+      },
+      {
+        "name": "Owner-approved standard price in isolated shop, exact asset/runtime checks and unchanged paid order/production hashes",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39223060247"
+      },
+      {
+        "name": "Owner price source Storefront CI",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39223066252"
+      },
+      {
+        "name": "Owner price shared workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39223066323"
+      },
+      {
+        "name": "Final manual-only owner-price updater shared workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39223243527"
+      },
+      {
+        "name": "Final manual-only owner-price updater Storefront CI",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39223243539"
       }
     ]
   },
@@ -423,6 +448,12 @@
       "basis": "red_then_green_provider_fixture_and_signed_localhost_webhook_tests_independent_review_private_Hostinger_receipt_HTTPS_checks_authenticated_test_endpoint_update_and_read",
       "observed_at": "2026-10-19T08:23:39Z",
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222078093"
+    },
+    {
+      "finding": "Owner explicitly set the standard 12×12 mirror at $150 USD before tax and shipping. Published consistent standard-price copy on the homepage, product card, mirror builder and customer shop source. The existing guarded isolated updater deployed only the shop price copy plus unchanged regenerated commerce/JS at c41729550993e30ee44c54b55329b99fab0c23ae; the other three price-copy pages remain undeployed source. No supplier component estimates, frame-only markup, quotes or existing paid records were changed. Deployment run 39223060247 passed all 248 tests, exact public asset/runtime verification, original $1.09 paid order/single confirmation/replay preservation, unchanged production hashes and cleanup. Source CI passed and final updater restored manual-only. Selected configuration/proof/delivery still require final quote review; other sizes, options and actual turnaround are not priced by this approval. Production payments remain off.",
+      "basis": "owner_explicit_retail_price_confirmation_source_inspection_existing_tests_private_deployment_receipt_and_exact_HTTPS_asset_checks",
+      "observed_at": "2026-10-19T08:29:51Z",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39223060247"
     }
   ],
   "connector": {
@@ -553,7 +584,7 @@
     "sandbox_test_quote_shipping_cents": 0,
     "sandbox_customer_approval_verified": true,
     "sandbox_quote_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39200193536",
-    "sandbox_checkout_patch_source": "cfcaba1538c193fdc60e90f1bb9101c2a78c2714",
+    "sandbox_checkout_patch_source": "c41729550993e30ee44c54b55329b99fab0c23ae",
     "sandbox_checkout_activation_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39217543467",
     "sandbox_self_signed_probe_verified": true,
     "sandbox_self_signed_replay_verified": true,
@@ -571,7 +602,7 @@
     "sandbox_known_event_self_signed_replay_verified": true,
     "sandbox_payment_acceptance_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39219632873",
     "sandbox_payment_verifier_source": "ec9a2a9ae7504c172ef0cb5d969d0886c91e4e3b",
-    "sandbox_ui_patch_source": "cfcaba1538c193fdc60e90f1bb9101c2a78c2714",
+    "sandbox_ui_patch_source": "c41729550993e30ee44c54b55329b99fab0c23ae",
     "sandbox_recovery_patch_verified": true,
     "sandbox_recovery_patch_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39222078093",
     "sandbox_restricted_key_expanded_intent_read_verified": true,
@@ -593,5 +624,27 @@
     "external_adapters_verified": false,
     "documentation": "docs/AI_DATABASE.md",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/pull/23"
+  },
+  "retail_pricing": {
+    "standard_12x12_mirror": {
+      "currency": "USD",
+      "product_cents": 15000,
+      "tax_included": false,
+      "shipping_included": false,
+      "basis": "owner_explicitly_confirmed_standard_retail_price",
+      "confirmed_at": "2026-10-19T08:29:51Z",
+      "configuration_policy": "Selected configuration, artwork proof and delivery terms remain subject to final quote review; other sizes/options not priced by this approval.",
+      "source_commit": "c41729550993e30ee44c54b55329b99fab0c23ae",
+      "source_pages": [
+        "index.html",
+        "products/index.html",
+        "infinity-builder/index.html",
+        "shop/index.html"
+      ],
+      "sandbox_shop_display_verified": true,
+      "sandbox_display_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39223060247",
+      "production_price_display_deployed": false,
+      "existing_orders_repriced": false
+    }
   }
 }
