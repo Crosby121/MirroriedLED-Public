@@ -1,0 +1,196 @@
+name: Initialize Private Customer Accounts on Hostinger
+
+on:
+  push:
+    branches: [fix/storefront-integration-20261019]
+    paths:
+      - .github/workflows/setup-customer-accounts.yml
+  workflow_dispatch:
+    inputs:
+      acknowledge_private_setup:
+        description: "Create missing private customer configuration without replacing existing data; payments stay disabled"
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: ${{ github.event_name == 'push' || inputs.acknowledge_private_setup }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    environment: production
+    env:
+      SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+      SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+      SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+      PUBLIC_HTML: ${{ secrets.HOSTINGER_PUBLIC_HTML }}
+      SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Verify setup preserves private data and refuses unsafe paths
+        run: python3 -m unittest discover -s tests -p 'test_customer_account_setup.py' -v
+      - name: Prepare the existing key for a read-only login check
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+          profile = json.loads(Path('deploy/hostinger/main-website.json').read_text())
+          assert profile['domain'] == 'mirroriedled.com'
+          values = {name: os.environ.get(name) or str(profile[field]) for name, field in {
+              'SSH_HOST': 'ssh_host', 'SSH_PORT': 'ssh_port', 'SSH_USER': 'ssh_user',
+              'PUBLIC_HTML': 'public_html', 'REMOTE_PYTHON': 'python_executable'}.items()}
+          assert re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.-]*', values['SSH_HOST'])
+          assert values['SSH_PORT'].isdigit() and 1 <= int(values['SSH_PORT']) <= 65535
+          assert re.fullmatch(r'u[0-9]+', values['SSH_USER'])
+          assert values['PUBLIC_HTML'] == '/home/' + values['SSH_USER'] + '/domains/mirroriedled.com/public_html'
+          assert values['REMOTE_PYTHON'] in {'python3', '/opt/alt/python311/bin/python3', '/opt/alt/python38/bin/python3'}
+          key = os.environ.get('SSH_PRIVATE_KEY', '').lstrip('\ufeff').replace('\r', '').strip()
+          if '\\n' in key and '\n' not in key:
+              key = key.replace('\\n', '\n')
+          hosts = os.environ.get('SSH_KNOWN_HOSTS', '').replace('\r', '').strip()
+          if not key or not hosts:
+              raise SystemExit('Main-site private key or trusted host setting is unavailable')
+          folder = Path(os.environ['RUNNER_TEMP']) / 'mled-readonly-auth'
+          folder.mkdir(mode=0o700)
+          for name, value in [('key', key), ('known_hosts', hosts)]:
+              target = folder / name
+              target.touch(mode=0o600)
+              target.write_text(value + '\n')
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              for name, value in values.items():
+                  output.write(name + '=' + value + '\n')
+          PY
+          ssh-keygen -y -P '' -f "$RUNNER_TEMP/mled-readonly-auth/key" > "$RUNNER_TEMP/mled-readonly-auth/public"
+          echo 'Deployment key public fingerprint:'
+          ssh-keygen -lf "$RUNNER_TEMP/mled-readonly-auth/public" -E sha256 | awk '{print $1, $2, $NF}'
+      - name: Verify authenticated SSH and hosting runtime without writing files
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$RUNNER_TEMP/mled-readonly-auth/key" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o PreferredAuthentications=publickey \
+            -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
+            -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts" \
+            -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "bash -s -- '$PUBLIC_HTML' '$REMOTE_PYTHON'" <<'REMOTE'
+          set -euo pipefail
+          echo 'MLED_SSH_AUTHENTICATED'
+          failed=0
+          check() {
+            label="$1"; shift
+            if "$@"; then
+              printf 'PASS: %s\n' "$label"
+            else
+              printf 'FAIL: %s\n' "$label" >&2
+              failed=1
+            fi
+          }
+          check 'Website directory exists' test -d "$1"
+          check 'Existing index.html is present' test -f "$1/index.html"
+          check 'Configured Python executable is available' command -v "$2"
+          if command -v "$2" >/dev/null; then
+            "$2" --version
+            check 'Configured Python is at least 3.8' "$2" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'
+          fi
+          check 'PHP executable is available' command -v php
+          if command -v php >/dev/null; then
+            php -r 'echo "PHP_VERSION=" . PHP_VERSION . PHP_EOL;'
+            check 'PHP is at least 8.2' php -r 'exit(PHP_VERSION_ID >= 80200 ? 0 : 1);'
+            for extension in pdo_sqlite fileinfo dom curl; do
+              check "PHP extension $extension is enabled" php -r 'exit(extension_loaded($argv[1]) ? 0 : 1);' "$extension"
+            done
+          fi
+          if [ "$failed" -ne 0 ]; then exit 1; fi
+          echo 'MLED_READ_ONLY_HOST_PREFLIGHT_PASSED'
+          REMOTE
+      - name: Inspect private setup presence without reading account data or credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$RUNNER_TEMP/mled-readonly-auth/key" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o PreferredAuthentications=publickey \
+            -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
+            -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts" \
+            -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' - '$PUBLIC_HTML'" <<'REMOTE'
+          import json
+          import os
+          from pathlib import Path
+          import stat
+          import sys
+          root = Path(sys.argv[1]).resolve(strict=True)
+          private = root.parent / 'mirroriedled-private' / 'customer-portal'
+          config = private / 'config.php'
+          report = {
+              'default_private_config_present': config.is_file(),
+              'default_private_config_symlink': config.is_symlink(),
+              'default_private_config_readable': os.access(config, os.R_OK),
+              'default_private_config_owner_only': config.is_file() and not bool(stat.S_IMODE(config.lstat().st_mode) & 0o077),
+              'default_private_storage_present': (private / 'storage').is_dir(),
+              'deployed_commerce_backend_present': (root / 'customer-portal/backend/commerce.php').is_file(),
+              'deployed_ordering_page_present': (root / 'shop/index.html').is_file(),
+          }
+          print('MLED_PRIVATE_SETUP_METADATA=' + json.dumps(report, sort_keys=True))
+          print('Only filesystem metadata inspected; alternate PHP/FPM config overrides and account contents were not read.')
+          REMOTE
+      - name: Report public account and checkout availability
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from urllib.error import HTTPError
+          from urllib.request import urlopen
+          for action in ('session', 'commerce-status'):
+              try:
+                  with urlopen('https://mirroriedled.com/customer-portal/backend/api.php?action=' + action, timeout=15) as response:
+                      data = json.load(response)
+                      report = {key: data[key] for key in ('ok', 'configured', 'accountsAvailable', 'paymentsAvailable', 'paymentMode') if key in data}
+                      report.update(action=action, http_status=response.status)
+              except HTTPError as error:
+                  report = {'action': action, 'http_status': error.code}
+              print('MLED_PUBLIC_PORTAL_STATUS=' + json.dumps(report, sort_keys=True))
+          PY
+      - name: Create only the missing private customer account configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          PRIVATE_SETUP_STAGE="${PUBLIC_HTML%/public_html}/.mled-account-setup-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          printf 'PRIVATE_SETUP_STAGE=%s\n' "$PRIVATE_SETUP_STAGE" >> "$GITHUB_ENV"
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/mled-readonly-auth/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "umask 077; mkdir '$PRIVATE_SETUP_STAGE'"
+          scp "${SSH_OPTIONS[@]}" -P "$SSH_PORT" deploy/hostinger/setup-customer-accounts.py customer-portal/backend/config.example.php "$SSH_USER@$SSH_HOST:$PRIVATE_SETUP_STAGE/"
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' '$PRIVATE_SETUP_STAGE/setup-customer-accounts.py' --webroot '$PUBLIC_HTML' --template '$PRIVATE_SETUP_STAGE/config.example.php'"
+      - name: Verify configured customer accounts over HTTPS
+        shell: bash
+        run: |
+          python3 - <<'PYVERIFY'
+          import json
+          from urllib.request import urlopen
+          with urlopen('https://mirroriedled.com/customer-portal/backend/api.php?action=session', timeout=20) as response:
+              data = json.load(response)
+          if data.get('configured') is not True or data.get('capabilities', {}).get('business') is not True:
+              raise SystemExit('Private account configuration was not accepted; inspect hosting setup without exposing config contents.')
+          if data.get('capabilities', {}).get('payments') is not False:
+              raise SystemExit('Unexpected payment activation; manual review required.')
+          print('MLED_CUSTOMER_ACCOUNTS_CONFIGURED=true')
+          print('MLED_PRODUCT_REQUESTS_AVAILABLE=true')
+          print('MLED_PAYMENT_ACTIVATION_PERFORMED=false')
+          PYVERIFY
+      - name: Remove the temporary non-secret setup files
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          if [[ -n "${PRIVATE_SETUP_STAGE:-}" && -f "$RUNNER_TEMP/mled-readonly-auth/key" ]]; then
+            SSH_OPTIONS=(-i "$RUNNER_TEMP/mled-readonly-auth/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts")
+            ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "rm -f -- '$PRIVATE_SETUP_STAGE/setup-customer-accounts.py' '$PRIVATE_SETUP_STAGE/config.example.php'; rmdir '$PRIVATE_SETUP_STAGE'"
+          fi
+      - name: Remove temporary runner credentials
+        if: ${{ always() }}
+        shell: bash
+        run: rm -rf -- "$RUNNER_TEMP/mled-readonly-auth"
