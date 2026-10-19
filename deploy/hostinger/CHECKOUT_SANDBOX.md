@@ -117,3 +117,13 @@ provider calls and does not prove actual Stripe-signed delivery. Resume only the
 sandbox provider webhook after these checks, then the customer opens test Checkout.
 An actual test-card payment, canonical reconciliation and provider delivery/replay
 are still required. Test payments cannot release production work.
+
+The final activation workflow is manual-only; its initial branch/path push
+bootstrap is removed after the verified activation. Existing different checkout
+patches or checkout records require separate review; this is an initial enable
+operation, not a general migration or reconfiguration tool.
+
+Before expanding beyond this artificial card test, handle delayed payment failures
+and test their retry/unlock path. Dynamic methods may include delayed payments;
+current reconciliation handles successful or expired sessions but does not resolve
+`checkout.session.async_payment_failed`. Live launch remains blocked on acceptance.
