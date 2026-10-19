@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "20261019t041526z-eec90ec3",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T04:15:26Z",
+  "ended_at": "2026-10-19T04:16:49Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "b5d901a8add31471ed8f51a0f10416f773f24c61",
+  "summary": "Verified owner-completed Mirroried Led sandbox Tax Settings active with head office present and livemode false. Confirmed no registrations, created one California state_sales_tax sandbox registration, and canonically verified active/livemode false. No address or private registration ID committed. No live registration, website source/config change or payment activation. Actual test customer account, artificial quote, Checkout writes and Stripe-signed delivery/replay remain pending.",
+  "next_action": "Create a test customer account in the isolated shop and prepare an artificial proof/quote/fake fulfillment terms. Align Checkout API version, dynamic payment methods and integration identifier before actual test Checkout and signed-webhook acceptance. Keep production payments disabled.",
+  "changed_files": [
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t041526z-eec90ec3.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json"
+  ],
+  "checks": [
+    {
+      "name": "Canonical sandbox Tax Settings active, head office present, livemode false",
+      "command": "Canonical sandbox Tax Settings active, head office present, livemode false",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Registration pre-list empty; created and canonical-read verified one active California test registration",
+      "command": "Registration pre-list empty; created and canonical-read verified one active California test registration",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Workflow validator and all 13 lifecycle tests passed",
+      "command": "Workflow validator and all 13 lifecycle tests passed",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": []
+}
