@@ -147,3 +147,7 @@ The helper refuses to replay an event that has not already been recorded, so thi
 probe cannot manufacture the evidence of original Stripe processing. No provider
 call or production release is made. The workflow checks unchanged production
 homepage/config hashes and removes its private helper transport.
+
+The final payment-verification workflow is manual-only and requires explicit
+acknowledgement and all four canonical fingerprints. Its initial branch/path push
+bootstrap is removed after verification.
