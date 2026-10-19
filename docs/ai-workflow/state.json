@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T02:36:16Z",
+  "observed_at": "2026-10-19T02:47:27Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -9,7 +9,7 @@
   },
   "source": {
     "observed_commit": "054192a3842deb2faf8e1e467104ac4866c8ce19",
-    "summary": "Current website galleries are preserved and private customer accounts are configured. PR 26 remains draft. Stripe sandbox OAuth is now verified, with one USD 1.00 hosted connection test awaiting payment. Server merchant credentials, deployed draft checkout, signed webhook acceptance and final fulfillment terms still gate paid ordering.",
+    "summary": "Live accounts remain configured and PR 26 remains draft. The USD 1.00 sandbox connection test is canonically complete/paid with livemode:false and a matching checkout.session.completed event. Restricted server-key readiness defect is repaired and 185 local Python tests pass. Isolated app credentials, signed webhook delivery/reconciliation and final fulfillment terms still gate paid ordering.",
     "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/054192a3842deb2faf8e1e467104ac4866c8ce19",
     "checks": [
       {
@@ -202,6 +202,11 @@
       "finding": "Stripe MCP authorization verified for Mirroried Led sandbox with livemode:false. No webhook endpoints or prior Checkout Sessions were present. Created one clearly labeled USD 1.00 sandbox connection-test Checkout Session, retrieved it as open/unpaid, and tagged it purpose=sandbox_connection_smoke_test, source_pr=26, fulfillment=none. This is a connection smoke test, not storefront or signed-webhook acceptance; no private checkout URL or session capability is published here.",
       "basis": "observed_authenticated_Stripe_MCP_create_and_read",
       "observed_at": "2026-10-19T02:36:16Z"
+    },
+    {
+      "finding": "Retrieved the previously created sandbox connection test after customer completion: Checkout status complete, payment_status paid, amount_total 100 USD cents, livemode false, fulfillment none. Found the matching checkout.session.completed event. No endpoint was registered, so this does not prove website webhook delivery or app reconciliation. No live money or product order was created.",
+      "basis": "authenticated_canonical_Stripe_Checkout_and_event_reads",
+      "observed_at": "2026-10-19T02:47:27Z"
     }
   ],
   "connector": {

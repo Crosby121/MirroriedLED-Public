@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T02:45:42Z",
+  "updated_at": "2026-10-19T02:47:27Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -266,17 +266,17 @@
     {
       "id": "WF-008",
       "title": "Open phased Infinity Mirror and address-sign ordering (PR #14)",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": 1,
-      "owner_session_id": "20261019t024542z-6754d20f",
-      "last_session_id": "20261019t023521z-fe297353",
+      "owner_session_id": null,
+      "last_session_id": "20261019t024542z-6754d20f",
       "depends_on": [],
       "acceptance": [
         "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
         "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
         "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
       ],
-      "next_action": "Customer completes the clearly labeled sandbox checkout with Stripe test payment details. Retrieve the latest session matching purpose=sandbox_connection_smoke_test and source_pr=26 to verify its canonical payment status. Then configure isolated server test credentials/webhook and run the actual quoted-order acceptance; preserve live payments off until final product/shipping/tax/production terms are confirmed.",
+      "next_action": "Provision a restricted sandbox server key and endpoint signing secret through private hosting/CI configuration, prepare isolated staging with separate storage, and complete the actual quoted-order signed-webhook acceptance. Keep live payments disabled and PR 26 draft until tax/product/shipping/production terms and live activation are separately confirmed.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"

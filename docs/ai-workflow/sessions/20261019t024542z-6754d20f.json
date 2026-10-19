@@ -5,16 +5,67 @@
   "application_identity": "declared",
   "github_account": "Crosby121",
   "started_at": "2026-10-19T02:45:42Z",
-  "ended_at": null,
-  "status": "active",
+  "ended_at": "2026-10-19T02:47:27Z",
+  "status": "blocked",
   "task_ids": [
     "WF-008"
   ],
   "branch": "fix/storefront-integration-20261019",
   "base_commit": "b882800c1875e4e30fe01ddb5c3092cbdd14d9aa",
-  "summary": "",
-  "next_action": "",
-  "changed_files": [],
-  "checks": [],
-  "findings": []
+  "summary": "Verified the customer-completed USD 1.00 sandbox test as complete/paid, livemode false, with its matching completion event. Reproduced and repaired draft checkout rejection of restricted server keys; full 185-test PHP/Python suite passed. Published source bd609a2bcef0c5d077487c7f1b0a6d43e583ff49. Actual app credentials, deployed sandbox checkout and signed webhook delivery/reconciliation remain pending; no live payment activation or website source deployment occurred.",
+  "next_action": "Provision a restricted sandbox server key and endpoint signing secret through private hosting/CI configuration, prepare isolated staging with separate storage, and complete the actual quoted-order signed-webhook acceptance. Keep live payments disabled and PR 26 draft until tax/product/shipping/production terms and live activation are separately confirmed.",
+  "changed_files": [
+    "customer-portal/backend/commerce.php",
+    "customer-portal/backend/config.example.php",
+    "docs/PHASED_PRODUCT_OPENING.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t024542z-6754d20f.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_commerce_backend.py"
+  ],
+  "checks": [
+    {
+      "name": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q: 185 passed, zero skips",
+      "command": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q: 185 passed, zero skips",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Restricted-key regression observed failing before repair and passing after repair; 10 commerce HTTP tests passed",
+      "command": "Restricted-key regression observed failing before repair and passing after repair; 10 commerce HTTP tests passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "PHP syntax checks for commerce.php and config.example.php passed",
+      "command": "PHP syntax checks for commerce.php and config.example.php passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "GitHub Storefront CI and Validate Shared AI Workflow passed for published source bd609a2",
+      "result": "passed",
+      "basis": "observed_GitHub_Actions",
+      "urls": [
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39191588355",
+        "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39191588570"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "finding": "Canonical sandbox Checkout read confirmed USD 1.00 complete/paid and livemode:false; matching checkout.session.completed event also exists. No registered webhook endpoint means pending_webhooks:0 is not evidence of successful website delivery. Private session/event identifiers, payment URL and customer details are intentionally excluded from public records.",
+      "basis": "observed_authenticated_Stripe_API_reads"
+    },
+    {
+      "finding": "Stripe official restricted-key documentation says server restricted keys use rk_test_/rk_live_ and are drop-in replacements for full server keys. Existing draft availability check accepted only sk_ and rejected a fixture restricted test key. Regression failed first, then passed after the minimal prefix fix while live/test and publishable-key rejection remained covered. Actual remote API permissions still require credential acceptance.",
+      "basis": "official_Stripe_documentation_and_executed_RED_GREEN_test",
+      "source": "https://docs.stripe.com/keys/restricted-api-keys"
+    },
+    {
+      "finding": "Changes are published on PR 26 only. The live website retains disabled payments. Stripe chat authorization does not automatically configure Hostinger server credentials or register a signed webhook endpoint.",
+      "basis": "session_actions_and_existing_runtime_configuration"
+    }
+  ]
 }
