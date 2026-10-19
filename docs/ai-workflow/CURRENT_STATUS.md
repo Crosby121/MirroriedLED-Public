@@ -1,6 +1,6 @@
 # Mirroried LED shared work status
 
-Evidence snapshot: 2026-10-19T03:09:47Z (UTC). Refresh GitHub at the start of each session.
+Evidence snapshot: 2026-10-19T03:17:43Z (UTC). Refresh GitHub at the start of each session.
 
 | Area | Recorded state |
 | --- | --- |
@@ -38,7 +38,7 @@ Evidence snapshot: 2026-10-19T03:09:47Z (UTC). Refresh GitHub at the start of ea
 | WF-001 — Install the shared workflow foundation | done | Unclaimed | Resolve WF-002 deployment settings; WF-003 shared connector can proceed independently after checking task ownership. |
 | WF-005 — Address the credential-filter review finding | done | Unclaimed | Foundation fix merged in PR #12; continue with shared connection and private capture activation. |
 | WF-007 — Address workflow capture privacy and streaming review findings | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
-| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Owner must replace the GitHub Actions repository secret MLED_STRIPE_SANDBOX_KEY with the complete restricted sandbox key beginning rk_test_. Rerun the credential preflight, then prepare isolated PHP staging and complete actual quoted-order signed-webhook acceptance. Keep live ordering disabled and PR 26 draft. |
+| WF-008 — Open phased Infinity Mirror and address-sign ordering (PR #14) | blocked | Unclaimed | Ask owner to identify only whether the copied token starts rk_test_, sk_test_, pk_test_ or another prefix. Do not request the complete token or another blind key replacement. Resolve the format mismatch before actual provider/staging/signed-webhook acceptance; keep live payments disabled. |
 | WF-009 — Preserve browser delta offsets when credentials are masked | done | Unclaimed | Capture fixes and follow-up privacy repairs are integrated in PR 22; complete WF-003/WF-006 activation before claiming automatic capture. |
 | WF-010 — Update owner component costs and 12-inch LED/power-supply research | done | Unclaimed | Continue WF-008: confirm exact LED/glass/power/fabrication/shipping/tax costs and production capacity, verify actual merchant sandbox checkout and signed webhook, configure live merchant settings and resolve main-site SSH deployment settings before an exact live release. |
 | WF-013 — Publish mirror artwork and stadium product browsing | done | Unclaimed | Review the live builds and replace stadium placeholder prices when ready. Private portal, payment and in-app AI activation remain separately scoped setup work. OneDrive cleanup remains paused. |

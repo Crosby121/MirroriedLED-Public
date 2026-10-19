@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T03:09:47Z",
+  "updated_at": "2026-10-19T03:17:43Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -269,14 +269,14 @@
       "status": "blocked",
       "priority": 1,
       "owner_session_id": null,
-      "last_session_id": "20261019t030359z-5a9bde8f",
+      "last_session_id": "20261019t031644z-2396d8dc",
       "depends_on": [],
       "acceptance": [
         "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
         "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
         "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
       ],
-      "next_action": "Owner must replace the GitHub Actions repository secret MLED_STRIPE_SANDBOX_KEY with the complete restricted sandbox key beginning rk_test_. Rerun the credential preflight, then prepare isolated PHP staging and complete actual quoted-order signed-webhook acceptance. Keep live ordering disabled and PR 26 draft.",
+      "next_action": "Ask owner to identify only whether the copied token starts rk_test_, sk_test_, pk_test_ or another prefix. Do not request the complete token or another blind key replacement. Resolve the format mismatch before actual provider/staging/signed-webhook acceptance; keep live payments disabled.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json"

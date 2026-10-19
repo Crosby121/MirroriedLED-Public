@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-19T03:09:47Z",
+  "observed_at": "2026-10-19T03:17:43Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -213,6 +213,12 @@
       "basis": "observed_GitHub_Actions_redacted_diagnostic",
       "observed_at": "2026-10-19T03:09:47Z",
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39193263549"
+    },
+    {
+      "finding": "Reran the existing private sandbox check after the owner reported updating the GitHub secret. Run 39193263549 attempt 2, job 117872461631, again returned restricted_sandbox_key_required. This is the local rk_test_ format gate, not a Stripe authentication/API response. The saved value was not read or disclosed and no provider request or website change occurred. Ask for the non-secret prefix only before requesting more credential replacement.",
+      "basis": "observed_redacted_GitHub_Actions_attempt_2",
+      "observed_at": "2026-10-19T03:17:43Z",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39193263549/attempts/2"
     }
   ],
   "connector": {
