@@ -175,3 +175,7 @@ and unchanged production homepage/config hashes. Private config and order data a
 not rewritten. Subscribe the verified sandbox endpoint to async_payment_failed only
 after these checks. Production payments remain disabled. A source/payload simulation
 does not replace actual delayed-method failure acceptance.
+
+The final recovery updater is manual-only and requires the current installed patch
+commit, canonical fingerprints and explicit acknowledgement. Its one-time
+branch/path bootstrap is removed after the verified patch.

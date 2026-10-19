@@ -63,7 +63,7 @@ Register the merchant webhook at:
 
 `https://mirroriedled.com/customer-portal/backend/api.php?action=commerce-webhook`
 
-Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`
+Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
 `checkout.session.async_payment_failed` and `checkout.session.expired`. Use the endpoint's own signing secret, rather than
 an unrelated CLI secret. Configure customer receipts/invoices in the actual
 merchant account. Keys and receipts are not activated by shipping this source.
