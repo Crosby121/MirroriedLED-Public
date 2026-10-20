@@ -219,8 +219,11 @@ the next three business dates are counted in America/Los_Angeles, excluding
 weekends and standard observed U.S. federal holidays, including adjacent-year
 observances and daylight-saving transitions. Holiday reference:
 https://www.opm.gov/policy-data-oversight/pay-leave/federal-holidays/ .
-The saved ship-by date is shown only after both conditions are met. This does not
-supply the still-unconfirmed production lead time. Late shipments can be recorded
+The saved ship-by date is shown only after both conditions are met. The owner
+confirmed up to five business days after deposit and digital artwork proof approval
+for the actual engraving photo to be ready. Customer response time and carrier
+transit are separate; this does not promise delivery within five days. Late
+shipments can be recorded
 truthfully without changing the original approval or deadline.
 
 A paid deposit does not mean the order is fully paid. Any unresolved sibling of
@@ -247,3 +250,15 @@ order remains full-payment with no finished engraving approval or final-price ro
 before committing. It never assigns staff roles, changes a price, publishes a photo,
 approves engraving or advances production. The original artificial paid test order
 stays unreleased. Keep this helper outside public_html and remove its transport.
+
+## Five-business-day engraving-photo readiness
+
+New mirror offers cap their production maximum at five business days and identify
+the endpoint as the actual engraving photo being ready for customer review, after
+both deposit confirmation and digital artwork proof approval. Sales can publish a
+shorter capacity-confirmed estimate. Team defaults are 1–5 internal business days;
+customer copy states the upper limit without promising a one-day completion.
+Address-sign estimates remain individually quoted. Pre-existing offers and active
+checkout snapshots are not edited. New deposit checkout text uses its immutable
+photo-readiness disclosure; old snapshots retain their original retry parameters.
+This policy confirmation does not authorize physical production or live payments.

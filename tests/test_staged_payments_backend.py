@@ -58,6 +58,48 @@ class StagedPaymentTests(unittest.TestCase):
         return data.get('order')
     def approve(self,order,accept=True,expected=200):
         return self.h.post(self.h.customer,'business-engraving-approve',{'orderId':order['id'],'revision':order['revision'],'reviewId':order['engravingReview']['id'],'acceptEngraving':True,'acceptFinalPrice':accept},expected).get('order')
+    def test_new_mirror_quote_rejects_more_than_five_production_business_days(self):
+        order,terms=self.c.quoted()
+        terms.update(productionMinDays=1,productionMaxDays=6)
+        self.h.post(self.h.staff,'commerce-offer',terms,422)
+        terms.update(productionMaxDays=5)
+        offer=self.h.post(self.h.staff,'commerce-offer',terms)['commerce']['offer']
+        self.assertEqual(offer['productionMaxDays'],5)
+        self.assertIn('within 5 business days',offer['engravingReady'])
+        self.assertIn('deposit confirmation',offer['engravingReady'])
+        self.assertIn('digital artwork proof approval',offer['engravingReady'])
+        self.assertIn('actual engraving photo',offer['engravingReady'].lower())
+
+    def test_new_deposit_checkout_discloses_photo_ready_time_and_retains_retry_terms(self):
+        o,_=self.offer()
+        self.cli(o,fail=True)
+        calls=[json.loads(x) for x in (self.server.root/'stage-calls.jsonl').read_text().splitlines()]
+        original=[x for x in calls if x[1]=='/checkout/sessions'][-1]
+        text=original[2]['custom_text']['submit']['message']
+        self.assertIn('actual engraving photo',text.lower())
+        self.assertIn('within 5 business days',text)
+        self.assertIn('digital artwork proof approval',text)
+        self.cli(o)
+        calls=[json.loads(x) for x in (self.server.root/'stage-calls.jsonl').read_text().splitlines()]
+        self.assertEqual(original,[x for x in calls if x[1]=='/checkout/sessions'][-1])
+
+    def test_pre_policy_deposit_retry_keeps_original_production_terms(self):
+        o,_=self.offer()
+        # Import a pre-policy staged offer; no existing merchant records are changed.
+        with self.db() as db:
+            row=db.execute('SELECT terms FROM commerce_offers WHERE order_id=?',(o['id'],)).fetchone()
+            terms=json.loads(row[0]);terms.pop('engravingReady',None)
+            terms.update(productionMinDays=7,productionMaxDays=14)
+            db.execute('UPDATE commerce_offers SET terms=? WHERE order_id=?',(json.dumps(terms),o['id']))
+            db.execute('UPDATE commerce_offer_history SET terms=? WHERE order_id=?',(json.dumps(terms),o['id']))
+        self.cli(o,fail=True)
+        calls=[json.loads(x) for x in (self.server.root/'stage-calls.jsonl').read_text().splitlines()]
+        original=[x for x in calls if x[1]=='/checkout/sessions'][-1]
+        self.assertIn('Production estimate: 7–14 business days.',original[2]['custom_text']['submit']['message'])
+        self.cli(o)
+        calls=[json.loads(x) for x in (self.server.root/'stage-calls.jsonl').read_text().splitlines()]
+        self.assertEqual(original,[x for x in calls if x[1]=='/checkout/sessions'][-1])
+
     def test_new_mirror_collects_half_product_plus_tax_and_defers_shipping(self):
         o,offer=self.offer();self.assertEqual(offer['paymentSchedule'],'deposit50');self.assertEqual(offer['depositProductCents'],7500)
         self.cli(o);s=json.loads(self.row(o)['snapshot']);self.assertEqual((s['paymentStage'],s['productCents'],s['shippingCents']),('deposit',7500,0))

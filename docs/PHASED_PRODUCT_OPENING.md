@@ -9,7 +9,12 @@ the private data and premium implementation are retained.
 
 The owner-approved standard **12×12 mirror is $150.00 before tax and shipping**.
 Final quote review confirms the selected configuration, artwork and delivery terms.
-Other sizes, options, shipping and turnaround are not priced by this approval.
+Other sizes, options and shipping are not priced by this approval.
+For new mirror orders, allow **up to five business days after deposit confirmation
+and digital artwork proof approval** for the actual engraving photo to be ready
+for customer review. This is separate from customer response time, the later
+three-business-day dispatch window, and carrier delivery time. Existing accepted
+production estimates remain unchanged.
 
 ## Customer journey
 
@@ -47,8 +52,9 @@ Other sizes, options, shipping and turnaround are not priced by this approval.
    time begins after shipment.** Monday–Friday excludes standard observed U.S.
    federal holidays, using Pacific calendar dates. The later approval/payment
    date is day zero. QC and all fulfillment gates must pass. The saved ship-by
-   date appears in both accounts only once both conditions are met. Production
-   time before the photo is ready still needs owner confirmation.
+   date appears in both accounts only once both conditions are met. The engraving
+   photo is ready within the separately quoted production window, up to five
+   business days after deposit and digital artwork proof approval.
 
 This is a reviewed custom-order flow. **Instant final pricing for every possible
 build is not implemented**: incomplete supplier data and fabrication costs need

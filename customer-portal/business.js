@@ -212,6 +212,10 @@
     $('teamFileForm').hidden=!mutable||!hasRole('sales','production');
     $('teamQuoteForm').hidden=!mutable||!hasRole('sales');
     $('teamCheckoutForm').hidden=!['QUOTED','APPROVED'].includes(state)||!hasRole('sales');
+    const mirror=Boolean(order?.engravingApprovalRequired),productionLimit=mirror?5:365,offer=order?.commerce?.offer;
+    $('teamProductionMin').max=productionLimit;$('teamProductionMax').max=productionLimit;
+    $('teamProductionMin').value=offer?Math.min(offer.productionMinDays,productionLimit):mirror?1:'';
+    $('teamProductionMax').value=offer?Math.min(offer.productionMaxDays,productionLimit):mirror?5:'';
     const address=order?.commerce?.address;
     $('teamDeliveryAddress').textContent=address?'Ship to '+[address.name,address.line1,address.line2,address.city,address.state,address.postalCode].filter(Boolean).join(', '):'The customer must save a delivery address before shipping can be quoted.';
     $('teamReserveForm').hidden=!mutable||!hasRole('inventory','production');

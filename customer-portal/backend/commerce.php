@@ -206,6 +206,9 @@ final class CommercePortal
                 'productionMinDays'=>$pMin,'productionMaxDays'=>$pMax,'transitMinDays'=>$tMin,'transitMaxDays'=>$tMax,'expiresAt'=>time()+$expires*86400,'address'=>$address,
                 'productionStarts'=>'After payment confirmation and approval of the final artwork proof. Estimates use business days.','tax'=>'Final tax and total are calculated and shown in secure checkout before payment.'];
             if (BusinessPortal::requiresEngravingApproval($order)) {
+                if($pMax>5)throw new PortalError('Mirror engraving photos must be ready within five business days after deposit and digital artwork proof approval. Confirm capacity before publishing.',422);
+                $terms['productionStarts']='After deposit confirmation and digital artwork proof approval. Business days exclude weekends and observed U.S. federal holidays.';
+                $terms['engravingReady']='Actual engraving photo ready within '.$pMax.' business days after deposit confirmation and digital artwork proof approval.';
                 if($product<100)throw new PortalError('A staged mirror quote must support a deposit of at least $0.50.',422);
                 $terms['paymentSchedule']='deposit50';$terms['depositProductCents']=intdiv($product+1,2);
                 $terms['paymentTerms']='Pay a 50% product deposit plus applicable tax before production. After approving the actual engraving and final price, pay the remaining product amount, shipping and applicable tax before shipment.';
@@ -292,7 +295,7 @@ final class CommercePortal
             $params['metadata']['payment_stage']=$s['paymentStage'];
             if(isset($s['engravingReviewId']))$params['metadata']['engraving_review']=$s['engravingReviewId'];
             $params['line_items'][0]['price_data']['product_data']['name']='Mirroried LED '.($s['paymentStage']==='deposit'?'50% product deposit':'final product balance').' '.$s['orderId'];
-            $params['custom_text']['submit']['message']=$s['paymentStage']==='deposit'?'50% product deposit plus applicable tax. Shipping and remaining product price are due after you approve the actual engraving and final price. Production estimate: '.$s['productionMinDays'].'–'.$s['productionMaxDays'].' business days.':'Final balance for your approved actual engraving and final price. Ships within three business days after both engraving approval and final payment, excluding weekends and observed U.S. federal holidays. Transit begins after shipment.';
+            $params['custom_text']['submit']['message']=$s['paymentStage']==='deposit'?'50% product deposit plus applicable tax. Shipping and remaining product price are due after you approve the actual engraving and final price. '.($s['engravingReady']??('Production estimate: '.$s['productionMinDays'].'–'.$s['productionMaxDays'].' business days.')):'Final balance for your approved actual engraving and final price. Ships within three business days after both engraving approval and final payment, excluding weekends and observed U.S. federal holidays. Transit begins after shipment.';
         }
         // The quoted shipping destination stays in the private order. Stripe calculates
         // shipping-address tax from a customer with exactly that saved address.

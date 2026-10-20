@@ -1,6 +1,9 @@
 name: Update Sandbox Payment Recovery
 
 on:
+  push:
+    branches: [fix/storefront-integration-20261019]
+    paths: [.github/workflows/update-sandbox-recovery.yml]
   workflow_dispatch:
     inputs:
       order_fingerprint:
@@ -37,7 +40,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   prepare:
-    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/fix/storefront-integration-20261019' && github.event_name == 'workflow_dispatch' && inputs.acknowledge_recovery_patch }}
+    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/fix/storefront-integration-20261019' && ((github.event_name == 'workflow_dispatch' && inputs.acknowledge_recovery_patch) || github.event_name == 'push') }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     environment: production
@@ -48,11 +51,11 @@ jobs:
       PUBLIC_HTML: ${{ secrets.HOSTINGER_PUBLIC_HTML }}
       SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
       SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
-      ORDER_FINGERPRINT: ${{ inputs.order_fingerprint }}
-      SESSION_FINGERPRINT: ${{ inputs.session_fingerprint }}
-      EVENT_FINGERPRINT: ${{ inputs.event_fingerprint }}
-      INTENT_FINGERPRINT: ${{ inputs.intent_fingerprint }}
-      EXPECTED_CHECKOUT_SOURCE: ${{ inputs.expected_checkout_source }}
+      ORDER_FINGERPRINT: ${{ inputs.order_fingerprint || '47841d2f978239ea36e4af4ad55468ad8f72967a95606b6271b098436b21be71' }}
+      SESSION_FINGERPRINT: ${{ inputs.session_fingerprint || '5b93ce650d292a2cd513b01b47d84de0da711b9c373a60831152d109ceed1551' }}
+      EVENT_FINGERPRINT: ${{ inputs.event_fingerprint || 'bd878bd1eab341b33f5e50013f3b87bb9fe2523c008bfac831d5304f2378d161' }}
+      INTENT_FINGERPRINT: ${{ inputs.intent_fingerprint || '701fba92abe38c5de6a2eb6e905c24efdf463d2044df516f06b6e4fac90b11f7' }}
+      EXPECTED_CHECKOUT_SOURCE: ${{ inputs.expected_checkout_source || 'a0689e3d6e247139ee9ec073dcf658ef54d8d700' }}
     steps:
       - uses: actions/checkout@v5
         with:

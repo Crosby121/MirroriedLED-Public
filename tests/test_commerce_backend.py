@@ -32,13 +32,14 @@ class CommerceTests(unittest.TestCase):
             order=self.post(self.h.customer,'business-request',{'items':[{'product':'Address Sign or Mailbox','size':'18×8','artwork':'128 Test Way','artworkSource':'team-design','quantity':1,'addressBuilder':spec}]})['order']
             file=self.h.upload(self.h.staff,order,'proof')['file'];order=self.post(self.h.staff,'business-proof',{'orderId':order['id'],'revision':order['revision'],'fileId':file['id'],'quoteCents':35000,'summary':'Complete tested sign scope.'})['order']
         self.post(self.h.customer,'commerce-address',{'orderId':order['id'],'address':ADDRESS})
-        terms={'orderId':order['id'],'proofId':order['proof']['id'],'shippingCents':2500,'productionMinDays':7,'productionMaxDays':14,'transitMinDays':2,'transitMaxDays':5,'fulfillmentConfirmed':True}
+        terms={'orderId':order['id'],'proofId':order['proof']['id'],'shippingCents':2500,'productionMinDays':7 if sign else 1,'productionMaxDays':14 if sign else 5,'transitMinDays':2,'transitMaxDays':5,'fulfillmentConfirmed':True}
         return order,terms
     def approved_offer(self,sign=False):
         order,terms=self.quoted(sign);offer=self.post(self.h.staff,'commerce-offer',terms)['commerce']['offer']
         # Import the pre-deposit full-payment offer shape for this legacy suite.
         # Native staged mirror quotes are exercised in test_staged_payments_backend.py.
-        for key in ('paymentSchedule','depositProductCents','paymentTerms'):offer.pop(key,None)
+        for key in ('paymentSchedule','depositProductCents','paymentTerms','engravingReady'):offer.pop(key,None)
+        offer.update(productionMinDays=7,productionMaxDays=14,productionStarts='After payment confirmation and approval of the final artwork proof. Estimates use business days.')
         db=self.db();encoded=json.dumps(offer)
         db.execute('UPDATE commerce_offers SET terms=? WHERE order_id=?',(encoded,order['id']))
         db.execute('UPDATE commerce_offer_history SET terms=? WHERE order_id=? AND version=?',(encoded,order['id'],offer['version']));db.commit()
@@ -102,7 +103,7 @@ class CommerceTests(unittest.TestCase):
     def test_two_products_preserve_quotes_and_scope_proof_before_payment(self):
         for sign in [False,True]:
             order,terms=self.quoted(sign);self.post(self.h.customer,'commerce-offer',terms,403)
-            broken={**terms,'productionMaxDays':1};self.post(self.h.staff,'commerce-offer',broken,422)
+            broken={**terms,'productionMinDays':2,'productionMaxDays':1};self.post(self.h.staff,'commerce-offer',broken,422)
             offer=self.post(self.h.staff,'commerce-offer',terms)['commerce']['offer'];self.assertEqual(offer['beforeTaxCents'],37500)
             self.enable_test();self.post(self.h.customer,'commerce-checkout',{'orderId':order['id'],'offerVersion':offer['version'],'acceptTerms':True},409)
             self.post(self.h.staff,'business-release',{'orderId':order['id'],'revision':order['revision']},409)
@@ -258,7 +259,7 @@ class CommerceTests(unittest.TestCase):
     def test_shipping_offer_versions_do_not_repeat_after_invalidation(self):
         order,offer=self.approved_offer()
         self.post(self.h.customer,'commerce-address',{'orderId':order['id'],'address':{**ADDRESS,'postalCode':'91791'}})
-        next_offer=self.post(self.h.staff,'commerce-offer',{'orderId':order['id'],'proofId':order['proof']['id'],'shippingCents':3000,'productionMinDays':7,'productionMaxDays':14,'transitMinDays':2,'transitMaxDays':5,'fulfillmentConfirmed':True})['commerce']['offer']
+        next_offer=self.post(self.h.staff,'commerce-offer',{'orderId':order['id'],'proofId':order['proof']['id'],'shippingCents':3000,'productionMinDays':1,'productionMaxDays':5,'transitMinDays':2,'transitMaxDays':5,'fulfillmentConfirmed':True})['commerce']['offer']
         self.assertGreater(next_offer['version'],offer['version'])
         self.enable_test()
         self.post(self.h.customer,'commerce-checkout',{'orderId':order['id'],'offerVersion':offer['version'],'acceptTerms':True},409)
