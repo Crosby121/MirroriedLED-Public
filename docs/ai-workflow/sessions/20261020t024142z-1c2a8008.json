@@ -5,16 +5,90 @@
   "application_identity": "declared",
   "github_account": "Crosby121",
   "started_at": "2026-10-20T02:41:42Z",
-  "ended_at": null,
-  "status": "active",
+  "ended_at": "2026-10-20T02:49:57Z",
+  "status": "blocked",
   "task_ids": [
     "WF-008"
   ],
   "branch": "fix/storefront-integration-20261019",
   "base_commit": "5335eccfa01b23d92c227014e04e8f6f9a23eed1",
-  "summary": "",
-  "next_action": "",
-  "changed_files": [],
-  "checks": [],
-  "findings": []
+  "summary": "Completed owner-confirmed five-business-day engraving-photo readiness for new mirror quotes after deposit confirmation and digital artwork proof approval. Added server maximum, team defaults, customer/shop and immutable deposit text. Existing legacy full-payment and pre-policy staged retry terms preserved; address-sign estimates remain separately quoted. Two policy tests RED-to-GREEN plus one pre-policy retry preservation test; all279 Python and24 Node tests passed. Independent bounded review found no Critical/Important issues. Published source9b4cc5cfda4def789f2af729426718a4a755caa0, verified isolated deployment39360697903/job118425935414 with all279 tests, original paid order/replay and every prior private row/config preserved, exact HTTPS assets/runtime and unchanged production hashes/cleanup. Manual-only updater1f32f7e7993098cb24f6b8e5450b2fff211af8d1 published, verified and CIs passed. Production duration blocker resolved; broader WF008 remains blocked on actual two-stage merchant/customer/staff acceptance and live fulfillment gates. No new charge, photo/approval, staff grant, physical production or live activation.",
+  "next_action": "Confirm business-specific holiday closures and hardware/shipping capacity. Verify owner/staff/customer photo-and-final-price workflow and actual deposit/balance merchant payments, remaining delayed-failure/negative/mobile cases; then separately approved live merchant/tax setup and exact-source phased release. Production payments stay off.",
+  "changed_files": [
+    ".github/workflows/update-sandbox-recovery.yml",
+    "customer-portal/backend/commerce.php",
+    "customer-portal/business.js",
+    "customer-portal/operations.html",
+    "deploy/hostinger/CHECKOUT_SANDBOX.md",
+    "docs/PHASED_PRODUCT_OPENING.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261020t024142z-1c2a8008.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "shop/index.html",
+    "shop/shop.js",
+    "tests/test_commerce_backend.py",
+    "tests/test_staged_payments_backend.py"
+  ],
+  "checks": [
+    {
+      "name": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q — 279 passed in63.583s",
+      "command": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q — 279 passed in63.583s",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "node --test tests/infinity-builder.test.cjs tests/stadiums.test.cjs — 24 passed",
+      "command": "node --test tests/infinity-builder.test.cjs tests/stadiums.test.cjs — 24 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "node --check shop/shop.js; node --check customer-portal/business.js; /tmp/mled-php-bin/php -l customer-portal/backend/commerce.php — passed",
+      "command": "node --check shop/shop.js; node --check customer-portal/business.js; /tmp/mled-php-bin/php -l customer-portal/backend/commerce.php — passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "/tmp/actionlint -shellcheck= .github/workflows/update-sandbox-recovery.yml — passed",
+      "command": "/tmp/actionlint -shellcheck= .github/workflows/update-sandbox-recovery.yml — passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 tools/ai_workflow.py validate; python3 -m unittest discover -s tests -p test_ai_workflow.py -q — 13 passed",
+      "command": "python3 tools/ai_workflow.py validate; python3 -m unittest discover -s tests -p test_ai_workflow.py -q — 13 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Source CIs39360702401/39360702455 and manual-only CIs39360877861/39360877737 — success",
+      "command": "Source CIs39360702401/39360702455 and manual-only CIs39360877861/39360877737 — success",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Isolated deploy39360697903: 279 tests, original paid/order replay and all prior private rows/config preserved, exact HTTPS/runtime, unchanged production hashes and cleanup — success",
+      "command": "Isolated deploy39360697903: 279 tests, original paid/order replay and all prior private rows/config preserved, exact HTTPS/runtime, unchanged production hashes and cleanup — success",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": [
+    {
+      "finding": "Owner answered up to five days to an explicit business-day fabrication question. Applied as up to five business days from confirmed deposit and digital artwork proof approval to actual engraving photo ready for review; customer response, later dispatch and transit are separate.",
+      "basis": "owner_explicit_confirmation_in_current_chat",
+      "source": "owner message and docs/PHASED_PRODUCT_OPENING.md"
+    },
+    {
+      "finding": "No Critical/Important issues in independent bounded policy review. New maximum only changes offer publication; optional immutable photo-readiness text preserves original pre-policy checkout retries. Sign production estimates stay independent.",
+      "basis": "independent_code_review_and_RED_GREEN_provider_HTTP_tests",
+      "source": "review_five_day_terms; tests/test_staged_payments_backend.py"
+    },
+    {
+      "finding": "Actual deposit/balance merchant acceptance remains unperformed. This update preserves the actual legacy paid test and cannot authorize physical production or live payments.",
+      "basis": "authenticated_Hostinger_deployment_receipt_and_exact_source_HTTPS_verification",
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39360697903"
+    }
+  ]
 }
