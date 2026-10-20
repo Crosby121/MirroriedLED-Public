@@ -79,6 +79,6 @@ deploy/hostinger/update-sandbox-recovery.py,verify-sandbox-engraving.php;
 - [x] Extend preservation verification for new additive schema; retain original
   paid full-payment artificial order and avoid creating any customer approval.
 - [x] Run all Python tests, JS tests/syntax, PHP lint, actionlint and work validation.
-- [ ] Obtain independent review, publish source, run the guarded isolated updater,
+- [x] Obtain independent review, publish source, run the guarded isolated updater,
   verify exact hashes/headers/private records, restore manual-only workflow.
-- [ ] Publish verified handoff with remaining production/live acceptance gates.
+- [x] Publish verified handoff with remaining production/live acceptance gates.

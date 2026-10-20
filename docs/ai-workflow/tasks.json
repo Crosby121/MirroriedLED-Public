@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-20T02:04:26Z",
+  "updated_at": "2026-10-20T02:32:41Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -266,17 +266,17 @@
     {
       "id": "WF-008",
       "title": "Open phased Infinity Mirror and address-sign ordering (PR #14)",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": 1,
-      "owner_session_id": "20261020t020426z-ef8d99c5",
-      "last_session_id": "20261019t083717z-a95e6a35",
+      "owner_session_id": null,
+      "last_session_id": "20261020t020426z-ef8d99c5",
       "depends_on": [],
       "acceptance": [
         "Preserve both capture and phased-opening records; reconcile PR #14 branch-local WF-006 to shared WF-008 before merge.",
         "Verify the actual merchant sandbox, signed webhooks, pricing/shipping/production terms and approved live setup before opening paid ordering.",
         "Resolve main-site SSH settings and verify an exact live release; packaging and provider doubles do not establish a live checkout."
       ],
-      "next_action": "Obtain actual fabrication lead time before the finished engraving photo is ready; confirm hardware/shipping terms and verify owner/staff/customer photo workflow. Complete actual delayed-method failure and remaining negative/mobile acceptance before separately approved live merchant/tax setup and exact-source phased release. Production payments stay off.",
+      "next_action": "Obtain actual fabrication lead time from deposit to actual engraving photo; confirm business-specific holiday closures and hardware/shipping capacity. Verify owner/staff/customer photo-and-final-price workflow and actual deposit/balance merchant payments, remaining delayed-failure/negative/mobile cases; then separately approved live merchant/tax setup and exact-source phased release. Production payments remain off.",
       "evidence": [
         "https://github.com/Crosby121/MirroriedLED-Public/pull/14",
         "https://github.com/Crosby121/MirroriedLED-Public/blob/276011ab7e1b2d8f7262f7812938ccc821eaa86c/docs/ai-workflow/sessions/20261004t223413z-233a5f91.json",
