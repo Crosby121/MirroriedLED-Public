@@ -61,6 +61,34 @@ class WebsiteVerificationTests(unittest.TestCase):
         with patch.object(verification, "fetch", side_effect=self.response), self.assertRaisesRegex(ValueError, "live merchant"):
             verification.verify(SOURCE, "https://mirroriedled.com", "abc123", require_commerce=True)
 
+    def quote_response(self, base, path, release, *, payments=False, business=True, accounts=True):
+        if path == 'customer-portal/backend/api.php?action=session':
+            return 200,json.dumps({'ok':True,'configured':accounts,'capabilities':{'business':business,'payments':payments}}).encode()
+        if path == 'customer-portal/backend/api.php?action=commerce-status':
+            return 200,json.dumps({'ok':True,'accountsAvailable':accounts,'paymentsAvailable':payments,'paymentMode':'live' if payments else None}).encode()
+        return self.response(base,path,release)
+
+    def test_quote_only_requires_configured_accounts_and_disabled_payments(self):
+        with patch.object(verification,'fetch',side_effect=self.quote_response),patch('builtins.print') as output:
+            self.assertTrue(verification.verify(SOURCE,'https://mirroriedled.com','abc123',require_quote_only=True))
+        self.assertTrue(any('QUOTE_ONLY_RELEASE_VERIFIED' in str(c) for c in output.call_args_list))
+
+    def test_quote_only_cannot_pass_with_enabled_payments(self):
+        def response(*args):return self.quote_response(*args,payments=True)
+        with patch.object(verification,'fetch',side_effect=response),self.assertRaisesRegex(ValueError,'disabled payments'):
+            verification.verify(SOURCE,'https://mirroriedled.com','abc123',require_quote_only=True)
+
+    def test_quote_only_cannot_pass_with_missing_quote_accounts(self):
+        for options in ({'business':False},{'accounts':False}):
+            with self.subTest(options=options):
+                def response(*args):return self.quote_response(*args,**options)
+                with patch.object(verification,'fetch',side_effect=response),self.assertRaisesRegex(ValueError,'configured quote accounts'):
+                    verification.verify(SOURCE,'https://mirroriedled.com','abc123',require_quote_only=True)
+
+    def test_paid_launch_and_quote_only_are_mutually_exclusive(self):
+        with self.assertRaisesRegex(ValueError,'one release mode'):
+            verification.verify(SOURCE,'https://mirroriedled.com','abc123',require_commerce=True,require_quote_only=True)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -159,7 +159,10 @@ protected `commerce.php`. It preserves existing private configuration and data.
 Live verification uses `--require-commerce`: unconfigured customer accounts,
 disabled product ordering or test/unavailable payment configuration fail the
 launch check and restore the previous public files. This configuration check
-does not replace actual merchant payment acceptance.
+does not replace actual merchant payment acceptance. An explicitly selected
+`quote_only` release instead requires configured quote accounts and disabled
+payments; it publishes the website without opening paid checkout. See
+`deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md` for preservation and rollback.
 The separate sponsor VPS cannot deploy this main website. The October 6 verified release passed authenticated SSH preflight and exact-source
 HTTPS verification (run 37538235814), resolving the earlier missing-settings
 blocker. Recheck those settings at release time; this integration does not

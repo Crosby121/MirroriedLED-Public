@@ -2,7 +2,7 @@ name: Deploy Complete Website to Hostinger
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/storefront-integration-20261019]
     paths:
       - index.html
       - styles.css
@@ -21,6 +21,13 @@ on:
       - deploy/hostinger/main-website.json
       - .github/workflows/deploy-hostinger-website.yml
   workflow_dispatch:
+    inputs:
+      release_mode:
+        description: "Verify a paid opening or a quote-only website with payments disabled"
+        type: choice
+        options: [live_checkout, quote_only]
+        default: live_checkout
+        required: true
 
 permissions:
   contents: read
@@ -59,17 +66,19 @@ jobs:
           for source in customer-portal/backend/*.php; do php -l "$source"; done
           php -r 'exit(PHP_VERSION_ID >= 80200 && extension_loaded("pdo_sqlite") && extension_loaded("fileinfo") && extension_loaded("dom") && extension_loaded("curl") ? 0 : 1);'
           python3 -m unittest discover -s tests -p 'test_*.py' -v
+          php -l deploy/hostinger/verify-quote-release.php
           python3 deploy/hostinger/package-customer-portal.py --output "$RUNNER_TEMP/MirroriedLED_Automated_Business_Website.zip"
 
   deploy:
     needs: validate
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && (github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/fix/storefront-integration-20261019' && github.event_name == 'push' && github.event.head_commit.message == 'Deploy approved quote-only storefront to Hostinger')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
       name: production
       url: https://mirroriedled.com
     env:
+      RELEASE_MODE: ${{ github.ref == 'refs/heads/fix/storefront-integration-20261019' && 'quote_only' || inputs.release_mode || 'live_checkout' }}
       SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
       SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
       SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
@@ -98,6 +107,7 @@ jobs:
 
       - name: Verify main website hosting settings
         run: |
+          [[ "$RELEASE_MODE" == live_checkout || "$RELEASE_MODE" == quote_only ]] || exit 1
           missing=0
           for setting in SSH_HOST SSH_PORT SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS PUBLIC_HTML REMOTE_PYTHON; do
             if [[ -z "${!setting}" ]]; then
@@ -156,7 +166,13 @@ jobs:
         run: |
           SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
           ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "umask 077; mkdir '$REMOTE_STAGE'"
-          scp "${SSH_OPTIONS[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/MirroriedLED_Automated_Business_Website.zip" deploy/hostinger/website-release.py "$SSH_USER@$SSH_HOST:$REMOTE_STAGE/"
+          scp "${SSH_OPTIONS[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/MirroriedLED_Automated_Business_Website.zip" deploy/hostinger/website-release.py deploy/hostinger/verify-quote-release.php "$SSH_USER@$SSH_HOST:$REMOTE_STAGE/"
+
+      - name: Guard private quote-only configuration and records before installation
+        if: ${{ env.RELEASE_MODE == 'quote_only' }}
+        run: |
+          SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "php '$REMOTE_STAGE/verify-quote-release.php' before '$PUBLIC_HTML' '$REMOTE_STAGE/private-preservation.json' '$GITHUB_SHA'"
 
       - name: Back up and install all website files
         id: install
@@ -166,7 +182,14 @@ jobs:
 
       - name: Verify the complete live website
         id: verify
-        run: python3 deploy/hostinger/verify-website.py --source . --release "$GITHUB_SHA" --require-commerce
+        run: |
+          if [[ "$RELEASE_MODE" == quote_only ]]; then
+            python3 deploy/hostinger/verify-website.py --source . --release "$GITHUB_SHA" --require-quote-only
+            SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
+            ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "php '$REMOTE_STAGE/verify-quote-release.php' after '$PUBLIC_HTML' '$REMOTE_STAGE/private-preservation.json' '$GITHUB_SHA'"
+          else
+            python3 deploy/hostinger/verify-website.py --source . --release "$GITHUB_SHA" --require-commerce
+          fi
 
       - name: Restore previous public files if HTTP verification fails
         if: ${{ failure() && steps.install.outcome == 'success' && steps.verify.outcome == 'failure' }}
@@ -176,13 +199,13 @@ jobs:
 
       - name: Report verified deployment
         run: |
-          printf 'Mirroried LED full public website deployed and verified.\n\nCommit: `%s`\n\nhttps://mirroriedled.com\n\nPrivate accounts, uploads and team records use the existing server configuration.\n' "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Mirroried LED full public website deployed and verified.\n\nMode: `%s`\n\nCommit: `%s`\n\nhttps://mirroriedled.com\n\nPrivate accounts, uploads and team records use the existing server configuration.\n' "$RELEASE_MODE" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Remove temporary runner credentials and remote package
         if: ${{ always() }}
         run: |
           if [[ -n "${REMOTE_STAGE:-}" && -f "$RUNNER_TEMP/hostinger-ssh/key" ]]; then
             SSH_OPTIONS=(-i "$RUNNER_TEMP/hostinger-ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/hostinger-ssh/known_hosts")
-            ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "rm -f -- '$REMOTE_STAGE/MirroriedLED_Automated_Business_Website.zip' '$REMOTE_STAGE/website-release.py' '$REMOTE_STAGE/receipt.json'; rmdir '$REMOTE_STAGE'" || echo 'Temporary remote package cleanup needs attention; private backups remain intact'
+            ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "rm -f -- '$REMOTE_STAGE/MirroriedLED_Automated_Business_Website.zip' '$REMOTE_STAGE/website-release.py' '$REMOTE_STAGE/verify-quote-release.php' '$REMOTE_STAGE/private-preservation.json' '$REMOTE_STAGE/receipt.json'; rmdir '$REMOTE_STAGE'" || echo 'Temporary remote package cleanup needs attention; private backups remain intact'
           fi
           rm -f -- "$RUNNER_TEMP/hostinger-ssh/key" "$RUNNER_TEMP/hostinger-ssh/known_hosts"

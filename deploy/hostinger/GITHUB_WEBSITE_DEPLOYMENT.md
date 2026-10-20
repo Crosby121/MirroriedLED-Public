@@ -92,3 +92,30 @@ Rollback restores both prior contents and the original absence of files. It
 does not restore or delete private customer data or replace the full webroot.
 
 The phased two-product release also includes `/address-builder/`, `/shop/` and protected product checkout. See `docs/PHASED_PRODUCT_OPENING.md` for merchant activation and actual acceptance requirements.
+
+## Explicit quote-only release
+
+The owner can deploy the complete public website before live merchant activation.
+Select `quote_only` for the manual workflow. Verification requires configured
+customer accounts and business/quote requests, with both public payment capability
+and commerce payments explicitly disabled and no test/live payment mode exposed.
+This mode never installs or changes private configuration, assigns staff, creates
+an order/approval, or enables merchant payments. `live_checkout` retains the prior
+live-commerce requirement; the modes are mutually exclusive.
+
+Before quote-only installation, the CLI-only `verify-quote-release.php` helper
+reads existing production and isolated sandbox private stores. It writes only a
+private release-bound receipt of configuration, existing-row and artwork hashes.
+After exact-source HTTPS checks it requires every previous row/file and both
+private configurations to be preserved, permitting additive tables and new rows.
+Session files and SQLite journals are excluded from byte comparison. Any failure
+in HTTPS or preservation verification restores the previous allowlisted public
+files from the existing verified full-site backup. Private data is never restored
+over customer activity or exposed in output. The helper/receipt are not public
+assets and temporary transport copies are removed after the job.
+
+An owner-approved one-time branch deployment may use a temporary exact-branch,
+exact-commit-message trigger. Restore main-only automatic triggering immediately
+after the verified deployment; record the exact deployed source separately from
+main, PR and subsequent documentation commits. Publishing quote requests does not
+claim actual two-stage merchant acceptance or a paid launch.

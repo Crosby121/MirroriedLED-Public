@@ -31,7 +31,9 @@ def fetch(base: str, path: str, release: str) -> tuple[int, bytes]:
         return error.code, b""
 
 
-def verify(source: Path, base: str, release: str, require_commerce: bool = False) -> bool:
+def verify(source: Path, base: str, release: str, require_commerce: bool = False, require_quote_only: bool = False) -> bool:
+    if require_commerce and require_quote_only:
+        raise ValueError("Choose one release mode")
     if base not in ("https://mirroriedled.com", "https://www.mirroriedled.com"):
         raise ValueError("Verify the main Mirroried LED website over HTTPS")
     if not release.isalnum():
@@ -67,6 +69,14 @@ def verify(source: Path, base: str, release: str, require_commerce: bool = False
     if require_commerce and (not session["configured"] or not session.get("capabilities", {}).get("business")
                              or not commerce["paymentsAvailable"] or commerce.get("paymentMode") != "live"):
         raise ValueError("The two-product opening requires configured customer accounts and live merchant checkout")
+    if require_quote_only:
+        if (session.get('configured') is not True or session.get('capabilities', {}).get('business') is not True
+                or commerce.get('accountsAvailable') is not True):
+            raise ValueError('The quote-only release requires configured quote accounts')
+        if (session.get('capabilities', {}).get('payments') is not False or commerce.get('paymentsAvailable') is not False
+                or commerce.get('paymentMode') is not None):
+            raise ValueError('The quote-only release requires disabled payments')
+        print('QUOTE_ONLY_RELEASE_VERIFIED: customer accounts and quote requests; payments disabled')
     print("PRODUCT_PAYMENTS_CONFIGURED=" + ("yes; live merchant acceptance must be checked separately" if commerce["paymentsAvailable"] else "no; merchant activation remains required"))
     print("LIVE_WEBSITE_VERIFIED: storefront, customer portal, team page, assets and PHP access rules")
     print("PRIVATE_PORTAL_CONFIGURED=" + ("yes" if session["configured"] else "no; private setup remains required"))
@@ -78,6 +88,8 @@ if __name__ == "__main__":
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--url", default="https://mirroriedled.com")
     parser.add_argument("--release", required=True)
-    parser.add_argument("--require-commerce", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--require-commerce", action="store_true")
+    mode.add_argument("--require-quote-only", action="store_true")
     args = parser.parse_args()
-    verify(args.source, args.url.rstrip("/"), args.release, args.require_commerce)
+    verify(args.source, args.url.rstrip("/"), args.release, args.require_commerce, args.require_quote_only)
