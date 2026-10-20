@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "20261020t020426z-ef8d99c5",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-20T02:04:26Z",
+  "ended_at": null,
+  "status": "active",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "b4188ceb8cf92e175c0e97c0c0ba41951ae0e184",
+  "summary": "",
+  "next_action": "",
+  "changed_files": [],
+  "checks": [],
+  "findings": []
+}
