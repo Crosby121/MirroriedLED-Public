@@ -2,7 +2,7 @@ name: Deploy Complete Website to Hostinger
 
 on:
   push:
-    branches: [main, fix/storefront-integration-20261019]
+    branches: [main]
     paths:
       - index.html
       - styles.css
@@ -71,14 +71,14 @@ jobs:
 
   deploy:
     needs: validate
-    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && (github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/fix/storefront-integration-20261019' && github.event_name == 'push' && github.event.head_commit.message == 'Deploy approved quote-only storefront to Hostinger')) }}
+    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
       name: production
       url: https://mirroriedled.com
     env:
-      RELEASE_MODE: ${{ github.ref == 'refs/heads/fix/storefront-integration-20261019' && 'quote_only' || inputs.release_mode || 'live_checkout' }}
+      RELEASE_MODE: ${{ inputs.release_mode || 'live_checkout' }}
       SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
       SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
       SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
