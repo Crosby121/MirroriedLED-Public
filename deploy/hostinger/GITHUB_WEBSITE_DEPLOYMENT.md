@@ -119,3 +119,9 @@ exact-commit-message trigger. Restore main-only automatic triggering immediately
 after the verified deployment; record the exact deployed source separately from
 main, PR and subsequent documentation commits. Publishing quote requests does not
 claim actual two-stage merchant acceptance or a paid launch.
+
+Verified owner-approved quote-only production release: October 20, 2026 UTC,
+source `dedf4d5c79a8f6c12eda388c749be51bbf7964a3`, all 136 installed files and
+129 public HTTP assets, run 39361919142/job118430183231. Both private stores were
+preserved and payments stayed disabled. The trigger-restoration commit is
+`af3658fca3da769cc2ed2c2c363032d05a960354`; it is not the deployed website source.

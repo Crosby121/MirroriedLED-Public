@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-20T02:48:46Z",
+  "observed_at": "2026-10-20T03:04:22Z",
   "repository": {
     "full_name": "Crosby121/MirroriedLED-Public",
     "default_branch": "main",
@@ -8,9 +8,9 @@
     "live_url": "https://mirroriedled.com"
   },
   "source": {
-    "observed_commit": "1f32f7e7993098cb24f6b8e5450b2fff211af8d1",
-    "summary": "PR26 remains draft. Owner confirmed up to five business days after deposit confirmation and digital artwork proof approval for the actual engraving photo to be ready. New mirror offers cap the maximum at five and disclose that endpoint in the customer account and immutable deposit checkout; team defaults use the approved maximum. Address signs retain their separately confirmed estimates. Existing offers/paid records/pre-policy creating snapshots keep original terms and retry parameters. The 50% deposit, current engraving/final-price approval before balance and three-business-day dispatch after BOTH approval and final payment remain. All279 Python tests and24 Node tests passed; independent bounded review found no Critical/Important issues. Source 9b4cc5cfda4def789f2af729426718a4a755caa0 deployed only to the isolated six-file test shop in run39360697903: actual installed restricted-key read, schema and all prior private rows/config preserved, original actual paid legacy order/single confirmation/replay, exact HTTPS assets/runtime/cookies, unchanged production hashes and cleanup. Manual-only updater 1f32f7e7993098cb24f6b8e5450b2fff211af8d1 is published and verified. No new merchant charge, approval, staff role or physical production; live payments remain off. Fabrication duration is now confirmed; actual two-stage merchant/customer/staff acceptance and real hardware/shipping/business-closure/live setup gates remain.",
-    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/1f32f7e7993098cb24f6b8e5450b2fff211af8d1",
+    "observed_commit": "af3658fca3da769cc2ed2c2c363032d05a960354",
+    "summary": "Owner authorized production deployment. The full 136-file phased website is now deployed from dedf4d5c79a8f6c12eda388c749be51bbf7964a3 and verified on mirroriedled.com in quote-only mode: customer accounts/business quote requests available, payments explicitly disabled. All136 installed file hashes and129 public asset hashes match the source; homepage, protected internal PHP paths, APIs and live browser homepage/shop were checked. Standard 12×12 $150 before tax/shipping and five-business-day engraving-photo readiness are live. The 50% deposit/current engraving-final-price approval/balance/three-business-day dispatch code is deployed but paid checkout remains off. Both production and isolated sandbox private configurations, prior database rows and artwork were verified preserved. Full-site rollback backup retained; no rollback needed and temporary transport removed. All288 Python tests and24 Node tests passed; independent deployment review found no Critical/Important issues. Main-only automatic triggers restored at af3658fca3da769cc2ed2c2c363032d05a960354. PR26 remains draft on the reviewed work branch; main remains a separate older source. No merchant charge, customer approval, staff grant or physical production. Actual two-stage merchant/customer/staff acceptance and final hardware/shipping/holiday/live merchant setup remain before a paid launch.",
+    "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/commit/af3658fca3da769cc2ed2c2c363032d05a960354",
     "checks": [
       {
         "name": "125-file website release validation and exact-source deployment",
@@ -336,27 +336,61 @@
         "name": "Final manual-only five-day updater shared validation",
         "result": "passed",
         "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39360877737"
+      },
+      {
+        "name": "Production quote-only full136-file deployment and private preservation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142"
+      },
+      {
+        "name": "Production release source Storefront CI",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361925926"
+      },
+      {
+        "name": "Production release shared workflow validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361925964"
+      },
+      {
+        "name": "Restored main-only deployment workflow Storefront CI",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39362240615"
+      },
+      {
+        "name": "Restored main-only deployment workflow shared validation",
+        "result": "passed",
+        "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39362240613"
       }
     ]
   },
   "deployment": {
-    "live_commit": "8690ab93f30ffd6913407b1ca5374e808bd6ad93",
-    "live_verified_at": "2026-10-06T22:05:23Z",
+    "live_commit": "dedf4d5c79a8f6c12eda388c749be51bbf7964a3",
+    "live_verified_at": "2026-10-20T03:01:18Z",
     "verification_evidence": [
-      "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696",
-      "https://mirroriedled.com/products/",
-      "https://mirroriedled.com/stadiums/"
+      "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142/job/118430183231",
+      "https://mirroriedled.com/",
+      "https://mirroriedled.com/shop/"
     ],
     "last_attempt": {
       "status": "verified",
-      "commit": "8690ab93f30ffd6913407b1ca5374e808bd6ad93",
-      "run_id": 37538235814,
+      "commit": "dedf4d5c79a8f6c12eda388c749be51bbf7964a3",
+      "run_id": 39361919142,
       "run_attempt": 1,
-      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/37538235814/job/112524716696",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142/job/118430183231",
       "failed_step": "No failed step",
-      "finding": "Existing SSH preflight passed. All 125 public files were backed up, installed and verified against the exact source over HTTPS; private records were preserved and no rollback was needed. Live browser checks confirmed the cropped Dodgers lead, original team layout sheet and email quote link. Private portal configuration remains required; this release does not establish payment, email delivery, in-app AI or hardware activation.",
-      "upload_performed": true
-    }
+      "finding": "Owner-approved quote-only full release passed host/PHP preflight, verified complete backup, exact136 installed files/129 public HTTPS assets/root/API/access rules, configured quote accounts and explicitly disabled payments. Both production and sandbox private configs, all prior rows and artwork preserved. Live browser homepage/shop show retail price, five-day terms and no-payment notice. Rollback not needed; private full-site backup retained and transport cleaned. Paid merchant launch remains gated.",
+      "upload_performed": true,
+      "release_mode": "quote_only",
+      "private_records_preserved": true,
+      "rollback_performed": false
+    },
+    "release_mode": "quote_only",
+    "public_files_verified": 136,
+    "public_http_assets_verified": 129,
+    "production_payments_enabled": false,
+    "source_branch": "fix/storefront-integration-20261019",
+    "source_merged_to_main": false
   },
   "connections": [
     {
@@ -547,6 +581,12 @@
       "basis": "owner_explicit_answer_to_business_day_fabrication_question_RED_GREEN_HTTP_tests_independent_review_and_verified_isolated_Hostinger_receipt",
       "observed_at": "2026-10-20T02:48:46Z",
       "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39360697903"
+    },
+    {
+      "finding": "Owner authorized production deployment. The full 136-file phased website is now deployed from dedf4d5c79a8f6c12eda388c749be51bbf7964a3 and verified on mirroriedled.com in quote-only mode: customer accounts/business quote requests available, payments explicitly disabled. All136 installed file hashes and129 public asset hashes match the source; homepage, protected internal PHP paths, APIs and live browser homepage/shop were checked. Standard 12×12 $150 before tax/shipping and five-business-day engraving-photo readiness are live. The 50% deposit/current engraving-final-price approval/balance/three-business-day dispatch code is deployed but paid checkout remains off. Both production and isolated sandbox private configurations, prior database rows and artwork were verified preserved. Full-site rollback backup retained; no rollback needed and temporary transport removed. All288 Python tests and24 Node tests passed; independent deployment review found no Critical/Important issues. Main-only automatic triggers restored at af3658fca3da769cc2ed2c2c363032d05a960354. PR26 remains draft on the reviewed work branch; main remains a separate older source. No merchant charge, customer approval, staff grant or physical production. Actual two-stage merchant/customer/staff acceptance and final hardware/shipping/holiday/live merchant setup remain before a paid launch.",
+      "basis": "owner_explicit_Deploy_request_fresh_full_tests_independent_review_authenticated_Hostinger_receipt_exact_source_HTTPS_and_browser_checks",
+      "observed_at": "2026-10-20T03:04:22Z",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142/job/118430183231"
     }
   ],
   "connector": {
@@ -639,8 +679,8 @@
     "php_version": "8.3.33"
   },
   "payment_setup": {
-    "status": "sandbox_payment_and_recovery_patch_verified_live_launch_gated",
-    "observed_at": "2026-10-20T02:48:46Z",
+    "status": "quote_only_production_website_deployed_paid_launch_gated",
+    "observed_at": "2026-10-20T03:04:22Z",
     "basis": "canonical_Stripe_session_intent_delivery_success_event_reads_private_SSH_acceptance_and_known_event_self_signed_replay",
     "sandbox_connection_smoke_payment_verified": true,
     "website_restricted_sandbox_key_verified": true,
@@ -719,7 +759,11 @@
     "actual_two_stage_merchant_acceptance_verified": false,
     "sandbox_updater_source": "1f32f7e7993098cb24f6b8e5450b2fff211af8d1",
     "sandbox_updater_manual_only": true,
-    "sandbox_production_policy_deployment_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39360697903"
+    "sandbox_production_policy_deployment_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39360697903",
+    "production_quote_only_website_deployed": true,
+    "production_website_source": "dedf4d5c79a8f6c12eda388c749be51bbf7964a3",
+    "production_website_deployment_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142/job/118430183231",
+    "production_private_configuration_preserved": true
   },
   "ai_database": {
     "status": "source_merged_installation_pending",
@@ -748,8 +792,10 @@
       ],
       "sandbox_shop_display_verified": true,
       "sandbox_display_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39223060247",
-      "production_price_display_deployed": false,
-      "existing_orders_repriced": false
+      "production_price_display_deployed": true,
+      "existing_orders_repriced": false,
+      "production_display_source": "dedf4d5c79a8f6c12eda388c749be51bbf7964a3",
+      "production_display_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142/job/118430183231"
     }
   },
   "shipping_policy": {
@@ -772,12 +818,14 @@
     "source_commit": "a0689e3d6e247139ee9ec073dcf658ef54d8d700",
     "sandbox_deployment_verified": true,
     "actual_customer_engraving_approval_verified": false,
-    "production_site_deployed": false,
+    "production_site_deployed": true,
     "legacy_full_payment_terms_preserved": true,
     "production_max_business_days": 5,
     "production_starts": "after_both_confirmed_deposit_and_digital_artwork_proof_approval",
     "production_endpoint": "actual_engraving_photo_ready_for_customer_review",
-    "production_policy_source_commit": "9b4cc5cfda4def789f2af729426718a4a755caa0"
+    "production_policy_source_commit": "9b4cc5cfda4def789f2af729426718a4a755caa0",
+    "production_deployment_source": "dedf4d5c79a8f6c12eda388c749be51bbf7964a3",
+    "production_deployment_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142/job/118430183231"
   },
   "mirror_payment_terms": {
     "scope": "new_Custom_Infinity_Mirror_offers",
@@ -791,7 +839,9 @@
     "automatic_refund_policy": false,
     "source_commit": "a0689e3d6e247139ee9ec073dcf658ef54d8d700",
     "actual_two_stage_merchant_acceptance_verified": false,
-    "live_activated": false
+    "live_activated": false,
+    "production_code_deployed": true,
+    "production_deployment_source": "dedf4d5c79a8f6c12eda388c749be51bbf7964a3"
   },
   "production_policy": {
     "scope": "new_Custom_Infinity_Mirror_offers",
@@ -809,6 +859,8 @@
     "existing_terms_changed": false,
     "source_commit": "9b4cc5cfda4def789f2af729426718a4a755caa0",
     "sandbox_deployment_verified": true,
-    "production_site_deployed": false
+    "production_site_deployed": true,
+    "production_deployment_source": "dedf4d5c79a8f6c12eda388c749be51bbf7964a3",
+    "production_deployment_evidence": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142/job/118430183231"
   }
 }

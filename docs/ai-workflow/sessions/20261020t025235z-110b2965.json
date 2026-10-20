@@ -5,16 +5,98 @@
   "application_identity": "declared",
   "github_account": "Crosby121",
   "started_at": "2026-10-20T02:52:35Z",
-  "ended_at": null,
-  "status": "active",
+  "ended_at": "2026-10-20T03:06:09Z",
+  "status": "blocked",
   "task_ids": [
     "WF-008"
   ],
   "branch": "fix/storefront-integration-20261019",
   "base_commit": "daa755fa7a60841be6d95dea3b8e221be748062a",
-  "summary": "",
-  "next_action": "",
-  "changed_files": [],
-  "checks": [],
-  "findings": []
+  "summary": "Completed the owner-authorized production website deployment in explicit quote-only mode. Full136-file source dedf4d5c79a8f6c12eda388c749be51bbf7964a3 deployed and verified by run39361919142/job118430183231: host/PHP preflight, verified full-site backup, exact136 installed file hashes/129 public HTTPS assets, root/API/internal access rules, configured quote accounts and both payment capabilities disabled. CLI read-only preservation verified unchanged production and sandbox private configs/prior rows/artwork. No rollback needed; transport/runner credential cleanup passed. Live browser homepage/shop confirmed $150 retail copy, five-day photo readiness and no-payment notice. Added mutually exclusive quote-only release checks and private guard with RED-to-GREEN tests; all288 Python/24 Node tests and independent deployment review passed. Main-only automatic triggers restored in af3658fca3da769cc2ed2c2c363032d05a960354; source/restoration CI passed. Updated draft PR26 title/body and public deployment records. Exact deployed source remains the reviewed work branch, not main; no merge, live merchant activation, charge, customer approval, staff grant or physical production occurred. Requested website deployment is complete; broader WF008 paid launch remains gated.",
+  "next_action": "Quote-only production website deployed and verified. Before enabling paid ordering, verify actual deposit/balance merchant payments, owner/staff/customer photo-and-final-price flow, remaining delayed-failure/negative/mobile cases and real hardware/shipping/business-closure capacity. Integrate reviewed source before future main deployment, then separately approved live merchant/tax activation. Production payments remain off.",
+  "changed_files": [
+    ".github/workflows/deploy-hostinger-website.yml",
+    "deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md",
+    "deploy/hostinger/verify-quote-release.php",
+    "deploy/hostinger/verify-website.py",
+    "docs/PHASED_PRODUCT_OPENING.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261020t025235z-110b2965.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_quote_release_preservation.py",
+    "tests/test_website_verification.py"
+  ],
+  "checks": [
+    {
+      "name": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q — 288 passed in63.217s",
+      "command": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q — 288 passed in63.217s",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "node --test tests/infinity-builder.test.cjs tests/stadiums.test.cjs — 24 passed",
+      "command": "node --test tests/infinity-builder.test.cjs tests/stadiums.test.cjs — 24 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "/tmp/mled-php-bin/php -l deploy/hostinger/verify-quote-release.php; /tmp/actionlint -shellcheck= .github/workflows/deploy-hostinger-website.yml — passed",
+      "command": "/tmp/mled-php-bin/php -l deploy/hostinger/verify-quote-release.php; /tmp/actionlint -shellcheck= .github/workflows/deploy-hostinger-website.yml — passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 deploy/hostinger/package-customer-portal.py --output /tmp/mled-production-website.zip — 136 public files verified",
+      "command": "python3 deploy/hostinger/package-customer-portal.py --output /tmp/mled-production-website.zip — 136 public files verified",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 tools/ai_workflow.py validate; python3 -m unittest discover -s tests -p test_ai_workflow.py -q — 13 passed",
+      "command": "python3 tools/ai_workflow.py validate; python3 -m unittest discover -s tests -p test_ai_workflow.py -q — 13 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Deployment39361919142/job118430183231 — exact installed136/public129 assets, private stores/config/artwork, quote-only/payment-off APIs, backup and cleanup passed",
+      "command": "Deployment39361919142/job118430183231 — exact installed136/public129 assets, private stores/config/artwork, quote-only/payment-off APIs, backup and cleanup passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Source CIs39361925926/39361925964 and restored main-only CIs39362240615/39362240613 — success",
+      "command": "Source CIs39361925926/39361925964 and restored main-only CIs39362240615/39362240613 — success",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Cloud Browser live homepage/shop — $150, five-day policy, quote accounts available and no-payment notice visually verified",
+      "command": "Cloud Browser live homepage/shop — $150, five-day policy, quote accounts available and no-payment notice visually verified",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": [
+    {
+      "finding": "The user explicitly said Deploy. Proceeded with full public website deployment while preserving the previously stated disabled-payment scope. Did not treat deployment approval as permission to configure live credentials, assign staff or charge money.",
+      "basis": "user_current_request_and_existing_session_scope",
+      "source": "current chat; docs/PHASED_PRODUCT_OPENING.md"
+    },
+    {
+      "finding": "Existing paid-launch verifier correctly rejects disabled commerce. Added a distinct explicit quote-only mode requiring configured quote accounts and payments false/no mode, retaining the live-commerce gate for a paid opening. No product or money behavior was weakened.",
+      "basis": "RED_GREEN_release_verification_tests_and_independent_review",
+      "source": "deploy/hostinger/verify-website.py; tests/test_website_verification.py; review_quote_only_deployment"
+    },
+    {
+      "finding": "136-file production release exact-source verification and both private store preservation checks passed; live browser confirms current public screens. Full-site backup retained, rollback skipped as unnecessary and transport cleaned.",
+      "basis": "authenticated_Hostinger_job_receipt_exact_source_HTTPS_and_live_browser_observation",
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142/job/118430183231"
+    },
+    {
+      "finding": "The production deployed source is dedf4d5c79a8f6c12eda388c749be51bbf7964a3 on the reviewed work branch. Main-only trigger restoration af3658fca3da769cc2ed2c2c363032d05a960354 and this later handoff are not newer website deployments. PR26 stays draft pending paid-launch acceptance/integration.",
+      "basis": "verified_GitHub_ref_run_and_source_receipts",
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/pull/26"
+    }
+  ]
 }

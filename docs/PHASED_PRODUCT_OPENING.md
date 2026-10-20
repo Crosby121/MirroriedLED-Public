@@ -163,15 +163,22 @@ does not replace actual merchant payment acceptance. An explicitly selected
 `quote_only` release instead requires configured quote accounts and disabled
 payments; it publishes the website without opening paid checkout. See
 `deploy/hostinger/GITHUB_WEBSITE_DEPLOYMENT.md` for preservation and rollback.
-The separate sponsor VPS cannot deploy this main website. The October 6 verified release passed authenticated SSH preflight and exact-source
-HTTPS verification (run 37538235814), resolving the earlier missing-settings
-blocker. Recheck those settings at release time; this integration does not
-perform or establish a new live deployment.
+The separate sponsor VPS cannot deploy this main website. The owner-approved
+October 20 UTC quote-only release installed and verified all 136 public files
+from `dedf4d5c79a8f6c12eda388c749be51bbf7964a3` on the production domain:
+https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39361919142 .
+Customer accounts and quote requests are available. Payments remain explicitly
+disabled. Existing production and sandbox private configs, rows and artwork were
+verified preserved; retained full-site rollback backup and transport cleanup passed.
+Live browser checks confirmed the homepage, $150 product copy, five-day photo
+readiness terms and no-payment notice. Automatic deployment triggers were restored
+to main only; the deployed reviewed work branch and main remain separate sources.
 
-A live launch additionally needs an actual sandbox Checkout payment and signed
-merchant webhook, then the real merchant configuration and confirmed product
-quotes/fulfillment terms. This branch does not claim that `mirroriedled.com` is
-updated or accepting payments.
+A paid opening still requires actual deposit/balance merchant acceptance and the
+current customer/staff engraving/final-price workflow, remaining negative/delayed
+payment cases, real hardware/shipping capacity, then separately approved live
+merchant/tax configuration. Integrate reviewed source before a future main release.
+Quote-only deployment does not establish a live merchant charge or paid launch.
 
 Official integration references:
 
