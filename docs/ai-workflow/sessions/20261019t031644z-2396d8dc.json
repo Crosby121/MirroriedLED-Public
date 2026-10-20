@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "20261019t031644z-2396d8dc",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T03:16:44Z",
+  "ended_at": "2026-10-19T03:17:43Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "20eda3761232b871287cc8efeee8d39a0c291785",
+  "summary": "Reran the existing private sandbox check after owner reported updating the key. Attempt 2 of run 39193263549 completed its seven safety tests but failed the local restricted-key format gate again. This does not show Stripe rejected authentication: no provider request was made. No secret value, customer data, source product change or deployment was performed. Need the safe key prefix before another correction.",
+  "next_action": "Ask owner to identify only whether the copied token starts rk_test_, sk_test_, pk_test_ or another prefix. Do not request the complete token or another blind key replacement. Resolve the format mismatch before actual provider/staging/signed-webhook acceptance; keep live payments disabled.",
+  "changed_files": [
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t031644z-2396d8dc.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json"
+  ],
+  "checks": [
+    {
+      "name": "Existing GitHub run 39193263549 attempt 2: seven preflight safety tests passed; redacted local format diagnostic observed",
+      "command": "Existing GitHub run 39193263549 attempt 2: seven preflight safety tests passed; redacted local format diagnostic observed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 tools/ai_workflow.py validate and 13 workflow lifecycle tests passed",
+      "command": "python3 tools/ai_workflow.py validate and 13 workflow lifecycle tests passed",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": []
+}

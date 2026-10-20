@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "20261019t030359z-5a9bde8f",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T03:03:59Z",
+  "ended_at": "2026-10-19T03:09:47Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "b62eaeb445ffc3a8809a7a90ec649074425151c8",
+  "summary": "Added and independently reviewed a read-only private sandbox credential preflight, published final manual-only source af2af895bc4ca569edb20978d6c0a8cac2fc3853. Full 192-test local suite passed with PHP and seven credential tests passed. Actual GitHub run 39193263549 confirms the saved secret is nonempty but fails restricted sandbox key validation, without exposing any key or provider records. No Stripe writes, web deployment, private hosting configuration or live activation occurred.",
+  "next_action": "Owner must replace the GitHub Actions repository secret MLED_STRIPE_SANDBOX_KEY with the complete restricted sandbox key beginning rk_test_. Rerun the credential preflight, then prepare isolated PHP staging and complete actual quoted-order signed-webhook acceptance. Keep live ordering disabled and PR 26 draft.",
+  "changed_files": [
+    ".github/workflows/verify-stripe-sandbox.yml",
+    "deploy/hostinger/verify-stripe-sandbox.py",
+    "docs/PHASED_PRODUCT_OPENING.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t030359z-5a9bde8f.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_stripe_sandbox_key.py"
+  ],
+  "checks": [
+    {
+      "name": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q: 192 passed, zero skips",
+      "command": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q: 192 passed, zero skips",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Seven private credential tests passed; RED to GREEN for redacted diagnostics; real redirect rejection verified",
+      "command": "Seven private credential tests passed; RED to GREEN for redacted diagnostics; real redirect rejection verified",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Independent code review reported no findings; final workflow YAML parsed and manual-only event verified",
+      "command": "Independent code review reported no findings; final workflow YAML parsed and manual-only event verified",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "GitHub Storefront CI 39193268110 and Shared AI Workflow 39193268233 passed for source 317e82d",
+      "command": "GitHub Storefront CI 39193268110 and Shared AI Workflow 39193268233 passed for source 317e82d",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": []
+}

@@ -1,4 +1,4 @@
 Options -Indexes
-<FilesMatch "^(\.htaccess|\.user\.ini|config(?:\.example)?\.php|portal\.php|business\.php|builder\.php)$">
+<FilesMatch "^(\.htaccess|\.user\.ini|config(?:\.example)?\.php|portal\.php|business\.php|builder\.php|commerce\.php)$">
     Require all denied
 </FilesMatch>

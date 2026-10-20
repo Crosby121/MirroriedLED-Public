@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "id": "20261020t020426z-ef8d99c5",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-20T02:04:26Z",
+  "ended_at": "2026-10-20T02:32:41Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "b4188ceb8cf92e175c0e97c0c0ba41951ae0e184",
+  "summary": "Implemented owner-approved 50% mirror deposit, final engraving/photo and displayed-price acceptance, balance checkout and three-business-day dispatch after both approval and final payment. Existing full-payment terms/private records preserved. Four RED-to-GREEN regressions fixed an independently reviewed cross-attempt race; unresolved siblings and duplicate success cannot release production/shipping. Published and verified source a0689e3d6e247139ee9ec073dcf658ef54d8d700 in draft PR26. Isolated deployment39359055823/job118420638465 passed all276 tests, installed restricted-key preflight, additive schema and every prior private row/config preserved, original actual paid legacy test/single confirmation/replay, exact HTTPS assets/runtime and unchanged production hashes/cleanup. Manual-only updater7ad79e7c47c5acca2aa2bf9bf4ea7c51582624cb and source CIs passed. No new merchant payment, photo/customer approval, staff assignment, physical production or live activation. Overall WF008 remains blocked on actual new-stage acceptance and real fulfillment/live gates.",
+  "next_action": "Obtain actual fabrication lead time from deposit to actual engraving photo; confirm business-specific holiday closures and hardware/shipping capacity. Verify owner/staff/customer photo-and-final-price workflow and actual deposit/balance merchant payments, remaining delayed-failure/negative/mobile cases; then separately approved live merchant/tax setup and exact-source phased release. Production payments remain off.",
+  "changed_files": [
+    ".github/workflows/storefront-ci.yml",
+    ".github/workflows/update-sandbox-recovery.yml",
+    "customer-portal/backend/business.php",
+    "customer-portal/backend/commerce.php",
+    "customer-portal/business.js",
+    "customer-portal/operations.html",
+    "deploy/hostinger/CHECKOUT_SANDBOX.md",
+    "deploy/hostinger/verify-sandbox-engraving.php",
+    "docs/PHASED_PRODUCT_OPENING.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261020t020426z-ef8d99c5.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "docs/superpowers/plans/2026-10-20-mirror-staged-payments.md",
+    "docs/superpowers/specs/2026-10-20-mirror-staged-payments.md",
+    "shop/index.html",
+    "shop/shop.js",
+    "tests/test_business_backend.py",
+    "tests/test_commerce_backend.py",
+    "tests/test_sandbox_payment_verify.py",
+    "tests/test_sandbox_recovery_update.py",
+    "tests/test_staged_payments_backend.py"
+  ],
+  "checks": [
+    {
+      "name": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q — 276 passed in60.365s",
+      "command": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q — 276 passed in60.365s",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "node --test tests/infinity-builder.test.cjs tests/stadiums.test.cjs — 24 passed",
+      "command": "node --test tests/infinity-builder.test.cjs tests/stadiums.test.cjs — 24 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "node --check shop/shop.js; node --check customer-portal/business.js; PHP commerce/business lint — passed",
+      "command": "node --check shop/shop.js; node --check customer-portal/business.js; PHP commerce/business lint — passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "/tmp/actionlint -shellcheck= .github/workflows/update-sandbox-recovery.yml .github/workflows/storefront-ci.yml — passed",
+      "command": "/tmp/actionlint -shellcheck= .github/workflows/update-sandbox-recovery.yml .github/workflows/storefront-ci.yml — passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 tools/ai_workflow.py validate; python3 -m unittest discover -s tests -p test_ai_workflow.py -q — 13 passed",
+      "command": "python3 tools/ai_workflow.py validate; python3 -m unittest discover -s tests -p test_ai_workflow.py -q — 13 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Source CI39359060671/39359060691 and final manual-only CI39359286573/39359286572 — success",
+      "command": "Source CI39359060671/39359060691 and final manual-only CI39359286573/39359286572 — success",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Isolated update39359055823: 276 tests, schema/legacy rows/config, actual old paid audit/replay, exact HTTPS/runtime, unchanged production hashes and cleanup — success",
+      "command": "Isolated update39359055823: 276 tests, schema/legacy rows/config, actual old paid audit/replay, exact HTTPS/runtime, unchanged production hashes and cleanup — success",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": [
+    {
+      "finding": "Owner-approved prior context specifies 50% product deposit, current actual engraving AND final-price approval before remaining balance, then dispatch within three business days after both approval and final payment. No production duration was given.",
+      "source": "Personal Context retrieval of owner-approved prior conversation; implemented spec docs/superpowers/specs/2026-10-20-mirror-staged-payments.md",
+      "basis": "owner_confirmed_terms"
+    },
+    {
+      "finding": "Use standard observed U.S. federal holidays for owner-approved holiday exclusion; confirm business-specific closures before live operation. Shipping is collected at final balance; immutable legacy terms retain their request parameters.",
+      "source": "implementation ruling recorded in spec and CHECKOUT_SANDBOX.md",
+      "basis": "explicit_implementation_assumption_not_new_owner_confirmation"
+    },
+    {
+      "finding": "Fresh whole-feature reviewer found paid-attempt/unresolved-sibling race. Reproduced RED then fixed with four regression tests: production/shipping hold, older unresolved refresh, terminal recovery and persistent second-success review. Three minor UI issues also repaired.",
+      "source": "independent reviewer review_staged_payment_gates; tests/test_staged_payments_backend.py",
+      "basis": "independent_review_and_executed_RED_GREEN_tests"
+    },
+    {
+      "finding": "Actual two-stage merchant acceptance is not performed. Prior actual legacy $1.09 test evidence is preserved and not substituted for deposit/balance acceptance. Test payments cannot release production. No new approval, staff role or charge was fabricated.",
+      "source": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39359055823",
+      "basis": "verified_isolated_deployment_preservation_receipt"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "id": "20261019t083717z-a95e6a35",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T08:37:17Z",
+  "ended_at": "2026-10-19T15:09:02Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "be14cd5087ad1b3757b5ba9d44475fd5b04368bc",
+  "summary": "Finished engraving photo approval and three-business-day Pacific dispatch gate implemented and verified in isolated sandbox source 1b23ed5cd2396d6e5c3b7802943b29a13ab95cd5. Latest review/owner/revision checks protect shipment, QC/payment/material gates remain, and accepted checkout snapshots are preserved. All 256 Python/PHP tests, 24 JavaScript tests, syntax/workflow checks and independent reviews passed. Deployment 39274591667 preserved pre-existing private rows/config, original paid test and single confirmation/replay, exact assets/runtime/cookies and production hashes. No customer engraving approval or physical production created. Final updater 77985a8ac12d25b7ff7f901575dc09355d9a3c4e is manual-only and both final CI runs passed. Live launch remains gated.",
+  "next_action": "Obtain actual fabrication lead time before the finished engraving photo is ready; confirm hardware/shipping terms and verify owner/staff/customer photo workflow. Complete actual delayed-method failure and remaining negative/mobile acceptance before separately approved live merchant/tax setup and exact-source phased release. Production payments stay off.",
+  "changed_files": [
+    ".github/workflows/storefront-ci.yml",
+    ".github/workflows/update-sandbox-recovery.yml",
+    "customer-portal/backend/business.php",
+    "customer-portal/backend/commerce.php",
+    "customer-portal/business.js",
+    "customer-portal/operations.html",
+    "deploy/hostinger/CHECKOUT_SANDBOX.md",
+    "deploy/hostinger/update-sandbox-recovery.py",
+    "deploy/hostinger/verify-sandbox-engraving.php",
+    "docs/PHASED_PRODUCT_OPENING.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t083717z-a95e6a35.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "shop/index.html",
+    "shop/shop.js",
+    "tests/test_business_backend.py",
+    "tests/test_commerce_backend.py",
+    "tests/test_sandbox_recovery_update.py"
+  ],
+  "checks": [
+    {
+      "name": "256 Python/PHP tests passed locally and deployment run39274591667; approval tests failed before implementation and passed afterward.",
+      "command": "256 Python/PHP tests passed locally and deployment run39274591667; approval tests failed before implementation and passed afterward.",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "24 builder/stadium JS tests, PHP/JS syntax, checksum-verified actionlint, workflow validation and independent product/deployment reviews passed.",
+      "command": "24 builder/stadium JS tests, PHP/JS syntax, checksum-verified actionlint, workflow validation and independent product/deployment reviews passed.",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Source CI39274599918 and39274599839; final manual-only updater CI39275041714 and39275041663 passed.",
+      "command": "Source CI39274599918 and39274599839; final manual-only updater CI39275041714 and39275041663 passed.",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Deployment39274591667 job118135593424 verified restricted-key expanded-intent read, schema initialization with pre-existing rows/config preserved, no customer engraving approval created, original paid test/single confirmation/replay, exact HTTPS assets/runtime/cookies, unchanged production hashes and private cleanup.",
+      "command": "Deployment39274591667 job118135593424 verified restricted-key expanded-intent read, schema initialization with pre-existing rows/config preserved, no customer engraving approval created, original paid test/single confirmation/replay, exact HTTPS assets/runtime/cookies, unchanged production hashes and private cleanup.",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Source1b23ed5 and final manual updater77985a8 published on draft PR26; exact remote branch heads and deployed business/checkout headers verified.",
+      "command": "Source1b23ed5 and final manual updater77985a8 published on draft PR26; exact remote branch heads and deployed business/checkout headers verified.",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": [
+    {
+      "finding": "Owner confirmed customer approval of the actual finished mirror engraving is required before shipping; dispatch within three business days after approval. This is separate from initial digital proof approval and does not establish production duration.",
+      "basis": "owner_explicit_confirmation"
+    },
+    {
+      "finding": "Independent product and deployment reviews found no blockers after fixing a dormant legacy customer button reset regression. Review included 19 business,22 commerce and7 deployment tests.",
+      "basis": "independent_review_and_local_verification"
+    }
+  ]
+}

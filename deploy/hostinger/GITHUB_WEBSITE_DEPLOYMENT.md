@@ -53,16 +53,16 @@ different host even when a similarly named directory exists.
 
 ## Installation and verification
 
-Only the 125 files in the packager's public allowlist are installed, including
-the product and stadium pages, curated image previews, Infinity Mirror builder
-and its private artwork service. Release
+Only the files in the packager's public allowlist are installed, including
+the product and stadium galleries, both builders, the ordering account and its
+private artwork and commerce services. Release
 archives, receipts and full-site backups remain outside `public_html` with
 private permissions. The complete backup is verified before a live file is
 changed. Access rules are installed first and the homepage last.
 
 Existing bridge services, unrelated files and private account/media/artwork
 storage remain intact. Account and team features retain the server's existing
-configuration; public installation does not enable billing, email delivery,
+configuration; public installation does not activate merchant payments, email delivery,
 machine operation or live WLED playback.
 
 The workflow compares all live HTML, JavaScript, CSS and image assets with the
@@ -90,3 +90,38 @@ the prior public files using that retained receipt:
 Use the actual website username and the matching retained backup directory.
 Rollback restores both prior contents and the original absence of files. It
 does not restore or delete private customer data or replace the full webroot.
+
+The phased two-product release also includes `/address-builder/`, `/shop/` and protected product checkout. See `docs/PHASED_PRODUCT_OPENING.md` for merchant activation and actual acceptance requirements.
+
+## Explicit quote-only release
+
+The owner can deploy the complete public website before live merchant activation.
+Select `quote_only` for the manual workflow. Verification requires configured
+customer accounts and business/quote requests, with both public payment capability
+and commerce payments explicitly disabled and no test/live payment mode exposed.
+This mode never installs or changes private configuration, assigns staff, creates
+an order/approval, or enables merchant payments. `live_checkout` retains the prior
+live-commerce requirement; the modes are mutually exclusive.
+
+Before quote-only installation, the CLI-only `verify-quote-release.php` helper
+reads existing production and isolated sandbox private stores. It writes only a
+private release-bound receipt of configuration, existing-row and artwork hashes.
+After exact-source HTTPS checks it requires every previous row/file and both
+private configurations to be preserved, permitting additive tables and new rows.
+Session files and SQLite journals are excluded from byte comparison. Any failure
+in HTTPS or preservation verification restores the previous allowlisted public
+files from the existing verified full-site backup. Private data is never restored
+over customer activity or exposed in output. The helper/receipt are not public
+assets and temporary transport copies are removed after the job.
+
+An owner-approved one-time branch deployment may use a temporary exact-branch,
+exact-commit-message trigger. Restore main-only automatic triggering immediately
+after the verified deployment; record the exact deployed source separately from
+main, PR and subsequent documentation commits. Publishing quote requests does not
+claim actual two-stage merchant acceptance or a paid launch.
+
+Verified owner-approved quote-only production release: October 20, 2026 UTC,
+source `dedf4d5c79a8f6c12eda388c749be51bbf7964a3`, all 136 installed files and
+129 public HTTP assets, run 39361919142/job118430183231. Both private stores were
+preserved and payments stayed disabled. The trigger-restoration commit is
+`af3658fca3da769cc2ed2c2c363032d05a960354`; it is not the deployed website source.

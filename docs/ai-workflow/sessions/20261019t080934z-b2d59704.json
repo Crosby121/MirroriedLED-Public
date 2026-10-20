@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "id": "20261019t080934z-b2d59704",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T08:09:34Z",
+  "ended_at": "2026-10-19T08:24:29Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "561d408332791ad2d7700cfc9f4e5c65692e160c",
+  "summary": "Delayed-payment recovery is repaired and installed only in the isolated test shop by patch cfcaba1538c193fdc60e90f1bb9101c2a78c2714, run39222078093. Processing payments stay locked; canonical verified failures permit fresh attempts, repeated failures notify once, paid records never regress or permit another payment. Actual restricted-key expanded-intent read, original paid record/replay, exact HTTPS source/assets and unchanged production hashes passed. All248 tests and final CI passed; independent reviews clean. Failed-event subscription canonically verified testmode. Final updater b733874f81257ff14b9e35289893009c5c15224e manual-only. Actual delayed failure/remaining negative acceptance and owner pricing/live-launch gates remain.",
+  "next_action": "Obtain owner selling price and complete hardware/shipping/production terms for the standard 12-inch mirror. Complete actual delayed-method failure and remaining failure/cancel/expiry acceptance, plus owner/staff workflow, before separately reviewing explicitly approved live merchant/tax setup and exact-source phased release. Production payments stay off.",
+  "changed_files": [
+    ".github/workflows/storefront-ci.yml",
+    ".github/workflows/update-sandbox-recovery.yml",
+    "customer-portal/backend/commerce.php",
+    "deploy/hostinger/CHECKOUT_SANDBOX.md",
+    "deploy/hostinger/update-sandbox-recovery.py",
+    "docs/PHASED_PRODUCT_OPENING.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t080934z-b2d59704.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "shop/index.html",
+    "shop/shop.js",
+    "tests/test_commerce_backend.py",
+    "tests/test_sandbox_recovery_update.py"
+  ],
+  "checks": [
+    {
+      "name": "Meaningful delayed failure/processing/paid-record regressions observed red before repair; all21 commerce tests now pass, including signed localhost webhook canonical retrieval and invalid-signature rejection",
+      "command": "Meaningful delayed failure/processing/paid-record regressions observed red before repair; all21 commerce tests now pass, including signed localhost webhook canonical retrieval and invalid-signature rejection",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "All248 Python/PHP tests passed locally and in recovery deployment job; five updater scope/interruption tests passed",
+      "command": "All248 Python/PHP tests passed locally and in recovery deployment job; five updater scope/interruption tests passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Independent core and updater reviews found no Critical/Important blockers",
+      "command": "Independent core and updater reviews found no Critical/Important blockers",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "PHP/JS syntax, actionlint, YAML/bash syntax and13 workflow tests/validator passed",
+      "command": "PHP/JS syntax, actionlint, YAML/bash syntax and13 workflow tests/validator passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Recovery run39222078093 passed actual installed restricted-key expanded-intent read before patch, original paid109cent order/single-confirmation/replay preservation, exact runtime/JS/HTML hashes, production homepage/private-config hashes and transport cleanup",
+      "command": "Recovery run39222078093 passed actual installed restricted-key expanded-intent read before patch, original paid109cent order/single-confirmation/replay preservation, exact runtime/JS/HTML hashes, production homepage/private-config hashes and transport cleanup",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Canonical authenticated Stripe read verified only sandbox endpoint enabled with completed/async success/async failure/expiry events, livemodefalse; no live or provider payment writes",
+      "command": "Canonical authenticated Stripe read verified only sandbox endpoint enabled with completed/async success/async failure/expiry events, livemodefalse; no live or provider payment writes",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Published/verified sourcecfcaba1 and manual-only updaterb733874; source CI39222083353/39222083360 and final CI39222341203/39222341202 passed",
+      "command": "Published/verified sourcecfcaba1 and manual-only updaterb733874; source CI39222083353/39222083360 and final CI39222341203/39222341202 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": []
+}

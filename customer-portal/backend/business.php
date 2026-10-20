@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-/** Website records only. This module never starts machines, charges cards or sends messages. */
+/** Production records and proof review. Verified payments are provided by commerce.php. */
 final class BusinessPortal
 {
     public const READS = ['business-orders', 'business-tickets', 'business-updates', 'business-file', 'business-dashboard', 'business-manifest'];
-    public const WRITES = ['business-request', 'business-upload', 'business-proof', 'business-approve', 'business-receive', 'business-reserve', 'business-release', 'business-build', 'business-qc', 'business-fulfill', 'business-cancel', 'business-ticket', 'business-reply', 'business-task'];
+    public const WRITES = ['business-request', 'business-upload', 'business-proof', 'business-approve', 'business-engraving-review', 'business-engraving-approve', 'business-receive', 'business-reserve', 'business-release', 'business-build', 'business-qc', 'business-fulfill', 'business-cancel', 'business-ticket', 'business-reply', 'business-task'];
     private array $moved = [];
 
     public function __construct(private PDO $db, private array $config, private string $storage, private array $user)
@@ -31,6 +31,13 @@ final class BusinessPortal
                 id TEXT PRIMARY KEY, order_id TEXT NOT NULL REFERENCES business_orders(id), version INTEGER NOT NULL,
                 summary TEXT NOT NULL, file_id TEXT NOT NULL REFERENCES business_files(id), quote_cents INTEGER NOT NULL,
                 creator_id INTEGER NOT NULL REFERENCES users(id), created_at INTEGER NOT NULL, UNIQUE(order_id, version)
+            );
+            CREATE TABLE IF NOT EXISTS business_engraving_reviews (
+                id TEXT PRIMARY KEY, order_id TEXT NOT NULL REFERENCES business_orders(id), version INTEGER NOT NULL,
+                file_id TEXT NOT NULL REFERENCES business_files(id), summary TEXT NOT NULL,
+                creator_id INTEGER NOT NULL REFERENCES users(id), created_at INTEGER NOT NULL,
+                approved_by INTEGER REFERENCES users(id), approved_at INTEGER, ship_by_date TEXT,
+                UNIQUE(order_id, version)
             );
             CREATE TABLE IF NOT EXISTS business_stock (
                 id INTEGER PRIMARY KEY, sku TEXT NOT NULL, name TEXT NOT NULL, lot TEXT NOT NULL, location TEXT NOT NULL,
@@ -173,7 +180,7 @@ final class BusinessPortal
 
     private function task(string $ref, string $kind, string $title): void
     {
-        $this->exec("INSERT INTO business_tasks(reference,kind,title,created_at,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(reference,kind) DO UPDATE SET state='OPEN',note=NULL,updated_at=excluded.updated_at", [$ref, $kind, $title, time(), time()]);
+        $this->exec("INSERT INTO business_tasks(reference,kind,title,created_at,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(reference,kind) DO UPDATE SET title=excluded.title,state='OPEN',note=NULL,updated_at=excluded.updated_at", [$ref, $kind, $title, time(), time()]);
     }
 
     private function closeTask(string $ref, string $kind): void
@@ -218,6 +225,8 @@ final class BusinessPortal
                     'business-upload' => $this->upload($data),
                     'business-proof' => $this->proof($data),
                     'business-approve' => $this->approve($data),
+                    'business-engraving-review' => $this->engravingReview($data),
+                    'business-engraving-approve' => $this->engravingApprove($data),
                     'business-receive' => $this->receive($data),
                     'business-reserve' => $this->reserve($data),
                     'business-release' => $this->release($data),
@@ -258,6 +267,9 @@ final class BusinessPortal
             if (!is_array($item) || !in_array($item['product'] ?? null, $catalog, true)) {
                 throw new PortalError('Choose a product from the website catalog.', 422);
             }
+            if (!in_array($item['product'],CommercePortal::PRODUCTS,true) && !$this->isStaff()) {
+                throw new PortalError('This section is being completed. Choose an Infinity Mirror or address sign.',403);
+            }
             $source = $item['artworkSource'] ?? 'team-design';
             if (!in_array($source, ['team-design', 'upload'], true)) {
                 throw new PortalError('Choose uploaded artwork or a Mirroried LED team design.', 422);
@@ -275,6 +287,12 @@ final class BusinessPortal
                 $builder = InfinityBuilder::validateConfiguration($item['builder'], $this->db, (int)$this->user['id']);
                 if ($size !== implode('×', $builder['state']['size'])) { throw new PortalError('The mirror size does not match the builder configuration.', 422); }
                 $clean[array_key_last($clean)]['builder'] = $builder;
+            }
+            if (isset($item['addressBuilder'])) {
+                if ($item['product']!=='Address Sign or Mailbox') throw new PortalError('Address-sign options require an address sign.',422);
+                $addressBuild=CommercePortal::validateAddressBuild($item['addressBuilder']);
+                if ($size!==$addressBuild['size']) throw new PortalError('The sign size does not match its configuration.',422);
+                $clean[array_key_last($clean)]['addressBuilder']=$addressBuild;
             }
         }
         $id = 'MLED-' . bin2hex(random_bytes(10));
@@ -297,8 +315,10 @@ final class BusinessPortal
             'currency' => 'USD', 'approvedProofId' => $order['approved_proof_id'], 'scheduledAt' => $order['scheduled_at'],
             'carrier' => $order['carrier'], 'tracking' => $order['tracking'], 'createdAt' => (int)$order['created_at'], 'updatedAt' => (int)$order['updated_at'],
             'files' => array_map($this->publicFile(...), $this->rows('SELECT * FROM business_files WHERE order_id=? AND purpose<>? ORDER BY created_at', [$order['id'], $internal ? '' : 'production'])),
-            'proof' => null,
+            'proof' => null, 'commerce' => CommercePortal::publicTerms($this->db,$order['id']),
             'timeline' => $this->rows('SELECT kind,customer_message,created_at FROM business_events WHERE order_id=? AND customer_message IS NOT NULL ORDER BY id', [$order['id']])];
+        $result['engravingApprovalRequired'] = self::requiresEngravingApproval($order);
+        $result['engravingReview'] = $this->latestEngraving($order);
         if ($order['proof_id'] !== null) {
             $proof = $this->rows('SELECT id,version,summary,file_id,quote_cents,created_at FROM business_proofs WHERE id=?', [$order['proof_id']]);
             $result['proof'] = $proof[0] ?? null;
@@ -320,14 +340,17 @@ final class BusinessPortal
     private function upload(array $data): array
     {
         $purpose = $data['purpose'] ?? 'artwork';
-        if (!in_array($purpose, ['artwork', 'proof', 'production'], true)) {
-            throw new PortalError('Choose artwork, proof or production artwork.', 422);
+        if (!in_array($purpose, ['artwork', 'proof', 'production', 'engraving'], true)) {
+            throw new PortalError('Choose artwork, proof, production artwork or a finished engraving photo.', 422);
         }
-        if ($purpose !== 'artwork') { $this->staff('sales', 'production'); }
+        if ($purpose === 'engraving') { $this->staff('production', 'qc'); }
+        elseif ($purpose !== 'artwork') { $this->staff('sales', 'production'); }
         $order = $this->order($data['orderId'] ?? null, $purpose === 'artwork');
-        if (!in_array($order['status'], ['REQUESTED','QUOTED','APPROVED'], true)) {
+        $states = $purpose === 'engraving' ? ['BUILDING','QC_HOLD','QC_PASSED'] : ['REQUESTED','QUOTED','APPROVED'];
+        if (!in_array($order['status'], $states, true)) {
             throw new PortalError('Files are locked after the build is released.', 409);
         }
+        if ($purpose === 'engraving' && !self::requiresEngravingApproval($order)) { throw new PortalError('Finished engraving review applies to mirror builds.',422); }
         if ($purpose === 'artwork' && $order['status'] !== 'REQUESTED') {
             throw new PortalError('Request an artwork revision through support before changing a quoted build.', 409);
         }
@@ -345,6 +368,7 @@ final class BusinessPortal
         $formats = ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'webp' => ['image/webp'], 'pdf' => ['application/pdf'], 'svg' => ['image/svg+xml','text/xml','application/xml','text/plain'], 'lbrn2' => ['text/xml','application/xml','text/plain']];
         if (!isset($formats[$ext]) || !in_array($mime, $formats[$ext], true) || ($ext === 'lbrn2' && $purpose !== 'production')
             || ($purpose === 'production' && !in_array($ext, ['svg', 'lbrn2'], true))
+            || ($purpose === 'engraving' && !in_array($ext, ['png','jpg','jpeg','webp'], true))
             || $bytes === false || $bytes < 1 || $bytes > 10485760 || $bytes !== (int)($file['size'] ?? -1)) {
             throw new PortalError('Upload a PNG, JPEG, PDF or SVG up to 10 MB. Team production files may also use LBRN2.', 422);
         }
@@ -394,13 +418,15 @@ final class BusinessPortal
         header('Content-Type: ' . $file['mime']);
         header('Content-Length: ' . $file['bytes']);
         header('Content-Security-Policy: sandbox');
-        header("Content-Disposition: attachment; filename=\"artwork\"; filename*=UTF-8''" . rawurlencode($file['name']));
+        $disposition = $file['purpose'] === 'engraving' && in_array($file['mime'], ['image/png','image/jpeg','image/webp'], true) ? 'inline' : 'attachment';
+        header("Content-Disposition: ".$disposition."; filename=\"artwork\"; filename*=UTF-8''" . rawurlencode($file['name']));
         readfile($path); exit;
     }
 
     private function proof(array $data): array
     {
         $this->staff('sales'); $order = $this->order($data['orderId'] ?? null);
+        if (CommercePortal::locked($this->db,$order['id'])) throw new PortalError('This quote is locked by a checkout or payment. Resolve payment before revising the proof.',409);
         $this->revision($order,$data,['REQUESTED','QUOTED','APPROVED']);
         $fileId = $this->text($data['fileId'] ?? null, 32);
         if (!$this->rows("SELECT id FROM business_files WHERE id=? AND order_id=? AND purpose='proof'", [$fileId,$order['id']])) { throw new PortalError('Attach a private proof file for this build first.', 422); }
@@ -410,6 +436,7 @@ final class BusinessPortal
         $id = bin2hex(random_bytes(16));
         $this->exec('INSERT INTO business_proofs(id,order_id,version,summary,file_id,quote_cents,creator_id,created_at) VALUES(?,?,?,?,?,?,?,?)',[$id,$order['id'],$version,$summary,$fileId,$amount,$this->user['id'],time()]);
         $this->update($order,['status'=>'QUOTED','quote_cents'=>$amount,'proof_id'=>$id,'approved_proof_id'=>null]);
+        $this->exec('DELETE FROM commerce_offers WHERE order_id=?',[$order['id']]);
         $this->closeTask($order['id'],'QUOTE_REVIEW');
         $this->event($order['id'],'QUOTED',['proofId'=>$id,'version'=>$version,'quoteCents'=>$amount],'A quote and artwork proof are ready for your review.');
         return ['order'=>$this->publicOrder($this->order($order['id']))];
@@ -422,6 +449,85 @@ final class BusinessPortal
         $this->update($order,['status'=>'APPROVED','approved_proof_id'=>$order['proof_id']]);
         $this->event($order['id'],'APPROVED',['proofId'=>$order['proof_id'],'quoteCents'=>$order['quote_cents']],'You approved this proof and quote. The team will check production readiness.');
         $this->task($order['id'],'RELEASE_REVIEW','Check materials, production file and financial release reference');
+        return ['order'=>$this->publicOrder($this->order($order['id'],true))];
+    }
+
+    public static function requiresEngravingApproval(array $order): bool
+    {
+        $items = json_decode($order['configuration'], true, 16, JSON_THROW_ON_ERROR);
+        return in_array('Custom Infinity Mirror', array_column($items, 'product'), true);
+    }
+
+    private function latestEngraving(array $order): ?array
+    {
+        $review = $this->rows('SELECT id,version,file_id,summary,created_at,approved_at,ship_by_date FROM business_engraving_reviews WHERE order_id=? ORDER BY version DESC LIMIT 1', [$order['id']])[0] ?? null;
+        return $review === null ? null : $review + ['timezone'=>'America/Los_Angeles'];
+    }
+
+    public static function engravingShipBy(int $approvedAt): string
+    {
+        // Approval day is day zero. Calendar increments preserve Pacific dates across DST.
+        $day = (new DateTimeImmutable('@'.$approvedAt))->setTimezone(new DateTimeZone('America/Los_Angeles'));
+        for ($remaining = 3; $remaining > 0;) {
+            $day = $day->modify('+1 day');
+            if ((int)$day->format('N') <= 5 && !self::shippingHoliday($day)) { $remaining--; }
+        }
+        return $day->format('Y-m-d');
+    }
+
+    private static function shippingHoliday(DateTimeImmutable $day): bool
+    {
+        // Standard national observed dates; no regional inauguration/agency closures.
+        $year=(int)$day->format('Y');$dates=[];$zone=$day->getTimezone();
+        foreach([$year-1,$year,$year+1] as $y){
+            foreach(['01-01','06-19','07-04','11-11','12-25'] as $md){
+                if($md==='06-19'&&$y<2021)continue;
+                $holiday=new DateTimeImmutable($y.'-'.$md,$zone);$weekday=(int)$holiday->format('N');
+                if($weekday===6)$holiday=$holiday->modify('-1 day');elseif($weekday===7)$holiday=$holiday->modify('+1 day');
+                $dates[]=$holiday->format('Y-m-d');
+            }
+            foreach(['third monday of january','third monday of february','last monday of may','first monday of september','second monday of october','fourth thursday of november'] as $rule)$dates[]=(new DateTimeImmutable($rule.' '.$y,$zone))->format('Y-m-d');
+        }
+        return in_array($day->format('Y-m-d'),$dates,true);
+    }
+
+    private function engravingReview(array $data): array
+    {
+        $this->staff('production','qc'); $order = $this->order($data['orderId'] ?? null);
+        $this->revision($order,$data,['BUILDING','QC_HOLD','QC_PASSED']);
+        if (!self::requiresEngravingApproval($order)) { throw new PortalError('Finished engraving review applies to mirror builds.',422); }
+        $fileId = $this->text($data['fileId'] ?? null,32);
+        if (!$this->rows("SELECT id FROM business_files WHERE id=? AND order_id=? AND purpose='engraving'",[$fileId,$order['id']])) { throw new PortalError('Upload a photo of this mirror’s actual engraving first.',422); }
+        $summary = $this->text($data['summary'] ?? null,4000);
+        $checkout=CommercePortal::publicTerms($this->db,$order['id']);
+        if($checkout['installments']!==null&&(($data['finalProductCents']??null)!==$checkout['offer']['productCents']||($data['finalShippingCents']??null)!==$checkout['offer']['shippingCents']))$this->staff('sales');
+        $version = (int)$this->rows('SELECT COALESCE(MAX(version),0)+1 AS n FROM business_engraving_reviews WHERE order_id=?',[$order['id']])[0]['n'];
+        $id = bin2hex(random_bytes(16));
+        $this->exec('INSERT INTO business_engraving_reviews(id,order_id,version,file_id,summary,creator_id,created_at) VALUES(?,?,?,?,?,?,?)',[$id,$order['id'],$version,$fileId,$summary,$this->user['id'],time()]);
+        CommercePortal::saveFinalPrice($this->db,$order['id'],$id,$data['finalProductCents']??null,$data['finalShippingCents']??null);
+        $this->update($order,[]);
+        $this->closeTask($order['id'],'FULFILLMENT');
+        $this->task($order['id'],'ENGRAVING_APPROVAL','Await customer approval of the current finished engraving photo');
+        $this->event($order['id'],'ENGRAVING_REVIEW',['reviewId'=>$id,'version'=>$version,'fileId'=>$fileId],'A photo of your actual engraving is ready. Review and approve this version in your account before shipping can proceed.');
+        return ['order'=>$this->publicOrder($this->order($order['id']),true)];
+    }
+
+    private function engravingApprove(array $data): array
+    {
+        $order = $this->order($data['orderId'] ?? null,true);
+        $this->revision($order,$data,['BUILDING','QC_HOLD','QC_PASSED']);
+        $review = $this->latestEngraving($order);
+        if ($review === null || ($data['reviewId'] ?? null) !== $review['id'] || $review['approved_at'] !== null) { throw new PortalError('Refresh and review the current finished engraving photo.',409); }
+        if (($data['acceptEngraving'] ?? false) !== true) { throw new PortalError('Confirm approval of the actual engraving shown in this photo.',422); }
+        $plan=CommercePortal::paymentSummary($this->db,$order['id']);
+        if($plan!==null&&(($data['acceptFinalPrice']??false)!==true||$plan['finalReviewId']!==$review['id']||$plan['finalProductCents']===null||CommercePortal::balanceLocked($this->db,$order['id'])))throw new PortalError('Review and accept the current final product price, shipping and remaining balance with this engraving.',422);
+        $approvedAt = time(); $shipBy = $plan===null?self::engravingShipBy($approvedAt):null;
+        $this->exec('UPDATE business_engraving_reviews SET approved_by=?,approved_at=?,ship_by_date=? WHERE id=?',[$this->user['id'],$approvedAt,$shipBy,$review['id']]);
+        $this->update($order,[]);
+        $this->closeTask($order['id'],'ENGRAVING_APPROVAL');
+        if($plan===null){$this->task($order['id'],'FULFILLMENT','Ship by '.$shipBy.' Pacific, after quality inspection passes');}
+        else{CommercePortal::recordShippingReadiness($this->db,$order['id']);if(!CommercePortal::paymentSummary($this->db,$order['id'])['settled'])$this->task($order['id'],'BALANCE_REVIEW','Confirm final balance before shipment; dispatch clock starts after approval and full payment');}
+        $this->event($order['id'],'ENGRAVING_APPROVED',['reviewId'=>$review['id'],'approvedAt'=>$approvedAt,'shipByDate'=>$shipBy,'timezone'=>'America/Los_Angeles'],$plan===null?'You approved the actual engraving. Your mirror is due to ship within three business days after approval, by '.$shipBy.' (Pacific time). Transit begins after shipment.':'You approved the actual engraving and final price. Any remaining balance must be paid before shipment. We ship within three business days after BOTH approval and final payment, excluding weekends and observed U.S. federal holidays.');
         return ['order'=>$this->publicOrder($this->order($order['id'],true))];
     }
 
@@ -473,6 +579,14 @@ final class BusinessPortal
     private function release(array $data): array
     {
         $this->staff('production');$order=$this->order($data['orderId']??null);$this->revision($order,$data,['APPROVED']);
+        if (CommercePortal::publicTerms($this->db,$order['id'])['offer']!==null) {
+            $plan=CommercePortal::paymentSummary($this->db,$order['id']);
+            if($plan!==null&&(($plan['deposit']['state']??null)!=='paid'||$plan['hasPaymentReview']))throw new PortalError('A verified deposit without unresolved payment review is required before production.',409);
+            $payment=$this->rows("SELECT snapshot FROM commerce_checkouts WHERE order_id=? AND state='paid'",[$order['id']])[0]??null;
+            if (!$payment||json_decode($payment['snapshot'],true,32,JSON_THROW_ON_ERROR)['mode']!=='live') {
+                throw new PortalError('Verified live payment is required before releasing this checkout order to production.',409);
+            }
+        }
         if($order['approved_proof_id']===null||$order['approved_proof_id']!==$order['proof_id']||($data['materialsComplete']??false)!==true||($data['assetReviewed']??false)!==true){throw new PortalError('Current proof approval, complete materials and a reviewed production file are required.',409);}
         $fileId=$this->text($data['fileId']??null,32);
         if(!$this->rows("SELECT id FROM business_files WHERE id=? AND order_id=? AND purpose='production'",[$fileId,$order['id']])){throw new PortalError('Choose the reviewed production file for this build.',422);}
@@ -511,7 +625,14 @@ final class BusinessPortal
         if($pass){foreach(['dimensions','finish','electrical','function'] as $check){if(($data['checks'][$check]??false)!==true){throw new PortalError('Complete dimensions, finish, electrical and function inspection before passing QC.',409);}}}
         $state=$pass?'QC_PASSED':'QC_HOLD';$this->update($order,['status'=>$state,'qc_note'=>$note]);
         $this->event($order['id'],$state,['note'=>$note,'checks'=>$data['checks']??[]],$pass?'Your build passed its recorded quality inspection.':'Your build is on a quality hold while the team resolves an issue.');
-        if($pass){$this->closeTask($order['id'],'QC_REVIEW');$this->closeTask($order['id'],'PRODUCTION');$this->task($order['id'],'FULFILLMENT','Pack and confirm pickup or shipping details');}
+        if($pass){
+            $this->closeTask($order['id'],'QC_REVIEW');$this->closeTask($order['id'],'PRODUCTION');
+            $engraving=$this->latestEngraving($order);
+            if(self::requiresEngravingApproval($order)&&($engraving['approved_at']??null)===null){
+                $this->task($order['id'],'ENGRAVING_APPROVAL','Post finished engraving photo and obtain customer approval before shipping');
+            }elseif(($plan=CommercePortal::paymentSummary($this->db,$order['id']))!==null&&!$plan['settled']){$this->task($order['id'],'BALANCE_REVIEW','Confirm final balance before shipment');}
+            else{$this->task($order['id'],'FULFILLMENT',isset($engraving['ship_by_date'])?'Ship by '.$engraving['ship_by_date'].' Pacific':'Pack and confirm pickup or shipping details');}
+        }
         else{$this->task($order['id'],'QC_REVIEW','Resolve the nonconformance and reinspect');}
         return ['order'=>$this->publicOrder($this->order($order['id']),true)];
     }
@@ -520,6 +641,11 @@ final class BusinessPortal
     {
         $this->staff('fulfillment');$order=$this->order($data['orderId']??null);
         $complete=($data['complete']??false)===true;$this->revision($order,$data,$complete?['FULFILLING']:['QC_PASSED']);
+        if (!$complete && self::requiresEngravingApproval($order) && ($this->latestEngraving($order)['approved_at'] ?? null) === null) {
+            throw new PortalError('The customer must approve the latest photo of the actual engraving before shipment or pickup.',409);
+        }
+        $plan=CommercePortal::paymentSummary($this->db,$order['id']);
+        if(!$complete&&$plan!==null&&(!$plan['settled']||!$plan['livePaymentsVerified']))throw new PortalError('Verified final live payment and current engraving/final-price approval are required before shipment or pickup.',409);
         $carrier=$this->text($data['carrier']??null,100);$tracking=$this->text($data['tracking']??null,200);$note=$this->text($data['note']??null,1000);
         $state=$complete?'COMPLETED':'FULFILLING';$this->update($order,['status'=>$state,'carrier'=>$carrier,'tracking'=>$tracking]);
         $this->event($order['id'],$state,['carrier'=>$carrier,'tracking'=>$tracking,'note'=>$note],$complete?'The team recorded completed delivery or pickup.':'Pickup or shipment details have been recorded for your build.');
@@ -530,6 +656,7 @@ final class BusinessPortal
     private function cancel(array $data): array
     {
         $this->staff('sales','production');$order=$this->order($data['orderId']??null);$this->revision($order,$data,['REQUESTED','QUOTED','APPROVED','READY']);
+        if (CommercePortal::locked($this->db,$order['id'])) throw new PortalError('Resolve the active checkout or paid order with the payment provider before cancellation.',409);
         $note=$this->text($data['note']??null,2000);$this->exec('DELETE FROM business_reservations WHERE order_id=?',[$order['id']]);$this->update($order,['status'=>'CANCELLED']);
         $this->exec("UPDATE business_tasks SET state='DONE',updated_at=? WHERE reference=?",[time(),$order['id']]);$this->lowStock();
         $this->event($order['id'],'CANCELLED',['note'=>$note],'The team cancelled this request. Contact support for its recorded resolution.');
@@ -581,7 +708,7 @@ final class BusinessPortal
             'tasks'=>$this->rows('SELECT * FROM business_tasks ORDER BY state,created_at LIMIT 500'),
             'audit'=>$this->rows('SELECT * FROM business_events ORDER BY id DESC LIMIT 100'),
             'summary'=>$this->rows('SELECT status,COUNT(*) AS count FROM business_orders GROUP BY status'),
-            'integrations'=>['payments'=>'Not connected','emailSms'=>'Not connected; portal updates only','shipping'=>'Team recorded references','laser'=>'Local operator handoff only','wled'=>'Local Chataigne / WLED-MM setup required']];
+            'integrations'=>['payments'=>CommercePortal::available($this->config) ? 'Stripe checkout configured; verify live acceptance separately' : 'Not connected','emailSms'=>'Not connected; portal updates only','shipping'=>'Team recorded references','laser'=>'Local operator handoff only','wled'=>'Local Chataigne / WLED-MM setup required']];
     }
 
     private function manifest(): array

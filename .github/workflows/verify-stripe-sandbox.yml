@@ -1,0 +1,23 @@
+name: Verify Stripe Sandbox Key
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && (github.ref == 'refs/heads/fix/storefront-integration-20261019' || github.ref == 'refs/heads/main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Verify preflight safety tests without credentials
+        run: python3 -m unittest discover -s tests -p 'test_stripe_sandbox_key.py' -q
+      - name: Diagnose saved sandbox key without changing Stripe or the website
+        env:
+          MLED_STRIPE_SANDBOX_KEY: ${{ secrets.MLED_STRIPE_SANDBOX_KEY }}
+        run: python3 deploy/hostinger/verify-stripe-sandbox.py

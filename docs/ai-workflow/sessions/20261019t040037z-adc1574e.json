@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "id": "20261019t040037z-adc1574e",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T04:00:37Z",
+  "ended_at": "2026-10-19T04:07:57Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "2fe3b061d5539b3541d9a43715974a1091646057",
+  "summary": "Securely installed the owner-saved webhook signing secret into only the isolated sandbox private configuration in successful run 39197811440 from d126bacc2f4802fffb7ec384b0d180e5234188eb. Actual PHP signer read and disabled-payment HTTPS checks passed; production homepage/config checksums unchanged; temporary transport cleanup succeeded. Canonical Stripe read confirms webhook disabled and livemode false. Reviewer interruption finding reproduced and repaired with flock plus recovery regression; re-review clean. All 208 local tests and source CI passed. Final manual-only installer published at dd85fd611ad9f7c0d13e59d14f612667296170ef and draft PR 26 verified. No secret logged/committed, no public website source changed, no live activation. Actual website Checkout writes and signed delivery remain pending.",
+  "next_action": "Configure sandbox tax settings/registration and fake fulfillment terms, create a verified artificial quote/account fixture, then verify actual website Checkout writes, Stripe-signed delivery, canonical reconciliation and replay handling. Keep production payments disabled and PR 26 draft.",
+  "changed_files": [
+    ".github/workflows/install-sandbox-webhook-secret.yml",
+    "deploy/hostinger/CHECKOUT_SANDBOX.md",
+    "deploy/hostinger/checkout-sandbox.py",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t040037z-adc1574e.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_checkout_sandbox.py"
+  ],
+  "checks": [
+    {
+      "name": "All 208 Python tests passed with PHP; 16 sandbox tests include abrupt-exit recovery and actual workflow PHP invocation",
+      "command": "All 208 Python tests passed with PHP; 16 sandbox tests include abrupt-exit recovery and actual workflow PHP invocation",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Independent re-review: no Critical or Important issues after interruption recovery fix",
+      "command": "Independent re-review: no Critical or Important issues after interruption recovery fix",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "GitHub signer run 39197811440 and source CI 39197814848/39197814837 passed",
+      "command": "GitHub signer run 39197811440 and source CI 39197814848/39197814837 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Canonical Stripe read: webhook disabled, livemode false; production homepage/config hashes preserved",
+      "command": "Canonical Stripe read: webhook disabled, livemode false; production homepage/config hashes preserved",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Shared workflow validator and 13 lifecycle tests; YAML and all shell blocks parse; git diff --check",
+      "command": "Shared workflow validator and 13 lifecycle tests; YAML and all shell blocks parse; git diff --check",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": []
+}

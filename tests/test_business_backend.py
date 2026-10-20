@@ -4,6 +4,7 @@ from __future__ import annotations
 import base64
 import json
 import sqlite3
+import subprocess
 import time
 import unittest
 import uuid
@@ -37,6 +38,14 @@ class BusinessTests(unittest.TestCase):
         self.staff, self.staff_id = self.account()
         self.server.roles[self.staff_id] = ['admin']
         self.server.write_config()
+
+    def test_fixture_config_changes_are_visible_without_cache_delay(self):
+        self.server.enabled = False
+        self.server.write_config()
+        self.post(self.customer, 'business-request', {'items': []}, 503)
+        self.server.enabled = True
+        self.server.write_config()
+        self.assertEqual(self.request()['status'], 'REQUESTED')
 
     def tearDown(self):
         self.server.close()
@@ -213,9 +222,100 @@ class BusinessTests(unittest.TestCase):
         self.assertTrue(any(t['kind']=='QC_REVIEW' and t['state']=='OPEN' for t in self.dashboard()['tasks']))
         checks={k:True for k in ['dimensions','finish','electrical','function']}
         passed=self.post(self.staff,'business-qc',{'orderId':hold['id'],'revision':hold['revision'],'passed':True,'note':'Inspection log TEST-1; all checks passed.','checks':checks})['order']
+        self.post(self.staff,'business-fulfill',{'orderId':passed['id'],'revision':passed['revision'],'carrier':'Pickup','tracking':'P1','note':'Must wait for customer engraving approval.'},409)
+        passed=self.approve_engraving(self.publish_engraving(passed))
         shipped=self.post(self.staff,'business-fulfill',{'orderId':passed['id'],'revision':passed['revision'],'carrier':'Customer pickup','tracking':'PICKUP-1','note':'Ready for agreed pickup.'})['order']
         complete=self.post(self.staff,'business-fulfill',{'orderId':shipped['id'],'revision':shipped['revision'],'carrier':'Customer pickup','tracking':'PICKUP-1','note':'Test pickup recorded.','complete':True})['order']
         self.assertEqual(complete['status'],'COMPLETED')
+
+    def building(self):
+        order,_,_=self.ready()
+        return self.post(self.staff,'business-build',{'orderId':order['id'],'revision':order['revision']})['order']
+
+    def publish_engraving(self, order):
+        file=self.upload(self.staff,order,'engraving','finished-mirror.png')['file']
+        return self.post(self.staff,'business-engraving-review',{'orderId':order['id'],'revision':order['revision'],'fileId':file['id'],'summary':'Photo of the actual finished engraving. Please check its lettering and placement.'})['order']
+
+    def approve_engraving(self, order):
+        return self.post(self.customer,'business-engraving-approve',{'orderId':order['id'],'revision':order['revision'],'reviewId':order['engravingReview']['id'],'acceptEngraving':True})['order']
+
+    def test_finished_engraving_is_separate_private_and_owner_approved(self):
+        order=self.building()
+        self.assertTrue(order['engravingApprovalRequired'])
+        self.assertIsNone(order['engravingReview'])
+        self.assertIsNotNone(order['approvedProofId'])
+        self.upload(self.customer,order,'engraving',expected=403)
+        self.upload(self.staff,order,'engraving','photo.svg',SVG,expected=422)
+        review=self.publish_engraving(order)
+        photo=review['engravingReview']['file_id']
+        other,_=self.account()
+        self.assertEqual(other.raw('business-file',query='&id='+photo)[0],404)
+        status,body,headers=self.customer.raw('business-file',query='&id='+photo)
+        self.assertEqual(status,200);self.assertEqual(body,PNG)
+        self.assertTrue(headers['Content-Disposition'].startswith('inline'))
+        payload={'orderId':order['id'],'revision':review['revision'],'reviewId':review['engravingReview']['id'],'acceptEngraving':True}
+        self.post(other,'business-engraving-approve',payload,404)
+        self.post(self.staff,'business-engraving-approve',payload,404)
+        self.post(self.customer,'business-engraving-approve',{**payload,'acceptEngraving':False},422)
+        self.post(self.customer,'business-engraving-approve',{**payload,'csrf':'wrong'},419)
+        key=uuid.uuid4().hex
+        approved=self.post(self.customer,'business-engraving-approve',payload,key=key)
+        self.assertEqual(approved,self.post(self.customer,'business-engraving-approve',payload,key=key))
+        saved=approved['order']['engravingReview']
+        self.assertIsNotNone(saved['approved_at']);self.assertRegex(saved['ship_by_date'],r'^\d{4}-\d{2}-\d{2}$')
+        self.assertEqual(saved['timezone'],'America/Los_Angeles')
+        self.assertEqual(approved['order']['approvedProofId'],order['approvedProofId'])
+        self.post(self.staff,'business-fulfill',{'orderId':order['id'],'revision':approved['order']['revision'],'carrier':'Test','tracking':'T1','note':'QC still required.'},409)
+
+    def test_revised_engraving_requires_fresh_approval_and_latest_revision(self):
+        first=self.publish_engraving(self.building())
+        approved=self.approve_engraving(first)
+        revised=self.publish_engraving(approved)
+        self.assertEqual(revised['engravingReview']['version'],2)
+        self.assertIsNone(revised['engravingReview']['approved_at'])
+        self.assertIsNone(revised['engravingReview']['ship_by_date'])
+        self.post(self.customer,'business-engraving-approve',{'orderId':revised['id'],'revision':revised['revision'],'reviewId':first['engravingReview']['id'],'acceptEngraving':True},409)
+        self.post(self.customer,'business-engraving-approve',{'orderId':revised['id'],'revision':first['revision'],'reviewId':revised['engravingReview']['id'],'acceptEngraving':True},409)
+        checks={k:True for k in ['dimensions','finish','electrical','function']}
+        passed=self.post(self.staff,'business-qc',{'orderId':revised['id'],'revision':revised['revision'],'passed':True,'note':'Inspection passed.','checks':checks})['order']
+        self.post(self.staff,'business-fulfill',{'orderId':passed['id'],'revision':passed['revision'],'carrier':'Test','tracking':'T1','note':'Old approval must not release shipment.'},409)
+        passed=self.approve_engraving(passed)
+        shipped=self.post(self.staff,'business-fulfill',{'orderId':passed['id'],'revision':passed['revision'],'carrier':'Test','tracking':'T1','note':'Customer approved current actual engraving.'})['order']
+        self.upload(self.staff,shipped,'engraving',expected=409)
+        with sqlite3.connect(self.server.storage/'portal.sqlite') as db:
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM business_engraving_reviews WHERE order_id=? AND approved_at IS NOT NULL',(passed['id'],)).fetchone()[0],2)
+
+    def test_engraving_cannot_be_published_before_production_or_by_sales(self):
+        order=self.approved()
+        self.upload(self.staff,order,'engraving',expected=409)
+        order=self.building()
+        photo=self.upload(self.staff,order,'engraving')['file']
+        self.server.roles[self.staff_id]=['sales'];self.server.write_config()
+        self.post(self.staff,'business-engraving-review',{'orderId':order['id'],'revision':order['revision'],'fileId':photo['id'],'summary':'Not production staff'},403)
+
+    def test_dispatch_deadline_uses_three_weekdays_in_pacific_time_across_dst(self):
+        script="require "+php_quote(str(__import__('pathlib').Path(__file__).resolve().parents[1]/'customer-portal/backend/business.php'))+"; foreach (['2026-10-23T23:30:00-07:00','2026-10-31T23:30:00-07:00','2026-11-02T01:00:00Z','2026-10-19T12:00:00-07:00'] as $at) echo BusinessPortal::engravingShipBy((new DateTimeImmutable($at))->getTimestamp()).PHP_EOL;"
+        result=subprocess.run([PHP,'-r',script],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(result.stdout.splitlines(),['2026-10-28','2026-11-04','2026-11-04','2026-10-22'])
+
+    def test_dispatch_excludes_observed_federal_holidays_across_year_boundary(self):
+        script="require "+php_quote(str(__import__('pathlib').Path(__file__).resolve().parents[1]/'customer-portal/backend/business.php'))+"; foreach (['2026-11-10T12:00:00-08:00','2026-11-25T12:00:00-08:00','2026-07-02T12:00:00-07:00','2027-12-29T12:00:00-08:00'] as $at) echo BusinessPortal::engravingShipBy((new DateTimeImmutable($at))->getTimestamp()).PHP_EOL;"
+        result=subprocess.run([PHP,'-r',script],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertEqual(result.stdout.splitlines(),['2026-11-16','2026-12-01','2026-07-08','2028-01-04'])
+
+    def test_late_shipment_can_be_recorded_without_rewriting_approval(self):
+        order=self.approve_engraving(self.publish_engraving(self.building()))
+        with sqlite3.connect(self.server.storage/'portal.sqlite') as db:
+            db.execute("UPDATE business_engraving_reviews SET approved_at=1600000000,ship_by_date='2020-09-17' WHERE order_id=?",(order['id'],))
+        checks={k:True for k in ['dimensions','finish','electrical','function']}
+        order=self.post(self.staff,'business-qc',{'orderId':order['id'],'revision':order['revision'],'passed':True,'note':'Inspection passed.','checks':checks})['order']
+        task=next(t for t in self.dashboard()['tasks'] if t['reference']==order['id'] and t['kind']=='FULFILLMENT')
+        self.assertIn('2020-09-17',task['title'])
+        shipped=self.post(self.staff,'business-fulfill',{'orderId':order['id'],'revision':order['revision'],'carrier':'Test','tracking':'T1','note':'Late shipment recorded truthfully.'})['order']
+        self.assertEqual(shipped['engravingReview']['approved_at'],1600000000)
+        self.assertEqual(shipped['engravingReview']['ship_by_date'],'2020-09-17')
 
     def test_cancel_releases_materials_and_records_customer_update(self):
         order=self.approved();stock,_=self.receipt(quantity='1');order=self.reserved(order,stock)
@@ -248,10 +348,10 @@ class BusinessTests(unittest.TestCase):
 
     def test_stadium_has_only_three_sizes_and_quantities_are_server_validated(self):
         for size in ['Custom','Mid','Huge']:
-            self.post(self.customer,'business-request',{'items':[{'product':'Layered Stadium Model','size':size,'artwork':'Venue','quantity':1}]},422)
+            self.post(self.staff,'business-request',{'items':[{'product':'Layered Stadium Model','size':size,'artwork':'Venue','quantity':1}]},422)
         for size in ['Mini','Medium','Collector']:
-            self.post(self.customer,'business-request',{'items':[{'product':'Layered Stadium Model','size':size,'artwork':'Venue','quantity':1}]})
-        self.post(self.customer,'business-request',{'items':[{'product':'Other Custom Build','size':'Custom','artwork':'Theme','quantity':-2}]},422)
+            self.post(self.staff,'business-request',{'items':[{'product':'Layered Stadium Model','size':size,'artwork':'Venue','quantity':1}]})
+        self.post(self.staff,'business-request',{'items':[{'product':'Other Custom Build','size':'Custom','artwork':'Theme','quantity':-2}]},422)
 
 
 if __name__ == '__main__':

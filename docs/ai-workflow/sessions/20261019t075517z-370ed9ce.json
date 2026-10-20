@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "id": "20261019t075517z-370ed9ce",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T07:55:17Z",
+  "ended_at": "2026-10-19T08:05:38Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "804fdcd2a93a22bd2fae69ccf48ea95300193afc",
+  "summary": "Actual website sandbox payment and provider-signed delivery are verified: canonical paid $1.09, succeeded PaymentIntent, successful Stripe delivery; private acceptance run39219632873 verified matching approved artificial proof/payment/reference, actual event receipt and one confirmation after two self-signed duplicates. Production hashes unchanged. All234 tests passed with forced OPcache; independent review clean. Final workflow manual-only. A CI config-cache race was reproduced and fixed only in the HTTP test fixture, published at06f6e6391f537d17aacda0fb935cb177b76e315f. Broader live launch gates remain. Final source CI39220263111 and workflow validation39220263094 passed.",
+  "next_action": "Before paid launch, resolve failed delayed-payment retry/unlock behavior and remaining actual failure/cancel/expiry acceptance; confirm real 12-inch product/hardware/shipping/production terms and owner/staff workflow; then separately review approved live merchant/tax setup and exact-source phased release. Production payments stay off.",
+  "changed_files": [
+    ".github/workflows/storefront-ci.yml",
+    ".github/workflows/verify-sandbox-payment.yml",
+    "deploy/hostinger/CHECKOUT_SANDBOX.md",
+    "deploy/hostinger/verify-sandbox-payment.py",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t075517z-370ed9ce.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_business_backend.py",
+    "tests/test_customer_portal_backend.py",
+    "tests/test_sandbox_payment_verify.py"
+  ],
+  "checks": [
+    {
+      "name": "Authenticated canonical Stripe Checkout read: complete/paid109 cents, subtotal100, tax9, shipping0, matching order, testmode; PaymentIntent succeeded109",
+      "command": "Authenticated canonical Stripe Checkout read: complete/paid109 cents, subtotal100, tax9, shipping0, matching order, testmode; PaymentIntent succeeded109",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Canonical completed event appears with delivery_success:true and pending_webhooks0",
+      "command": "Canonical completed event appears with delivery_success:true and pending_webhooks0",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Private acceptance run39219632873 success: same canonical fingerprints, approved artificial proof, paid checkout, matching payment reference, actual event receipt, one confirmation preserved after two known-event self-signed replays",
+      "command": "Private acceptance run39219632873 success: same canonical fingerprints, approved artificial proof, paid checkout, matching payment reference, actual event receipt, one confirmation preserved after two known-event self-signed replays",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Production homepage/private config checksums unchanged; runtime sandbox source/cookie/capability, production payments off and transport cleanup passed",
+      "command": "Production homepage/private config checksums unchanged; runtime sandbox source/cookie/capability, production payments off and transport cleanup passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "All234 Python/PHP tests passed under forced OPcache wrapper; new fixture config mutation test and original failing activation test observed red503 before disabling fixture opcode cache, then green",
+      "command": "All234 Python/PHP tests passed under forced OPcache wrapper; new fixture config mutation test and original failing activation test observed red503 before disabling fixture opcode cache, then green",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Five focused payment verifier tests and independent review passed; no Critical/Important finding; fixture-only fix independently reviewed",
+      "command": "Five focused payment verifier tests and independent review passed; no Critical/Important finding; fixture-only fix independently reviewed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Actionlint, YAML/bash syntax, workflow validation and13 shared workflow tests passed",
+      "command": "Actionlint, YAML/bash syntax, workflow validation and13 shared workflow tests passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Published verifier ec9a2a9 and final manual-only workflow4de0e10; exact branch heads verified; source CI39219638739/39219638889 passed; final source workflow CI39219759942 passed",
+      "command": "Published verifier ec9a2a9 and final manual-only workflow4de0e10; exact branch heads verified; source CI39219638739/39219638889 passed; final source workflow CI39219759942 passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Historical manual-only source CI39219759785 failed due cached mutable fixture config; exact503 reproduced and fixture-only correction verified in latest CI",
+      "command": "Final source Storefront CI39219759785 exposed mutable-fixture config cache503; fixed only test-server launch and regression, published/verified06f6e639; latest source CI pending",
+      "result": "failed",
+      "basis": "observed_GitHub_CI_then_reproduced_locally"
+    },
+    {
+      "name": "Final fixture correction source Storefront CI39220263111 and workflow CI39220263094 passed",
+      "result": "passed",
+      "basis": "observed_GitHub_jobs",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39220263111"
+    }
+  ],
+  "findings": []
+}

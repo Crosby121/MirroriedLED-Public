@@ -2,7 +2,7 @@ name: Verify Main Hostinger SSH Authentication
 
 on:
   push:
-    branches: [docs/deployment-readiness-20261005]
+    branches: [docs/deployment-readiness-20261005, fix/storefront-integration-20261019]
     paths:
       - .github/workflows/verify-hostinger-auth.yml
   workflow_dispatch:
@@ -94,13 +94,59 @@ jobs:
           if command -v php >/dev/null; then
             php -r 'echo "PHP_VERSION=" . PHP_VERSION . PHP_EOL;'
             check 'PHP is at least 8.2' php -r 'exit(PHP_VERSION_ID >= 80200 ? 0 : 1);'
-            for extension in pdo_sqlite fileinfo dom; do
+            for extension in pdo_sqlite fileinfo dom curl; do
               check "PHP extension $extension is enabled" php -r 'exit(extension_loaded($argv[1]) ? 0 : 1);' "$extension"
             done
           fi
           if [ "$failed" -ne 0 ]; then exit 1; fi
           echo 'MLED_READ_ONLY_HOST_PREFLIGHT_PASSED'
           REMOTE
+      - name: Inspect private setup presence without reading account data or credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$RUNNER_TEMP/mled-readonly-auth/key" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o PreferredAuthentications=publickey \
+            -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
+            -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts" \
+            -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' - '$PUBLIC_HTML'" <<'REMOTE'
+          import json
+          import os
+          from pathlib import Path
+          import stat
+          import sys
+          root = Path(sys.argv[1]).resolve(strict=True)
+          private = root.parent / 'mirroriedled-private' / 'customer-portal'
+          config = private / 'config.php'
+          report = {
+              'default_private_config_present': config.is_file(),
+              'default_private_config_symlink': config.is_symlink(),
+              'default_private_config_readable': os.access(config, os.R_OK),
+              'default_private_config_owner_only': config.is_file() and not bool(stat.S_IMODE(config.lstat().st_mode) & 0o077),
+              'default_private_storage_present': (private / 'storage').is_dir(),
+              'deployed_commerce_backend_present': (root / 'customer-portal/backend/commerce.php').is_file(),
+              'deployed_ordering_page_present': (root / 'shop/index.html').is_file(),
+          }
+          print('MLED_PRIVATE_SETUP_METADATA=' + json.dumps(report, sort_keys=True))
+          print('Only filesystem metadata inspected; alternate PHP/FPM config overrides and account contents were not read.')
+          REMOTE
+      - name: Report public account and checkout availability
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from urllib.error import HTTPError
+          from urllib.request import urlopen
+          for action in ('session', 'commerce-status'):
+              try:
+                  with urlopen('https://mirroriedled.com/customer-portal/backend/api.php?action=' + action, timeout=15) as response:
+                      data = json.load(response)
+                      report = {key: data[key] for key in ('ok', 'configured', 'accountsAvailable', 'paymentsAvailable', 'paymentMode') if key in data}
+                      report.update(action=action, http_status=response.status)
+              except HTTPError as error:
+                  report = {'action': action, 'http_status': error.code}
+              print('MLED_PUBLIC_PORTAL_STATUS=' + json.dumps(report, sort_keys=True))
+          PY
       - name: Remove temporary runner credentials
         if: ${{ always() }}
         shell: bash

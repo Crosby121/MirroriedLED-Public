@@ -61,6 +61,7 @@ class PortalServer:
                 f"'storage_path'=>{php_quote(str(storage))},\n"
                 f"'origin'=>{php_quote(self.origin)},\n"
                 "'allow_insecure_localhost'=>true,\n"
+                "'premium_enabled'=>true,\n"  # Exercise retained private media features separately from public opening.
                 f"'max_audio_bytes'=>{max_audio},\n"
                 "'max_video_bytes'=>134217728,\n"
                 f"'plans'=>['free'=>['songs'=>3,'videos'=>1,'bytes'=>{storage_limit}]],\n"
@@ -75,8 +76,9 @@ class PortalServer:
         self.log = tempfile.TemporaryFile()
         env = os.environ.copy()
         env["MLED_PORTAL_CONFIG"] = str(self.config)
+        # Tests rewrite private PHP config between requests; never cache fixture code.
         self.process = subprocess.Popen(
-            [PHP, "-d", "upload_max_filesize=129M", "-d", "post_max_size=130M", "-S", f"127.0.0.1:{self.port}", "-t", str(self.public)],
+            [PHP, "-d", "opcache.enable=0", "-d", "upload_max_filesize=129M", "-d", "post_max_size=130M", "-S", f"127.0.0.1:{self.port}", "-t", str(self.public)],
             env=env,
             stdout=self.log,
             stderr=self.log,

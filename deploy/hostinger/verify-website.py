@@ -31,7 +31,9 @@ def fetch(base: str, path: str, release: str) -> tuple[int, bytes]:
         return error.code, b""
 
 
-def verify(source: Path, base: str, release: str) -> bool:
+def verify(source: Path, base: str, release: str, require_commerce: bool = False, require_quote_only: bool = False) -> bool:
+    if require_commerce and require_quote_only:
+        raise ValueError("Choose one release mode")
     if base not in ("https://mirroriedled.com", "https://www.mirroriedled.com"):
         raise ValueError("Verify the main Mirroried LED website over HTTPS")
     if not release.isalnum():
@@ -48,7 +50,7 @@ def verify(source: Path, base: str, release: str) -> bool:
     status, homepage = fetch(base, "", release)
     if status != 200 or hashlib.sha256(homepage).digest() != hashlib.sha256((source / "index.html").read_bytes()).digest():
         raise ValueError("The website homepage does not serve the new release")
-    for name in ("portal.php", "business.php", "builder.php", "config.php", "config.example.php", ".htaccess", ".user.ini"):
+    for name in ("portal.php", "business.php", "builder.php", "commerce.php", "config.php", "config.example.php", ".htaccess", ".user.ini"):
         status, _ = fetch(base, "customer-portal/backend/" + name, release)
         if status not in (403, 404):
             raise ValueError("An internal portal file is publicly reachable: " + name)
@@ -58,6 +60,24 @@ def verify(source: Path, base: str, release: str) -> bool:
     session = json.loads(body)
     if session.get("ok") is not True or not isinstance(session.get("configured"), bool):
         raise ValueError("The customer portal API did not return a valid status")
+    status, body = fetch(base, "customer-portal/backend/api.php?action=commerce-status", release)
+    if status != 200:
+        raise ValueError("The product checkout status API is unavailable")
+    commerce = json.loads(body)
+    if commerce.get("ok") is not True or not isinstance(commerce.get("paymentsAvailable"), bool):
+        raise ValueError("The product checkout API did not return a valid status")
+    if require_commerce and (not session["configured"] or not session.get("capabilities", {}).get("business")
+                             or not commerce["paymentsAvailable"] or commerce.get("paymentMode") != "live"):
+        raise ValueError("The two-product opening requires configured customer accounts and live merchant checkout")
+    if require_quote_only:
+        if (session.get('configured') is not True or session.get('capabilities', {}).get('business') is not True
+                or commerce.get('accountsAvailable') is not True):
+            raise ValueError('The quote-only release requires configured quote accounts')
+        if (session.get('capabilities', {}).get('payments') is not False or commerce.get('paymentsAvailable') is not False
+                or commerce.get('paymentMode') is not None):
+            raise ValueError('The quote-only release requires disabled payments')
+        print('QUOTE_ONLY_RELEASE_VERIFIED: customer accounts and quote requests; payments disabled')
+    print("PRODUCT_PAYMENTS_CONFIGURED=" + ("yes; live merchant acceptance must be checked separately" if commerce["paymentsAvailable"] else "no; merchant activation remains required"))
     print("LIVE_WEBSITE_VERIFIED: storefront, customer portal, team page, assets and PHP access rules")
     print("PRIVATE_PORTAL_CONFIGURED=" + ("yes" if session["configured"] else "no; private setup remains required"))
     return session["configured"]
@@ -68,5 +88,8 @@ if __name__ == "__main__":
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--url", default="https://mirroriedled.com")
     parser.add_argument("--release", required=True)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--require-commerce", action="store_true")
+    mode.add_argument("--require-quote-only", action="store_true")
     args = parser.parse_args()
-    verify(args.source, args.url.rstrip("/"), args.release)
+    verify(args.source, args.url.rstrip("/"), args.release, args.require_commerce, args.require_quote_only)

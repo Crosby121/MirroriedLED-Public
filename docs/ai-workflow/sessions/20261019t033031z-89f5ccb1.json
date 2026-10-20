@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "20261019t033031z-89f5ccb1",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T03:30:31Z",
+  "ended_at": "2026-10-19T03:31:24Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "b081e1c886ebef12aa1b19d82ab9dcaa6db5f16a",
+  "summary": "Reran the existing private sandbox credential preflight with the updated GitHub secret. Run 39193263549 attempt 3 succeeded: seven safety tests passed and actual Stripe Checkout read access was verified with only sandbox records. The key and provider/customer payload were never disclosed. No source code change, hosting configuration, Stripe write, webhook or live activation occurred. Credential read-access substep is complete; actual website payment acceptance remains pending.",
+  "next_action": "Prepare isolated full PHP staging with separate private configuration/storage and the verified sandbox restricted credential; register the deployed staging webhook and securely install its endpoint signing secret. Complete actual quoted-order Checkout write permissions, signed event delivery, canonical reconciliation and replay acceptance before considering live merchant/tax and product/shipping/production launch gates. Keep PR 26 draft and live payments disabled.",
+  "changed_files": [
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t033031z-89f5ccb1.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json"
+  ],
+  "checks": [
+    {
+      "name": "GitHub run 39193263549 attempt 3 job 117875815256: seven safety tests and authenticated sandbox Checkout read passed",
+      "command": "GitHub run 39193263549 attempt 3 job 117875815256: seven safety tests and authenticated sandbox Checkout read passed",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 tools/ai_workflow.py validate and 13 workflow lifecycle tests passed",
+      "command": "python3 tools/ai_workflow.py validate and 13 workflow lifecycle tests passed",
+      "result": "passed",
+      "basis": "agent_report"
+    }
+  ],
+  "findings": []
+}

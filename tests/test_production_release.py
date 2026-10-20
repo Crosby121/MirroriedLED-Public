@@ -147,7 +147,7 @@ class ProductionReleaseTests(unittest.TestCase):
         curl.write_text('#!/bin/sh\nurl=""\nout=""\nwhile [ "$#" -gt 0 ]; do\n'
                         '  if [ "$1" = "-o" ]; then shift; out="$1"; fi\n'
                         '  url="$1"\n  shift\ndone\n'
-                        'body="Mirroried LED Advertising on the Go Sponsor Partner Program sponsors.mirroriedled.com"\n'
+                        'body="Mirroried LED Infinity Mirrors Address signs"\n'
                         'if [ -n "$out" ]; then printf "%s" "$body" > "$out"; else printf "%s" "$body"; fi\n'
                         'case "$url" in\n'
                         '  *address-sign.webp) printf "404" ;;\n'

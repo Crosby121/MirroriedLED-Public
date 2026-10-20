@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "id": "20261019t021452z-98d36616",
+  "application": "ChatGPT Work / Codex",
+  "application_identity": "declared",
+  "github_account": "Crosby121",
+  "started_at": "2026-10-19T02:14:52Z",
+  "ended_at": "2026-10-19T02:21:55Z",
+  "status": "blocked",
+  "task_ids": [
+    "WF-008"
+  ],
+  "branch": "fix/storefront-integration-20261019",
+  "base_commit": "4bb1d2da5d5fda2909d5021f54d6fc6a7f62eaad",
+  "summary": "Diagnosed missing private account configuration through authenticated read-only SSH, implemented and independently reviewed an exclusive private setup helper, and successfully configured the live account backend. HTTPS now reports signup and business enabled with payments disabled. No staff accounts, storefront deployment or merchant activation occurred. Source is published at c856fb7f235e83fe23cadfd77f609afb6206ebc5; setup run 39189529036 passed. All 184 Python tests passed; overall storefront launch remains blocked on merchant acceptance and fulfillment terms.",
+  "next_action": "Keep draft storefront release gated. Connect Stripe for actual sandbox checkout and signed-webhook acceptance; verify owner account before numeric staff assignment; confirm final product, shipping, tax and production terms. Deploy draft shop/commerce only through an approved exact-source release after acceptance.",
+  "changed_files": [
+    ".github/workflows/setup-customer-accounts.yml",
+    ".github/workflows/verify-hostinger-auth.yml",
+    "deploy/hostinger/setup-customer-accounts.py",
+    "docs/CUSTOMER_PORTAL_BACKEND.md",
+    "docs/ai-workflow/CURRENT_STATUS.md",
+    "docs/ai-workflow/sessions/20261019t021452z-98d36616.json",
+    "docs/ai-workflow/state.json",
+    "docs/ai-workflow/tasks.json",
+    "tests/test_customer_account_setup.py"
+  ],
+  "checks": [
+    {
+      "name": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q",
+      "command": "PATH=/tmp/mled-php-bin:$PATH python3 -m unittest discover -s tests -q",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "python3 -m unittest discover -s tests -p test_customer_account_setup.py -q",
+      "command": "python3 -m unittest discover -s tests -p test_customer_account_setup.py -q",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Read-only metadata no-disclosure/no-write check and workflow YAML/shell validation",
+      "command": "Read-only metadata no-disclosure/no-write check and workflow YAML/shell validation",
+      "result": "passed",
+      "basis": "agent_report"
+    },
+    {
+      "name": "Authenticated read-only Hostinger diagnosis",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39189161597"
+    },
+    {
+      "name": "Actual private setup and HTTPS account availability",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39189529036"
+    },
+    {
+      "name": "Source storefront CI",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39189534018"
+    },
+    {
+      "name": "Source shared workflow CI",
+      "result": "passed",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39189534005"
+    }
+  ],
+  "findings": [
+    {
+      "finding": "Initial authenticated diagnosis found the default config/storage and new shop/commerce source absent. PHP 8.3.35, Python 3.11.17 and required extensions passed. The setup job created only missing private config/storage and HTTPS then reported configured:true, signup:true, business:true, payments:false.",
+      "basis": "actual_remote_job_receipt_and_live_HTTPS",
+      "evidence_url": "https://github.com/Crosby121/MirroriedLED-Public/actions/runs/39189529036"
+    },
+    {
+      "finding": "Independent review found insufficient parent-directory checks; writable-parent and symlink-ancestor regressions failed before repair and passed afterward. Eight setup tests and all 184 Python tests passed. The final workflow is manual-only after successful one-time activation.",
+      "basis": "independent_review_and_RED_GREEN_checks"
+    },
+    {
+      "finding": "Live Customer Portal browser observation showed enabled Create my account control and draft billing-off notice. No actual user registration, staff assignment, password reset, Stripe connection, merchant charge or new storefront deployment occurred.",
+      "basis": "live_browser_observation_and_session_actions"
+    },
+    {
+      "finding": "Hostinger cloud-browser sign-in is restricted; supported setup was completed using the existing authenticated GitHub SSH connection without dashboard sign-in or credential disclosure.",
+      "basis": "site_specific_guidance_and_GitHub_receipt"
+    }
+  ]
+}

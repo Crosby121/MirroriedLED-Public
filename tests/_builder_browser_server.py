@@ -9,7 +9,8 @@ from test_business_backend import BusinessServer
 ROOT=Path(__file__).resolve().parents[1]
 server=BusinessServer()
 try:
-    shutil.copytree(ROOT/'infinity-builder',server.public/'infinity-builder')
+    for folder in ['infinity-builder','shop','address-builder']:
+        shutil.copytree(ROOT/folder,server.public/folder)
     shutil.copytree(ROOT/'customer-portal',server.public/'customer-portal',dirs_exist_ok=True)
     for name in ['index.html','styles.css','app.js','repair.js','infinity-mirror.webp','stadium-model.webp','led-display.webp','address-sign.webp']:
         shutil.copyfile(ROOT/name,server.public/name)
