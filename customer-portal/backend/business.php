@@ -470,9 +470,25 @@ final class BusinessPortal
         $day = (new DateTimeImmutable('@'.$approvedAt))->setTimezone(new DateTimeZone('America/Los_Angeles'));
         for ($remaining = 3; $remaining > 0;) {
             $day = $day->modify('+1 day');
-            if ((int)$day->format('N') <= 5) { $remaining--; }
+            if ((int)$day->format('N') <= 5 && !self::shippingHoliday($day)) { $remaining--; }
         }
         return $day->format('Y-m-d');
+    }
+
+    private static function shippingHoliday(DateTimeImmutable $day): bool
+    {
+        // Standard national observed dates; no regional inauguration/agency closures.
+        $year=(int)$day->format('Y');$dates=[];$zone=$day->getTimezone();
+        foreach([$year-1,$year,$year+1] as $y){
+            foreach(['01-01','06-19','07-04','11-11','12-25'] as $md){
+                if($md==='06-19'&&$y<2021)continue;
+                $holiday=new DateTimeImmutable($y.'-'.$md,$zone);$weekday=(int)$holiday->format('N');
+                if($weekday===6)$holiday=$holiday->modify('-1 day');elseif($weekday===7)$holiday=$holiday->modify('+1 day');
+                $dates[]=$holiday->format('Y-m-d');
+            }
+            foreach(['third monday of january','third monday of february','last monday of may','first monday of september','second monday of october','fourth thursday of november'] as $rule)$dates[]=(new DateTimeImmutable($rule.' '.$y,$zone))->format('Y-m-d');
+        }
+        return in_array($day->format('Y-m-d'),$dates,true);
     }
 
     private function engravingReview(array $data): array
@@ -483,9 +499,12 @@ final class BusinessPortal
         $fileId = $this->text($data['fileId'] ?? null,32);
         if (!$this->rows("SELECT id FROM business_files WHERE id=? AND order_id=? AND purpose='engraving'",[$fileId,$order['id']])) { throw new PortalError('Upload a photo of this mirror’s actual engraving first.',422); }
         $summary = $this->text($data['summary'] ?? null,4000);
+        $checkout=CommercePortal::publicTerms($this->db,$order['id']);
+        if($checkout['installments']!==null&&(($data['finalProductCents']??null)!==$checkout['offer']['productCents']||($data['finalShippingCents']??null)!==$checkout['offer']['shippingCents']))$this->staff('sales');
         $version = (int)$this->rows('SELECT COALESCE(MAX(version),0)+1 AS n FROM business_engraving_reviews WHERE order_id=?',[$order['id']])[0]['n'];
         $id = bin2hex(random_bytes(16));
         $this->exec('INSERT INTO business_engraving_reviews(id,order_id,version,file_id,summary,creator_id,created_at) VALUES(?,?,?,?,?,?,?)',[$id,$order['id'],$version,$fileId,$summary,$this->user['id'],time()]);
+        CommercePortal::saveFinalPrice($this->db,$order['id'],$id,$data['finalProductCents']??null,$data['finalShippingCents']??null);
         $this->update($order,[]);
         $this->closeTask($order['id'],'FULFILLMENT');
         $this->task($order['id'],'ENGRAVING_APPROVAL','Await customer approval of the current finished engraving photo');
@@ -500,12 +519,15 @@ final class BusinessPortal
         $review = $this->latestEngraving($order);
         if ($review === null || ($data['reviewId'] ?? null) !== $review['id'] || $review['approved_at'] !== null) { throw new PortalError('Refresh and review the current finished engraving photo.',409); }
         if (($data['acceptEngraving'] ?? false) !== true) { throw new PortalError('Confirm approval of the actual engraving shown in this photo.',422); }
-        $approvedAt = time(); $shipBy = self::engravingShipBy($approvedAt);
+        $plan=CommercePortal::paymentSummary($this->db,$order['id']);
+        if($plan!==null&&(($data['acceptFinalPrice']??false)!==true||$plan['finalReviewId']!==$review['id']||$plan['finalProductCents']===null||CommercePortal::balanceLocked($this->db,$order['id'])))throw new PortalError('Review and accept the current final product price, shipping and remaining balance with this engraving.',422);
+        $approvedAt = time(); $shipBy = $plan===null?self::engravingShipBy($approvedAt):null;
         $this->exec('UPDATE business_engraving_reviews SET approved_by=?,approved_at=?,ship_by_date=? WHERE id=?',[$this->user['id'],$approvedAt,$shipBy,$review['id']]);
         $this->update($order,[]);
         $this->closeTask($order['id'],'ENGRAVING_APPROVAL');
-        $this->task($order['id'],'FULFILLMENT','Ship by '.$shipBy.' Pacific, after quality inspection passes');
-        $this->event($order['id'],'ENGRAVING_APPROVED',['reviewId'=>$review['id'],'approvedAt'=>$approvedAt,'shipByDate'=>$shipBy,'timezone'=>'America/Los_Angeles'],'You approved the actual engraving. Your mirror is due to ship within three business days after approval, by '.$shipBy.' (Pacific time). Transit begins after shipment.');
+        if($plan===null){$this->task($order['id'],'FULFILLMENT','Ship by '.$shipBy.' Pacific, after quality inspection passes');}
+        else{CommercePortal::recordShippingReadiness($this->db,$order['id']);if(!CommercePortal::paymentSummary($this->db,$order['id'])['settled'])$this->task($order['id'],'BALANCE_REVIEW','Confirm final balance before shipment; dispatch clock starts after approval and full payment');}
+        $this->event($order['id'],'ENGRAVING_APPROVED',['reviewId'=>$review['id'],'approvedAt'=>$approvedAt,'shipByDate'=>$shipBy,'timezone'=>'America/Los_Angeles'],$plan===null?'You approved the actual engraving. Your mirror is due to ship within three business days after approval, by '.$shipBy.' (Pacific time). Transit begins after shipment.':'You approved the actual engraving and final price. Any remaining balance must be paid before shipment. We ship within three business days after BOTH approval and final payment, excluding weekends and observed U.S. federal holidays.');
         return ['order'=>$this->publicOrder($this->order($order['id'],true))];
     }
 
@@ -558,6 +580,8 @@ final class BusinessPortal
     {
         $this->staff('production');$order=$this->order($data['orderId']??null);$this->revision($order,$data,['APPROVED']);
         if (CommercePortal::publicTerms($this->db,$order['id'])['offer']!==null) {
+            $plan=CommercePortal::paymentSummary($this->db,$order['id']);
+            if($plan!==null&&(($plan['deposit']['state']??null)!=='paid'||$plan['hasPaymentReview']))throw new PortalError('A verified deposit without unresolved payment review is required before production.',409);
             $payment=$this->rows("SELECT snapshot FROM commerce_checkouts WHERE order_id=? AND state='paid'",[$order['id']])[0]??null;
             if (!$payment||json_decode($payment['snapshot'],true,32,JSON_THROW_ON_ERROR)['mode']!=='live') {
                 throw new PortalError('Verified live payment is required before releasing this checkout order to production.',409);
@@ -606,7 +630,8 @@ final class BusinessPortal
             $engraving=$this->latestEngraving($order);
             if(self::requiresEngravingApproval($order)&&($engraving['approved_at']??null)===null){
                 $this->task($order['id'],'ENGRAVING_APPROVAL','Post finished engraving photo and obtain customer approval before shipping');
-            }else{$this->task($order['id'],'FULFILLMENT',isset($engraving['ship_by_date'])?'Ship by '.$engraving['ship_by_date'].' Pacific':'Pack and confirm pickup or shipping details');}
+            }elseif(($plan=CommercePortal::paymentSummary($this->db,$order['id']))!==null&&!$plan['settled']){$this->task($order['id'],'BALANCE_REVIEW','Confirm final balance before shipment');}
+            else{$this->task($order['id'],'FULFILLMENT',isset($engraving['ship_by_date'])?'Ship by '.$engraving['ship_by_date'].' Pacific':'Pack and confirm pickup or shipping details');}
         }
         else{$this->task($order['id'],'QC_REVIEW','Resolve the nonconformance and reinspect');}
         return ['order'=>$this->publicOrder($this->order($order['id']),true)];
@@ -619,6 +644,8 @@ final class BusinessPortal
         if (!$complete && self::requiresEngravingApproval($order) && ($this->latestEngraving($order)['approved_at'] ?? null) === null) {
             throw new PortalError('The customer must approve the latest photo of the actual engraving before shipment or pickup.',409);
         }
+        $plan=CommercePortal::paymentSummary($this->db,$order['id']);
+        if(!$complete&&$plan!==null&&(!$plan['settled']||!$plan['livePaymentsVerified']))throw new PortalError('Verified final live payment and current engraving/final-price approval are required before shipment or pickup.',409);
         $carrier=$this->text($data['carrier']??null,100);$tracking=$this->text($data['tracking']??null,200);$note=$this->text($data['note']??null,1000);
         $state=$complete?'COMPLETED':'FULFILLING';$this->update($order,['status'=>$state,'carrier'=>$carrier,'tracking'=>$tracking]);
         $this->event($order['id'],$state,['carrier'=>$carrier,'tracking'=>$tracking,'note'=>$note],$complete?'The team recorded completed delivery or pickup.':'Pickup or shipment details have been recorded for your build.');

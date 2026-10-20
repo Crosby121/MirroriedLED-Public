@@ -198,23 +198,52 @@ shipping readiness until the customer approves it. Each version, approving accou
 approval timestamp and ship-by date remain in private history. Portal updates are
 implemented; email/SMS delivery is not connected.
 
-Ship within **three business days after customer approval**. The approval date is
-day zero; the next three Monday–Friday dates are counted in America/Los_Angeles,
-including correct daylight-saving transitions. No holiday closure calendar or
-cutoff time has been specified. The saved ship-by date is shown to both customer
-and team. Carrier transit starts after shipment; this dispatch window does not
-supply the still-unconfirmed production lead time. Late shipments can be recorded
-truthfully without altering the original approval or deadline.
+New mirror quotes collect a **50% product deposit before production**, rounded
+up to cents, with shipping deferred to the final balance. Stripe calculates tax
+on each payment's actual product/shipping amounts. For a $150 product this is a
+$75 product deposit and $75 product balance, plus applicable tax and shipping.
+Address signs and pre-existing full-payment offers/snapshots keep their terms.
 
-New mirror checkout offers disclose the engraving approval/dispatch rule. Existing
-accepted offer history and creating/paid checkout snapshots are not rewritten;
-legacy provider retries retain their original request text.
+For staged orders each actual-photo review stores immutable final product and
+shipping amounts. Changing quoted amounts requires sales/admin authorization.
+The owning customer explicitly approves both that review and its final price
+before opening balance checkout. A current unpaid/processing/paid/review balance
+locks replacement reviews. Final product price below the paid deposit and positive
+remaining totals below the provider minimum require manual support; zero remaining
+balance settles without an invented charge. Refunds are not automated.
+
+Owner-approved wording: **Your custom mirror will ship within three business days
+after we receive both your approval of the actual engraving and your final payment.
+Delivery time begins after shipment.** The later condition's date is day zero;
+the next three business dates are counted in America/Los_Angeles, excluding
+weekends and standard observed U.S. federal holidays, including adjacent-year
+observances and daylight-saving transitions. Holiday reference:
+https://www.opm.gov/policy-data-oversight/pay-leave/federal-holidays/ .
+The saved ship-by date is shown only after both conditions are met. This does not
+supply the still-unconfirmed production lead time. Late shipments can be recorded
+truthfully without changing the original approval or deadline.
+
+A paid deposit does not mean the order is fully paid. Any unresolved sibling of
+a paid stage holds production/shipping until canonical reconciliation resolves it;
+a second success stays on manual review. Refresh finds unresolved attempts even
+when a paid row is newer. Balance payment must match the current accepted final
+review and exact immutable stage amounts. Only verified live funds permit actual
+production or shipment; test payments never release fulfillment.
+
+New mirror checkout offers disclose these terms. Existing accepted offer history
+and creating/paid checkout snapshots are not rewritten; legacy provider retries
+retain their original request text. Deterministic provider/HTTP tests exercise
+both stages, revised prices, failure/expiry, duplicate success, late events and
+holiday readiness. **Actual two-stage merchant checkout acceptance has not been
+performed.** The earlier actual $1.09 full-payment test remains evidence only for
+that original legacy flow. Do not claim the newer stages are merchant-tested from
+schema initialization or preservation of the original order.
 
 After updating the six files, the CLI-only `verify-sandbox-engraving.php` helper
 checks exact receipt hashes, private test-only configuration and the selected
-approved test order. It initializes the additive review table through the installed
-BusinessPortal constructor, verifies the customer-facing order still has no finished
-engraving approval, and compares every pre-existing table's rows and private config
+approved test order. It initializes the additive review and per-review final-price
+tables through the installed constructors, verifies the legacy customer-facing
+order remains full-payment with no finished engraving approval or final-price row, and compares every pre-existing table's rows and private config
 before committing. It never assigns staff roles, changes a price, publishes a photo,
 approves engraving or advances production. The original artificial paid test order
 stays unreleased. Keep this helper outside public_html and remove its transport.

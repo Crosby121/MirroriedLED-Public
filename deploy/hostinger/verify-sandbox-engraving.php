@@ -53,7 +53,9 @@ try {
         $service=new BusinessPortal($db,$config,$private.'/storage',$user);
         $public=(new ReflectionMethod(BusinessPortal::class,'publicOrder'))->invoke($service,$order);
         if($public['engravingApprovalRequired']!==true||$public['engravingReview']!==null||engraving_snapshot($db,$tables)!==$before||hash_file('sha256',$private.'/config.php')!==$configHash)throw new RuntimeException('Preserved records and unapproved engraving required');
+        $q=$db->prepare('SELECT COUNT(*) FROM commerce_engraving_prices WHERE order_id=?');$q->execute([$order['id']]);
+        if((int)$q->fetchColumn()!==0||$public['commerce']['installments']!==null)throw new RuntimeException('Original full-payment test terms must remain unchanged');
         $db->exec('COMMIT');
     }catch(Throwable $error){$db->exec('ROLLBACK');throw $error;}
-    echo json_encode(['engraving_schema_verified'=>true,'existing_private_records_preserved'=>true,'customer_engraving_approval_created'=>false,'production_payment_activation'=>false],JSON_THROW_ON_ERROR).PHP_EOL;
+    echo json_encode(['engraving_schema_verified'=>true,'staged_payment_schema_verified'=>true,'legacy_full_payment_preserved'=>true,'existing_private_records_preserved'=>true,'customer_engraving_approval_created'=>false,'production_payment_activation'=>false],JSON_THROW_ON_ERROR).PHP_EOL;
 }catch(Throwable){fwrite(STDERR,"Sandbox engraving verification stopped; inspect private prerequisites. No customer approval or production activation performed.\n");exit(1);}

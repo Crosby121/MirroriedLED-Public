@@ -76,6 +76,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_business_backend.py' -v
           python3 -m unittest discover -s tests -p 'test_infinity_builder_backend.py' -v
           python3 -m unittest discover -s tests -p 'test_commerce_backend.py' -v
+          python3 -m unittest discover -s tests -p 'test_staged_payments_backend.py' -v
           python3 -m unittest discover -s tests -p 'test_sandbox_quote.py' -v
           python3 -m unittest discover -s tests -p 'test_sandbox_checkout_enable.py' -v
           python3 -m unittest discover -s tests -p 'test_sandbox_payment_verify.py' -v

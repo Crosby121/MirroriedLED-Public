@@ -1,6 +1,6 @@
 # Mirror Staged Payments Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Collect the approved 50% mirror deposit, confirm final price with the
 actual engraving approval, collect the balance, then start the dispatch clock.
@@ -40,14 +40,15 @@ final amounts/current review, balance state and readiness. Existing publicTerms
 adds installments without changing legacy payment fields. New snapshots have
 paymentStage, originalProductCents and the immutable stage product/shipping amount.
 
-- [ ] Add failing HTTP/CLI canonical-provider tests for the $150/$75 split, taxes,
+- [x] Add failing HTTP/CLI canonical-provider tests for the $150/$75 split, taxes,
   duplicate/retry/processing protection, owner/stage identity and old snapshots.
-- [ ] Run the focused tests and observe missing behavior failures.
-- [ ] Implement the additive final-price table, staged selection, checkout amounts
+- [x] Run the focused tests and observe missing behavior failures.
+- [x] Implement the additive final-price table, staged selection, checkout amounts
   and canonical payment validation while preserving legacy request parameters.
-- [ ] Assert final offer/price owner approval, stale balance mismatch/review and
+- [x] Assert final offer/price owner approval, stale balance mismatch/review and
   final-price below deposit, zero/subminimum balance and rounding boundaries.
-- [ ] Run commerce and stage tests; publish a reviewed coherent source checkpoint.
+- [x] Run commerce and stage tests; prepare a reviewed coherent source checkpoint.
+  Publication receipt is recorded in the final shared handoff.
 
 ### Task 2: Actual engraving, readiness and holiday dates
 
@@ -58,12 +59,12 @@ Owner approval also accepts final price. CommercePortal::paymentSummary returns
 shippingReadyAt only for a settled current review. engravingShipBy(int) excludes
 weekends and standard observed U.S. federal holidays.
 
-- [ ] Add failing tests for no shipping before BOTH approval and full settlement,
+- [x] Add failing tests for no shipping before BOTH approval and full settlement,
   price/photo revision locks, live/test boundary and approval/webhook ordering.
-- [ ] Implement transactional final-price capture/approval, deposit production gate
+- [x] Implement transactional final-price capture/approval, deposit production gate
   and shipping balance gate; save deadline only once readiness is established.
-- [ ] Add weekend, observed holiday/year boundary and Pacific DST assertions.
-- [ ] Run business, commerce and stage suites and independently review money gates.
+- [x] Add weekend, observed holiday/year boundary and Pacific DST assertions.
+- [x] Run business, commerce and stage suites and independently review money gates.
 
 ### Task 3: Customer/team interaction and isolated deployment
 
@@ -71,13 +72,13 @@ weekends and standard observed U.S. federal holidays.
 deploy/hostinger/update-sandbox-recovery.py,verify-sandbox-engraving.php;
 .github/workflows/update-sandbox-recovery.yml; existing deployment tests and docs.
 
-- [ ] Show separate deposit, accepted final price, balance/tax and status. Bind the
+- [x] Show separate deposit, accepted final price, balance/tax and status. Bind the
   final-price acceptance to the existing photo approval and current order revision.
-- [ ] Add final price/shipping inputs only for staged mirror photo reviews. Explain
+- [x] Add final price/shipping inputs only for staged mirror photo reviews. Explain
   the two payment stages and holiday-aware dispatch rule before each acceptance.
-- [ ] Extend preservation verification for new additive schema; retain original
+- [x] Extend preservation verification for new additive schema; retain original
   paid full-payment artificial order and avoid creating any customer approval.
-- [ ] Run all Python tests, JS tests/syntax, PHP lint, actionlint and work validation.
+- [x] Run all Python tests, JS tests/syntax, PHP lint, actionlint and work validation.
 - [ ] Obtain independent review, publish source, run the guarded isolated updater,
   verify exact hashes/headers/private records, restore manual-only workflow.
 - [ ] Publish verified handoff with remaining production/live acceptance gates.

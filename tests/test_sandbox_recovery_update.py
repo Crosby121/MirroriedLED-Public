@@ -92,6 +92,8 @@ class RecoveryUpdateTests(unittest.TestCase):
         result=subprocess.run([PHP,str(ROOT/'deploy/hostinger/verify-sandbox-engraving.php'),str(self.web),self.a.q.fingerprint],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         self.assertTrue(json.loads(result.stdout)['engraving_schema_verified'])
+        self.assertTrue(json.loads(result.stdout)['staged_payment_schema_verified'])
+        self.assertTrue(json.loads(result.stdout)['legacy_full_payment_preserved'])
         self.assertNotIn(self.a.q.order['id'],result.stdout)
         with sqlite3.connect(self.a.q.dbpath) as db:
             self.assertEqual(db.execute('SELECT COUNT(*) FROM business_engraving_reviews').fetchone()[0],0)

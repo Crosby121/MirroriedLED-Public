@@ -299,6 +299,12 @@ class BusinessTests(unittest.TestCase):
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertEqual(result.stdout.splitlines(),['2026-10-28','2026-11-04','2026-11-04','2026-10-22'])
 
+    def test_dispatch_excludes_observed_federal_holidays_across_year_boundary(self):
+        script="require "+php_quote(str(__import__('pathlib').Path(__file__).resolve().parents[1]/'customer-portal/backend/business.php'))+"; foreach (['2026-11-10T12:00:00-08:00','2026-11-25T12:00:00-08:00','2026-07-02T12:00:00-07:00','2027-12-29T12:00:00-08:00'] as $at) echo BusinessPortal::engravingShipBy((new DateTimeImmutable($at))->getTimestamp()).PHP_EOL;"
+        result=subprocess.run([PHP,'-r',script],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertEqual(result.stdout.splitlines(),['2026-11-16','2026-12-01','2026-07-08','2028-01-04'])
+
     def test_late_shipment_can_be_recorded_without_rewriting_approval(self):
         order=self.approve_engraving(self.publish_engraving(self.building()))
         with sqlite3.connect(self.server.storage/'portal.sqlite') as db:

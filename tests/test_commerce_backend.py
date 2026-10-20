@@ -35,7 +35,14 @@ class CommerceTests(unittest.TestCase):
         terms={'orderId':order['id'],'proofId':order['proof']['id'],'shippingCents':2500,'productionMinDays':7,'productionMaxDays':14,'transitMinDays':2,'transitMaxDays':5,'fulfillmentConfirmed':True}
         return order,terms
     def approved_offer(self,sign=False):
-        order,terms=self.quoted(sign);offer=self.post(self.h.staff,'commerce-offer',terms)['commerce']['offer'];order=self.post(self.h.customer,'business-approve',{'orderId':order['id'],'revision':order['revision'],'proofId':order['proof']['id'],'acceptQuote':True})['order'];return order,offer
+        order,terms=self.quoted(sign);offer=self.post(self.h.staff,'commerce-offer',terms)['commerce']['offer']
+        # Import the pre-deposit full-payment offer shape for this legacy suite.
+        # Native staged mirror quotes are exercised in test_staged_payments_backend.py.
+        for key in ('paymentSchedule','depositProductCents','paymentTerms'):offer.pop(key,None)
+        db=self.db();encoded=json.dumps(offer)
+        db.execute('UPDATE commerce_offers SET terms=? WHERE order_id=?',(encoded,order['id']))
+        db.execute('UPDATE commerce_offer_history SET terms=? WHERE order_id=? AND version=?',(encoded,order['id'],offer['version']));db.commit()
+        order=self.post(self.h.customer,'business-approve',{'orderId':order['id'],'revision':order['revision'],'proofId':order['proof']['id'],'acceptQuote':True})['order'];return order,offer
     def cli(self,order_id,operation='checkout',session=None,fail_checkout=False,expected_http_status=None):
         # A PHP callable is injected by this test process only; the HTTP app cannot select one.
         source=self.server.public/'customer-portal/backend/portal.php'

@@ -23,6 +23,11 @@ class PaymentVerifyTests(unittest.TestCase):
         self.hashes = [hashlib.sha256(v.encode()).hexdigest() for v in self.ids]
         with sqlite3.connect(self.a.q.dbpath) as db:
             terms = json.loads(db.execute('SELECT terms FROM commerce_offers').fetchone()[0])
+            # This fixture represents the already-paid pre-deposit full-payment order.
+            for key in ('paymentSchedule','depositProductCents','paymentTerms'):terms.pop(key,None)
+            encoded=json.dumps(terms)
+            db.execute('UPDATE commerce_offers SET terms=?',(encoded,))
+            db.execute('UPDATE commerce_offer_history SET terms=?',(encoded,))
             snapshot = {**terms, 'orderId': self.ids[0], 'mode': 'test'}
             db.execute("INSERT INTO commerce_checkouts(order_id,offer_version,attempt,snapshot,provider_id,state,payment_intent,paid_cents,tax_cents,created_at,paid_at) VALUES(?,1,1,?,?,'paid',?,109,9,1,1)", (self.ids[0], json.dumps(snapshot), self.ids[1], self.ids[3]))
             db.execute('UPDATE business_orders SET finance_reference=?', (self.ids[3],))

@@ -25,6 +25,11 @@ final class CommercePortal
             created_at INTEGER NOT NULL, paid_at INTEGER, UNIQUE(order_id,offer_version,attempt)
         );
         CREATE TABLE IF NOT EXISTS commerce_webhooks(event_id TEXT PRIMARY KEY, processed_at INTEGER NOT NULL);
+        CREATE TABLE IF NOT EXISTS commerce_engraving_prices(
+            review_id TEXT PRIMARY KEY REFERENCES business_engraving_reviews(id),
+            order_id TEXT NOT NULL REFERENCES business_orders(id), product_cents INTEGER NOT NULL,
+            shipping_cents INTEGER NOT NULL, created_at INTEGER NOT NULL
+        );
         SQL);
     }
     public static function available(array $config): bool
@@ -93,7 +98,65 @@ final class CommercePortal
         $q=$db->prepare('SELECT terms FROM commerce_offers WHERE order_id=?');$q->execute([$id]);$terms=$q->fetchColumn();
         $q=$db->prepare('SELECT address FROM commerce_addresses WHERE order_id=?');$q->execute([$id]);$address=$q->fetchColumn();
         $q=$db->prepare('SELECT state,paid_cents,tax_cents,paid_at,expires_at FROM commerce_checkouts WHERE order_id=? ORDER BY CASE state WHEN \'paid\' THEN 0 WHEN \'review\' THEN 1 ELSE 2 END,id DESC LIMIT 1');$q->execute([$id]);$payment=$q->fetch()?:null;
-        return ['offer'=>$terms===false?null:json_decode($terms,true,16,JSON_THROW_ON_ERROR),'address'=>$address===false?null:json_decode($address,true,16,JSON_THROW_ON_ERROR),'payment'=>$payment];
+        return ['offer'=>$terms===false?null:json_decode($terms,true,16,JSON_THROW_ON_ERROR),'address'=>$address===false?null:json_decode($address,true,16,JSON_THROW_ON_ERROR),'payment'=>$payment,'installments'=>self::paymentSummary($db,$id)];
+    }
+
+    public static function paymentSummary(PDO $db,string $id): ?array
+    {
+        $q=$db->prepare('SELECT terms FROM commerce_offers WHERE order_id=?');$q->execute([$id]);$terms=json_decode($q->fetchColumn()?:'null',true);
+        if(($terms['paymentSchedule']??null)!=='deposit50')return null;
+        $q=$db->prepare('SELECT * FROM commerce_checkouts WHERE order_id=? ORDER BY id DESC');$q->execute([$id]);$rows=$q->fetchAll();
+        $stages=['deposit'=>[],'balance'=>[]];$hold=false;
+        foreach($rows as $row){$snap=json_decode($row['snapshot'],true,32,JSON_THROW_ON_ERROR);$stage=$snap['paymentStage']??'full';if(isset($stages[$stage]))$stages[$stage][]=$row;if($row['state']==='review'||($stage==='full'&&$row['state']==='paid'))$hold=true;}
+        $choose=static function(array $items):?array{foreach($items as $r)if($r['state']==='paid')return $r;foreach($items as $r)if($r['state']==='review')return $r;return $items[0]??null;};
+        $deposit=$choose($stages['deposit']);$balance=$choose($stages['balance']);
+        foreach($stages as $items){
+            $paidCount=count(array_filter($items,static fn($r)=>$r['state']==='paid'));
+            $unresolved=count(array_filter($items,static fn($r)=>in_array($r['state'],['creating','open','processing','review'],true)));
+            if($paidCount>1||($paidCount>0&&$unresolved>0))$hold=true;
+        }
+        $q=$db->prepare('SELECT r.id,r.approved_at,p.product_cents,p.shipping_cents FROM business_engraving_reviews r LEFT JOIN commerce_engraving_prices p ON p.review_id=r.id AND p.order_id=r.order_id WHERE r.order_id=? ORDER BY r.version DESC LIMIT 1');$q->execute([$id]);$final=$q->fetch()?:null;
+        $paid=$deposit!==null&&$deposit['state']==='paid';$approved=$final!==null&&$final['approved_at']!==null&&$final['product_cents']!==null;
+        $due=$final&&$final['product_cents']!==null?(int)$final['product_cents']-(int)$terms['depositProductCents']+(int)$final['shipping_cents']:null;
+        $settled=$paid&&$approved&&$due!==null&&$due>=0&&!$hold;
+        $live=$paid&&json_decode($deposit['snapshot'],true)['mode']==='live';
+        if($settled&&$due>0){
+            $snap=$balance?json_decode($balance['snapshot'],true):[];
+            $settled=$balance!==null&&$balance['state']==='paid'&&($snap['engravingReviewId']??null)===$final['id']&&($snap['productCents']??null)===(int)$final['product_cents']-(int)$terms['depositProductCents']&&($snap['shippingCents']??null)===(int)$final['shipping_cents'];
+            $live=$live&&($snap['mode']??null)==='live';
+        }
+        $public=static fn(?array $r)=>$r===null?null:array_intersect_key($r,array_flip(['state','paid_cents','tax_cents','paid_at','expires_at']));
+        return ['schedule'=>'deposit50','depositProductCents'=>(int)$terms['depositProductCents'],'deposit'=>$public($deposit),'balance'=>$public($balance),
+            'depositPaidCents'=>$paid?(int)$deposit['paid_cents']:0,'depositTaxCents'=>$paid?(int)$deposit['tax_cents']:0,
+            'finalReviewId'=>$final['id']??null,'finalProductCents'=>$final['product_cents']??null,'finalShippingCents'=>$final['shipping_cents']??null,'finalPriceApproved'=>$approved,
+            'balanceBeforeTaxCents'=>$due,'settled'=>$settled,'hasPaymentReview'=>$hold,'livePaymentsVerified'=>$settled&&$live,
+            'shippingReadyAt'=>$settled?max((int)$final['approved_at'],(int)$deposit['paid_at'],(int)($balance['paid_at']??0)):null];
+    }
+
+    public static function balanceLocked(PDO $db,string $id): bool
+    {
+        $q=$db->prepare("SELECT snapshot FROM commerce_checkouts WHERE order_id=? AND state IN ('creating','open','processing','paid','review')");$q->execute([$id]);
+        foreach($q->fetchAll() as $r)if((json_decode($r['snapshot'],true)['paymentStage']??null)==='balance')return true;
+        return false;
+    }
+
+    public static function saveFinalPrice(PDO $db,string $orderId,string $reviewId,mixed $product,mixed $shipping): void
+    {
+        $summary=self::paymentSummary($db,$orderId);if($summary===null)return;
+        if(($summary['deposit']['state']??null)!=='paid'||$summary['hasPaymentReview']||self::balanceLocked($db,$orderId))throw new PortalError('Confirm the deposit and resolve any balance payment before publishing a new final engraving/price.',409);
+        $product=self::integer($product,$summary['depositProductCents'],100000000);$shipping=self::integer($shipping,0,10000000);
+        $due=$product-$summary['depositProductCents']+$shipping;
+        if($due>0&&$due<50)throw new PortalError('This small remaining balance requires support review; it cannot be rounded up or charged automatically.',422);
+        $q=$db->prepare('INSERT INTO commerce_engraving_prices(review_id,order_id,product_cents,shipping_cents,created_at) VALUES(?,?,?,?,?)');$q->execute([$reviewId,$orderId,$product,$shipping,time()]);
+    }
+
+    public static function recordShippingReadiness(PDO $db,string $id): void
+    {
+        $summary=self::paymentSummary($db,$id);if($summary===null||$summary['shippingReadyAt']===null)return;
+        $shipBy=BusinessPortal::engravingShipBy($summary['shippingReadyAt']);
+        $q=$db->prepare('UPDATE business_engraving_reviews SET ship_by_date=? WHERE id=? AND ship_by_date IS NULL');$q->execute([$shipBy,$summary['finalReviewId']]);
+        $q=$db->prepare("UPDATE business_tasks SET state='DONE',updated_at=? WHERE reference=? AND kind='BALANCE_REVIEW'");$q->execute([time(),$id]);
+        $q=$db->prepare("INSERT INTO business_tasks(reference,kind,title,created_at,updated_at) VALUES(?,'FULFILLMENT',?,?,?) ON CONFLICT(reference,kind) DO UPDATE SET title=excluded.title,state='OPEN',updated_at=excluded.updated_at");$q->execute([$id,'Ship by '.$shipBy.' Pacific, after QC passes',time(),time()]);
     }
     public function handle(string $action,array $data): never
     {
@@ -143,7 +206,10 @@ final class CommercePortal
                 'productionMinDays'=>$pMin,'productionMaxDays'=>$pMax,'transitMinDays'=>$tMin,'transitMaxDays'=>$tMax,'expiresAt'=>time()+$expires*86400,'address'=>$address,
                 'productionStarts'=>'After payment confirmation and approval of the final artwork proof. Estimates use business days.','tax'=>'Final tax and total are calculated and shown in secure checkout before payment.'];
             if (BusinessPortal::requiresEngravingApproval($order)) {
-                $terms['engravingShipping']='You must approve a photo of the actual engraving on your mirror before shipping. We ship within three business days after that approval (Monday–Friday, Pacific time). Transit begins after shipment.';
+                if($product<100)throw new PortalError('A staged mirror quote must support a deposit of at least $0.50.',422);
+                $terms['paymentSchedule']='deposit50';$terms['depositProductCents']=intdiv($product+1,2);
+                $terms['paymentTerms']='Pay a 50% product deposit plus applicable tax before production. After approving the actual engraving and final price, pay the remaining product amount, shipping and applicable tax before shipment.';
+                $terms['engravingShipping']='You must approve the actual engraving and final price. We ship within three business days after BOTH engraving approval and final payment (Monday–Friday, excluding observed U.S. federal holidays, Pacific time). Transit begins after shipment.';
             }
             $this->exec('INSERT INTO commerce_offers(order_id,proof_id,version,terms,created_at) VALUES(?,?,?,?,?) ON CONFLICT(order_id) DO UPDATE SET proof_id=excluded.proof_id,version=excluded.version,terms=excluded.terms,created_at=excluded.created_at',[$order['id'],$order['proof_id'],$version,json_encode($terms,JSON_THROW_ON_ERROR),time()]);
             $this->exec('INSERT INTO commerce_offer_history(order_id,version,terms) VALUES(?,?,?)',[$order['id'],$version,json_encode($terms,JSON_THROW_ON_ERROR)]);
@@ -180,17 +246,31 @@ final class CommercePortal
         $this->db->exec('BEGIN IMMEDIATE');
         try {
             $order=$this->order($data['orderId']??null);$terms=self::publicTerms($this->db,$order['id'])['offer'];
-            if (!$terms||$terms['expiresAt']<time()||$terms['proofId']!==$order['proof_id']||$order['approved_proof_id']!==$order['proof_id']||$order['status']!=='APPROVED'||($data['acceptTerms']??false)!==true||($data['offerVersion']??null)!==$terms['version']) throw new PortalError('Approve the current artwork proof and review the latest quote, delivery estimate and checkout terms.',409);
-            if ($this->rows("SELECT 1 FROM commerce_checkouts WHERE order_id=? AND state IN ('paid','review') LIMIT 1",[$order['id']])) throw new PortalError('This order already has a payment record. Review it in your account.',409);
-            $prior=$this->rows('SELECT * FROM commerce_checkouts WHERE order_id=? AND offer_version=? ORDER BY attempt DESC LIMIT 1',[$order['id'],$terms['version']])[0]??null;
-            if ($prior&&in_array($prior['state'],['paid','review'],true)) throw new PortalError('This order already has a payment record. Review it in your account.',409);
+            $plan=self::paymentSummary($this->db,$order['id']);
+            $stage=$plan===null?'full':(($plan['deposit']['state']??null)==='paid'?'balance':'deposit');
+            $balance=$stage==='balance';
+            if (!$terms||(!$balance&&$terms['expiresAt']<time())||$terms['proofId']!==$order['proof_id']||$order['approved_proof_id']!==$order['proof_id']||!in_array($order['status'],$balance?['BUILDING','QC_HOLD','QC_PASSED']:['APPROVED'],true)||($data['acceptTerms']??false)!==true||($data['offerVersion']??null)!==$terms['version']) throw new PortalError('Approve the current proof and review the applicable price and payment terms.',409);
+            if($plan!==null&&($plan['hasPaymentReview']||$plan['settled']||($balance&&(!$plan['finalPriceApproved']||$plan['balanceBeforeTaxCents']===null))))throw new PortalError('Review the current engraving, final price and payment status before paying.',409);
+            $prior=null;
+            foreach($this->rows('SELECT * FROM commerce_checkouts WHERE order_id=? ORDER BY id DESC',[$order['id']]) as $candidate){
+                $candidateStage=json_decode($candidate['snapshot'],true,32,JSON_THROW_ON_ERROR)['paymentStage']??'full';
+                if($candidate['state']==='review'||($candidate['state']==='paid'&&(!$balance||$candidateStage!=='deposit')))throw new PortalError('This order already has a payment record. Review it in your account.',409);
+                if($candidateStage===$stage&&(int)$candidate['offer_version']===$terms['version']&&$prior===null)$prior=$candidate;
+            }
             if ($prior&&$prior['state']==='processing') throw new PortalError('Your payment is still processing. Refresh its status before trying again.',409);
             if ($prior&&$prior['state']==='open'&&$prior['expires_at']>time()) { $this->db->exec('COMMIT');return ['checkoutUrl'=>$prior['url'],'orderId'=>$order['id']]; }
             if ($prior&&$prior['state']==='open') throw new PortalError('Refresh payment status before trying checkout again.',409);
             if ($prior&&$prior['state']==='creating') $row=$prior;
             else {
                 $suffix='';foreach(unpack('C*',random_bytes(8)) as $byte)$suffix.=chr(97+$byte%26);
-                $attempt=$prior?(int)$prior['attempt']+1:1;$snapshot=$terms+['orderId'=>$order['id'],'userId'=>(int)$this->user['id'],'email'=>$this->user['email'],'mode'=>$this->config['commerce']['mode']??'live','integrationIdentifier'=>'mirroriedled_hosted_'.$suffix];
+                $attempt=(int)$this->rows('SELECT COALESCE(MAX(attempt),0)+1 AS n FROM commerce_checkouts WHERE order_id=? AND offer_version=?',[$order['id'],$terms['version']])[0]['n'];$snapshot=$terms+['orderId'=>$order['id'],'userId'=>(int)$this->user['id'],'email'=>$this->user['email'],'mode'=>$this->config['commerce']['mode']??'live','integrationIdentifier'=>'mirroriedled_hosted_'.$suffix];
+                if($stage!=='full'){
+                    $snapshot['paymentStage']=$stage;$snapshot['originalProductCents']=$terms['productCents'];$snapshot['originalShippingCents']=$terms['shippingCents'];
+                    $snapshot['productCents']=$balance?$plan['finalProductCents']-$terms['depositProductCents']:$terms['depositProductCents'];
+                    $snapshot['shippingCents']=$balance?$plan['finalShippingCents']:0;
+                    if($balance){$snapshot['engravingReviewId']=$plan['finalReviewId'];$snapshot['finalProductCents']=$plan['finalProductCents'];}
+                    $snapshot['beforeTaxCents']=$snapshot['productCents']+$snapshot['shippingCents'];
+                }
                 $this->exec('INSERT INTO commerce_checkouts(order_id,offer_version,attempt,snapshot,created_at) VALUES(?,?,?,?,?)',[$order['id'],$terms['version'],$attempt,json_encode($snapshot,JSON_THROW_ON_ERROR),time()]);
                 $row=$this->rows('SELECT * FROM commerce_checkouts WHERE id=?',[$this->db->lastInsertId()])[0];
             }
@@ -208,6 +288,12 @@ final class CommercePortal
             'success_url'=>$origin.$basePath.'/shop/?payment=returned&order='.rawurlencode($s['orderId']),
             'cancel_url'=>$origin.$basePath.'/shop/?payment=cancelled&order='.rawurlencode($s['orderId']),
             'custom_text'=>['submit'=>['message'=>'Production: '.$s['productionMinDays'].'–'.$s['productionMaxDays'].' business days after payment and artwork approval. '.(isset($s['engravingShipping'])?'Approve the actual engraving photo before shipping; ships within three business days after approval. Transit after shipment: ':'Shipping: ').$s['transitMinDays'].'–'.$s['transitMaxDays'].' business days. Ship to '.$a['line1'].', '.$a['city'].', '.$a['state'].' '.$a['postalCode'].'.']]];
+        if(isset($s['paymentStage'])){
+            $params['metadata']['payment_stage']=$s['paymentStage'];
+            if(isset($s['engravingReviewId']))$params['metadata']['engraving_review']=$s['engravingReviewId'];
+            $params['line_items'][0]['price_data']['product_data']['name']='Mirroried LED '.($s['paymentStage']==='deposit'?'50% product deposit':'final product balance').' '.$s['orderId'];
+            $params['custom_text']['submit']['message']=$s['paymentStage']==='deposit'?'50% product deposit plus applicable tax. Shipping and remaining product price are due after you approve the actual engraving and final price. Production estimate: '.$s['productionMinDays'].'–'.$s['productionMaxDays'].' business days.':'Final balance for your approved actual engraving and final price. Ships within three business days after both engraving approval and final payment, excluding weekends and observed U.S. federal holidays. Transit begins after shipment.';
+        }
         // The quoted shipping destination stays in the private order. Stripe calculates
         // shipping-address tax from a customer with exactly that saved address.
         $customer=$this->stripe('POST','/customers',['email'=>$s['email'],'name'=>$a['name'],'address'=>['line1'=>$a['line1'],'line2'=>$a['line2'],'city'=>$a['city'],'state'=>$a['state'],'postal_code'=>$a['postalCode'],'country'=>'US'],'shipping'=>['name'=>$a['name'],'address'=>['line1'=>$a['line1'],'line2'=>$a['line2'],'city'=>$a['city'],'state'=>$a['state'],'postal_code'=>$a['postalCode'],'country'=>'US']]],'mled-customer-'.$row['id']);
@@ -220,6 +306,7 @@ final class CommercePortal
     private function refresh(array $data): array
     {
         $order=$this->order($data['orderId']??null);$row=$this->rows('SELECT * FROM commerce_checkouts WHERE order_id=? ORDER BY CASE state WHEN \'paid\' THEN 0 WHEN \'review\' THEN 1 ELSE 2 END,id DESC LIMIT 1',[$order['id']])[0]??null;
+        $plan=self::paymentSummary($this->db,$order['id']);if($plan!==null){$rows=$this->rows("SELECT * FROM commerce_checkouts WHERE order_id=? AND state IN ('creating','open','processing') AND provider_id IS NOT NULL ORDER BY id DESC LIMIT 1",[$order['id']]);$row=$rows[0]??null;}
         if ($row&&$row['provider_id']&&in_array($row['state'],['open','creating','processing'],true)) $this->reconcile($this->stripe('GET','/checkout/sessions/'.rawurlencode($row['provider_id']),['expand'=>['line_items','payment_intent']]));
         return ['commerce'=>self::publicTerms($this->db,$order['id'])];
     }
@@ -254,6 +341,7 @@ final class CommercePortal
             $intent=$session['payment_intent']??null;$intentId=is_array($intent)?($intent['id']??null):$intent;
             $identity=($session['mode']??'')==='payment'&&($session['currency']??'')==='usd'&&($session['livemode']??null)===($s['mode']==='live')
                 &&($session['client_reference_id']??'')===$s['orderId']&&($session['metadata']['order_id']??'')===$s['orderId']&&($session['metadata']['checkout_record']??'')===(string)$row['id']&&($session['metadata']['proof_id']??'')===$s['proofId'];
+            if(isset($s['paymentStage']))$identity=$identity&&($session['metadata']['payment_stage']??null)===$s['paymentStage']&&(!isset($s['engravingReviewId'])||($session['metadata']['engraving_review']??null)===$s['engravingReviewId']);
             $intentMatches=is_array($intent)&&is_string($intentId)&&preg_match('/^pi_[A-Za-z0-9]+$/D',$intentId)===1
                 &&($intent['livemode']??null)===($s['mode']==='live')&&($intent['currency']??'')==='usd'
                 &&($intent['metadata']['order_id']??'')===$s['orderId']&&is_int($intent['amount']??null)&&($intent['amount']??null)===($session['amount_total']??null);
@@ -279,6 +367,7 @@ final class CommercePortal
                         $this->exec("UPDATE commerce_checkouts SET state='processing' WHERE id=?",[$row['id']]);
                     }
                 }
+                if(isset($s['paymentStage']))self::recordShippingReadiness($this->db,$order['id']);
                 $this->db->exec('COMMIT');return;
             }
             $tax=$session['total_details']['amount_tax']??null;$shipping=$session['total_details']['amount_shipping']??null;$total=$session['amount_total']??null;
@@ -286,15 +375,28 @@ final class CommercePortal
                 &&($session['client_reference_id']??'')===$s['orderId']&&($session['metadata']['order_id']??'')===$s['orderId']&&($session['metadata']['checkout_record']??'')===(string)$row['id']&&($session['metadata']['proof_id']??'')===$s['proofId']
                 &&($session['amount_subtotal']??null)===$s['productCents']&&$shipping===$s['shippingCents']&&is_int($tax)&&$tax>=0&&is_int($total)&&$total===$s['productCents']+$s['shippingCents']+$tax
                 &&($session['automatic_tax']['status']??'')==='complete'&&($session['total_details']['amount_discount']??0)===0
-                &&$order['proof_id']===$s['proofId']&&$order['approved_proof_id']===$s['proofId']&&(int)$order['quote_cents']===$s['productCents']&&$order['status']!=='CANCELLED'
+                &&$order['proof_id']===$s['proofId']&&$order['approved_proof_id']===$s['proofId']&&(int)$order['quote_cents']===($s['originalProductCents']??$s['productCents'])&&$order['status']!=='CANCELLED'
                 &&is_string($intentId)&&preg_match('/^pi_[A-Za-z0-9]+$/D',$intentId)===1
                 &&(!is_array($intent)||($intentMatches&&($intent['status']??'')==='succeeded'));
+            if(isset($s['paymentStage'])){
+                $matches=$matches&&($session['metadata']['payment_stage']??null)===$s['paymentStage']&&$intentMatches&&($intent['status']??null)==='succeeded'&&($intent['amount_received']??null)===$total;
+                if($s['paymentStage']==='deposit')$matches=$matches&&$s['productCents']===$s['depositProductCents']&&$s['shippingCents']===0;
+                elseif($s['paymentStage']==='balance'){
+                    $plan=self::paymentSummary($this->db,$order['id']);
+                    $matches=$matches&&$plan!==null&&$plan['finalPriceApproved']&&($plan['deposit']['state']??null)==='paid'&&!$plan['hasPaymentReview']&&($s['engravingReviewId']??null)===$plan['finalReviewId']&&($session['metadata']['engraving_review']??null)===$plan['finalReviewId']&&$s['productCents']===$plan['finalProductCents']-$plan['depositProductCents']&&$s['shippingCents']===$plan['finalShippingCents'];
+                }else{$matches=false;}
+            }
             $items=$session['line_items']['data']??[];
             $matches=$matches&&is_array($items)&&count($items)===1&&($items[0]['quantity']??null)===1&&($items[0]['amount_subtotal']??null)===$s['productCents'];
             if (!$matches) { $this->exec("UPDATE commerce_checkouts SET state='review' WHERE id=?",[$row['id']]);$this->event($order,'PAYMENT_REVIEW','A payment needs review. Contact Mirroried LED before trying to pay again.');$this->db->exec('COMMIT');return; }
             $this->exec("UPDATE commerce_checkouts SET state='paid',payment_intent=?,paid_cents=?,tax_cents=?,paid_at=? WHERE id=?",[$intentId,$total,$tax,time(),$row['id']]);
             $this->exec('UPDATE business_orders SET finance_reference=?,updated_at=?,revision=revision+1 WHERE id=?',[$intentId,time(),$order['id']]);
-            $this->event($order,'PAYMENT_CONFIRMED','Your payment is confirmed. Production is estimated at '.$s['productionMinDays'].'–'.$s['productionMaxDays'].' business days after payment and artwork approval, followed by '.$s['transitMinDays'].'–'.$s['transitMaxDays'].' business days in transit.');
+            if(isset($s['paymentStage'])){
+                $this->event($order,$s['paymentStage']==='deposit'?'DEPOSIT_CONFIRMED':'BALANCE_CONFIRMED',$s['paymentStage']==='deposit'?'Your 50% product deposit is confirmed. The team will update your production timeline. Final engraving/price approval and the balance are required before shipment.':'Your final payment is confirmed. Shipping waits for quality inspection and is due within three business days after both engraving approval and final payment, excluding weekends and observed U.S. federal holidays.');
+                self::recordShippingReadiness($this->db,$order['id']);
+            }else{
+                $this->event($order,'PAYMENT_CONFIRMED','Your payment is confirmed. Production is estimated at '.$s['productionMinDays'].'–'.$s['productionMaxDays'].' business days after payment and artwork approval, followed by '.$s['transitMinDays'].'–'.$s['transitMaxDays'].' business days in transit.');
+            }
             $this->db->exec('COMMIT');
         } catch(Throwable $e) { try {$this->db->exec('ROLLBACK');}catch(Throwable){}throw $e; }
     }

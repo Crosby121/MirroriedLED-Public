@@ -22,9 +22,12 @@ Other sizes, options, shipping and turnaround are not priced by this approval.
    then confirms shipping to the saved address and production/transit ranges.
    No retail price, material availability or turnaround is invented. The existing
    supplier estimate retains the 20% frame-only rule.
-4. The customer reviews the current proof and quote. Secure Stripe checkout shows
-   the final tax and total before a card payment. Account pages show product plus
-   shipping as a subtotal and label tax separately until checkout.
+4. The customer reviews the current proof and quote. New mirror quotes collect
+   a **50% product deposit before production**, rounded up to cents. Shipping is
+   collected with the balance. Stripe shows tax and the actual amount for each
+   payment before confirmation; the $150 product example is $75 deposit plus $75
+   product balance, with applicable tax and shipping extra. Address signs and
+   existing accepted full-payment mirror orders retain their original terms.
 5. Payment is recorded only after retrieving the merchant's canonical Checkout
    Session, verifying ownership, mode, proof, immutable terms, line items,
    subtotal, shipping, tax, total and the payment intent. Signed webhooks work
@@ -32,15 +35,20 @@ Other sizes, options, shipping and turnaround are not priced by this approval.
    reconciliation and never trusts a URL claiming payment succeeded.
 6. The existing material reservation, production file, scheduling and QC gates
    remain. A product checkout offer additionally requires a verified **live**
-   payment before production release. Test payments cannot authorize production.
+   deposit (or the original full payment) before production release. Test payments cannot authorize production.
    Tracking and actual fulfillment updates appear in the customer's account.
 7. For mirrors, production/QC staff publish a photo of the actual finished
-   engraving. The customer must approve the current photo version before shipping
-   or pickup. A revised engraving photo requires fresh approval. Dispatch is due
-   within three business days after that approval (Monday–Friday, Pacific time);
-   the saved ship-by date appears in both accounts. QC must also pass. Carrier
-   transit begins after shipment. Production time before the photo is ready still
-   needs owner confirmation.
+   engraving. New staged orders also display the final product/shipping price,
+   which sales must authorize if changed. The customer approves both that current
+   photo and its final price before paying the balance. A revised review requires
+   fresh approval; an active balance attempt locks review changes.
+8. **Your custom mirror will ship within three business days after we receive
+   both your approval of the actual engraving and your final payment. Delivery
+   time begins after shipment.** Monday–Friday excludes standard observed U.S.
+   federal holidays, using Pacific calendar dates. The later approval/payment
+   date is day zero. QC and all fulfillment gates must pass. The saved ship-by
+   date appears in both accounts only once both conditions are met. Production
+   time before the photo is ready still needs owner confirmation.
 
 This is a reviewed custom-order flow. **Instant final pricing for every possible
 build is not implemented**: incomplete supplier data and fabrication costs need
@@ -118,7 +126,11 @@ PaymentIntent data proves failure. A matching canceled intent or failed payment
 method with zero received/capturable funds marks the attempt failed, records one
 customer notice and permits a fresh attempt with a new idempotency key. Unknown,
 processing or mismatched results cannot unlock payment. Paid records never regress,
-and any paid/review record blocks another checkout across all attempts. Subscribe
+and any review hold blocks another checkout across all attempts. A paid deposit
+permits only its legitimate balance stage after current final-price/photo approval.
+A paid stage with an unresolved sibling attempt remains on hold; refresh checks
+that attempt even if it is older than the paid row. A second paid attempt requires
+manual support review and cannot release production or shipping. Subscribe
 to failed asynchronous payments as well as success/expiry events.
 
 Cancelled browser checkout can be reopened while its session is valid. Expired

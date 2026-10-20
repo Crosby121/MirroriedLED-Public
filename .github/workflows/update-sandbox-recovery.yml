@@ -1,6 +1,9 @@
 name: Update Sandbox Payment Recovery
 
 on:
+  push:
+    branches: [fix/storefront-integration-20261019]
+    paths: [.github/workflows/update-sandbox-recovery.yml]
   workflow_dispatch:
     inputs:
       order_fingerprint:
@@ -37,7 +40,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   prepare:
-    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/fix/storefront-integration-20261019' && github.event_name == 'workflow_dispatch' && inputs.acknowledge_recovery_patch }}
+    if: ${{ github.repository == 'Crosby121/MirroriedLED-Public' && github.ref == 'refs/heads/fix/storefront-integration-20261019' && ((github.event_name == 'workflow_dispatch' && inputs.acknowledge_recovery_patch) || github.event_name == 'push') }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     environment: production
@@ -48,11 +51,11 @@ jobs:
       PUBLIC_HTML: ${{ secrets.HOSTINGER_PUBLIC_HTML }}
       SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
       SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
-      ORDER_FINGERPRINT: ${{ inputs.order_fingerprint }}
-      SESSION_FINGERPRINT: ${{ inputs.session_fingerprint }}
-      EVENT_FINGERPRINT: ${{ inputs.event_fingerprint }}
-      INTENT_FINGERPRINT: ${{ inputs.intent_fingerprint }}
-      EXPECTED_CHECKOUT_SOURCE: ${{ inputs.expected_checkout_source }}
+      ORDER_FINGERPRINT: ${{ inputs.order_fingerprint || '47841d2f978239ea36e4af4ad55468ad8f72967a95606b6271b098436b21be71' }}
+      SESSION_FINGERPRINT: ${{ inputs.session_fingerprint || '5b93ce650d292a2cd513b01b47d84de0da711b9c373a60831152d109ceed1551' }}
+      EVENT_FINGERPRINT: ${{ inputs.event_fingerprint || 'bd878bd1eab341b33f5e50013f3b87bb9fe2523c008bfac831d5304f2378d161' }}
+      INTENT_FINGERPRINT: ${{ inputs.intent_fingerprint || '701fba92abe38c5de6a2eb6e905c24efdf463d2044df516f06b6e4fac90b11f7' }}
+      EXPECTED_CHECKOUT_SOURCE: ${{ inputs.expected_checkout_source || '1b23ed5cd2396d6e5c3b7802943b29a13ab95cd5' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -148,7 +151,17 @@ jobs:
           print('MLED_SANDBOX_RECOVERY_PATCH_VERIFIED=true')
           print('MLED_RESTRICTED_KEY_EXPANDED_INTENT_READ_VERIFIED=true')
           RECEIPT
-          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "php '$REMOTE_SANDBOX_STAGE/verify-sandbox-engraving.php' '$PUBLIC_HTML' '$ORDER_FINGERPRINT'"
+          ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "php '$REMOTE_SANDBOX_STAGE/verify-sandbox-engraving.php' '$PUBLIC_HTML' '$ORDER_FINGERPRINT'" > "$RUNNER_TEMP/staged-schema-receipt.json"
+          python3 - <<'SCHEMA'
+          import json, os
+          from pathlib import Path
+          data=json.loads((Path(os.environ['RUNNER_TEMP'])/'staged-schema-receipt.json').read_text())
+          for name in ('engraving_schema_verified', 'staged_payment_schema_verified', 'legacy_full_payment_preserved', 'existing_private_records_preserved'):
+              assert data[name] is True
+          assert data['customer_engraving_approval_created'] is False
+          assert data['production_payment_activation'] is False
+          print('MLED_STAGED_SCHEMA_AND_LEGACY_RECORDS_VERIFIED=true')
+          SCHEMA
           ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' '$REMOTE_SANDBOX_STAGE/verify-sandbox-payment.py' --webroot '$PUBLIC_HTML' --order-fingerprint '$ORDER_FINGERPRINT' --session-fingerprint '$SESSION_FINGERPRINT' --event-fingerprint '$EVENT_FINGERPRINT' --intent-fingerprint '$INTENT_FINGERPRINT' --replay-known-event"
           after="$(ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "sha256sum '$PUBLIC_HTML/index.html' '${PUBLIC_HTML%/public_html}/mirroriedled-private/customer-portal/config.php'")"
           test "$before" = "$after"
@@ -185,7 +198,7 @@ jobs:
         if: ${{ always() }}
         shell: bash
         run: |
-          trap 'rm -f -- "$RUNNER_TEMP/recovery-receipt.json" "$RUNNER_TEMP/sandbox-credentials.json" "$RUNNER_TEMP/sandbox-receipt.json"; rm -rf -- "$RUNNER_TEMP/mled-readonly-auth"' EXIT
+          trap 'rm -f -- "$RUNNER_TEMP/recovery-receipt.json" "$RUNNER_TEMP/staged-schema-receipt.json" "$RUNNER_TEMP/sandbox-credentials.json" "$RUNNER_TEMP/sandbox-receipt.json"; rm -rf -- "$RUNNER_TEMP/mled-readonly-auth"' EXIT
           if [[ -n "${REMOTE_SANDBOX_STAGE:-}" && -f "$RUNNER_TEMP/mled-readonly-auth/key" ]]; then
             SSH_OPTIONS=(-i "$RUNNER_TEMP/mled-readonly-auth/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o "UserKnownHostsFile=$RUNNER_TEMP/mled-readonly-auth/known_hosts")
             ssh "${SSH_OPTIONS[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "'$REMOTE_PYTHON' - '$REMOTE_SANDBOX_STAGE'" <<'CLEANUP'
