@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-07T01:16:42Z",
+  "updated_at": "2026-11-26T02:17:16Z",
   "tasks": [
     {
       "id": "WF-001",
@@ -348,6 +348,22 @@
         "https://github.com/Crosby121/MirroriedLED-Public/pull/16",
         "https://github.com/Crosby121/MirroriedLED-Public/commit/1dc31f029c180df1e03fa006d30b05f81fab27ec"
       ]
+    },
+    {
+      "id": "WF-018",
+      "title": "Show stadium product formats using curated concept images",
+      "status": "in_progress",
+      "priority": 2,
+      "owner_session_id": "20261126t021716z-4d6bf019",
+      "depends_on": [],
+      "acceptance": [
+        "The product page shows the saved shadowbox design and links to the relevant team models.",
+        "Customers can view the labeled concepts on mobile and desktop.",
+        "The package includes the public preview and the existing stadium selection and quote flow passes checks."
+      ],
+      "next_action": "Prepare and verify the stadium gallery on an isolated branch.",
+      "evidence": [],
+      "last_session_id": null
     }
   ]
 }
